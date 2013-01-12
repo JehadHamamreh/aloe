@@ -23,7 +23,7 @@ add_executable(runcf ${rtdal_SOURCES})
 target_link_libraries (runcf "-Wl,--whole-archive" oesr)
 target_link_libraries (runcf "-Wl,--no-whole-archive" rt dl)
 
-
+target_link_libraries(runcf pthread)
 
 # install runcf
 install(TARGETS runcf DESTINATION bin)
