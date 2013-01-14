@@ -234,8 +234,9 @@ void* nod_waveform_status_init_thread(void *arg) {
 		if (i == waveform->nof_modules) {
 			i = 0;
 			nof_trials++;
-			if (nof_trials == 2*waveform->nof_modules) {
-				aerror_msg("Waveform could not initiate after %d trials\n", 2*waveform->nof_modules);
+			if (nof_trials == 3) {
+				aerror_msg("Only %d of %d modules initiated correctly after %d trials\n",
+						nof_initiated, waveform->nof_modules,waveform->nof_modules);
 				return NULL;
 			}
 		}
@@ -404,13 +405,21 @@ int nod_waveform_serialize(nod_waveform_t *src, packet_t *pkt, int all_module,
 int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 	ndebug("waveform_id=%d, nof_modules=%d, status=%d,\n",
 			dest->id, dest->nof_modules,dest->status.cur_status);
-	int i;
+	int i, j;
 	int nof_modules, tmp;
 	enum variable_serialize_data copy_data;
+	enum waveform_serialize_action action;
+	waveform_status_t new_status;
+	module_mode_t mode;
+
 	aassert(pkt);
 	aassert(dest);
 
-	if (dest->status.cur_status == STOP) {
+	get_i(&tmp);
+	action = (enum waveform_serialize_action) tmp;
+
+	switch(action) {
+	case WAVEFORM_LOAD:
 		get_i(&tmp);
 		copy_data = (enum variable_serialize_data) tmp;
 		get_i(&dest->id);
@@ -433,8 +442,8 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 				return -1;
 		}
 		dest->status.cur_status = LOADED;
-	} else {
-		waveform_status_t new_status;
+	break;
+	case WAVEFORM_STATUS:
 
 		if (packet_get_data(pkt, &new_status, sizeof(waveform_status_t))) {
 			return -1;
@@ -446,6 +455,28 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 			}
 			return -1;
 		}
+	break;
+	case WAVEFORM_MODE:
+		get_i(&nof_modules);
+		ndebug("id=%d, nof_modules=%d\n",dest->id,nof_modules);
+		for (i=0;i<nof_modules;i++) {
+			get_i(&tmp);
+			for (j=0;j<dest->nof_modules;j++) {
+				if (dest->modules[j].parent.id == tmp) {
+					break;
+				}
+			}
+			if (j == dest->nof_modules) {
+				aerror_msg("module id %d not found\n",tmp);
+				return -1;
+			}
+			if (packet_get_data(pkt,&mode,sizeof(module_mode_t))) {
+				return -1;
+			}
+			dest->modules[j].parent.mode.next_mode = mode.next_mode;
+			dest->modules[j].parent.mode.next_tslot = mode.next_tslot;
+		}
+		break;
 	}
 	return 0;
 }

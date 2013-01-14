@@ -26,10 +26,10 @@ typedef enum {
 	FORWARD, BACKWARD
 }dft_dir_t;
 
-#define DFT_MIRROR		0b10
-#define DFT_PSD			0b100
-#define DFT_OUT_DB		0b1000
-#define DFT_NORMALIZE   0b10000
+#define DFT_MIRROR		1
+#define DFT_PSD			2
+#define DFT_OUT_DB		4
+#define DFT_NORMALIZE   	16
 
 typedef struct {
 	int size;

@@ -28,10 +28,10 @@
 
 static mapping_t map;
 
-/** \brief Serializes a waveform and sends the packet to each of node it has modules allocated
+/**  Serializes a waveform and sends the packet to each of node it has modules allocated
  * to. Waits for the ACK from each node and returns 0 on success, -1 on error.
  */
-static int waveform_send(waveform_t *waveform, packet_command_t cmd) {
+static int waveform_send(waveform_t *waveform, packet_command_t cmd, enum waveform_serialize_action action) {
 	mdebug("waveform_id=%d\n",waveform->id);
 	packet_dest_t dest;
 	man_platform_t *platform = man_platform_get_context();
@@ -41,7 +41,7 @@ static int waveform_send(waveform_t *waveform, packet_command_t cmd) {
 			mdebug("sending %d modules to node_id=%d\n",map.modules_x_node[i],
 					platform->nodes[i].id);
 			packet_clear(&platform->packet);
-			if (waveform_serialize(waveform,&platform->packet,platform->nodes[i].id,
+			if (waveform_serialize(waveform,&platform->packet,platform->nodes[i].id, action,
 					CP_INIT)) {
 				return -1;
 			}
@@ -53,7 +53,7 @@ static int waveform_send(waveform_t *waveform, packet_command_t cmd) {
 			if (packet_sendto(&platform->packet,&dest)) {
 				return -1;
 			}
-			/** @TODO: In multi-processor platform, this should be something else
+			/** @TODO: In multi-processor platform, this should check the ack from all nodes
 			 *
 			 */
 			if (packet_get_ack(&platform->packet)) {
@@ -64,7 +64,7 @@ static int waveform_send(waveform_t *waveform, packet_command_t cmd) {
 	return 0;
 }
 
-/** \brief Loads waveform to the platform. For each node that has non-zero allocated modules,
+/**  Loads waveform to the platform. For each node that has non-zero allocated modules,
  * serializes the waveform setting loading_node_id parameter to node.id. The parameter CP_INIT
  * is also used for copy_data, which indicates that the initialization value for each variables
  * will be transfered to each node.
@@ -88,7 +88,7 @@ int waveform_load(waveform_t *waveform) {
 	memcpy(waveform->modules_x_node,
 			map.modules_x_node,MAX(nodes)*sizeof(int));
 
-	if (waveform_send(waveform, CMD_LOAD)) {
+	if (waveform_send(waveform, CMD_LOAD, WAVEFORM_LOAD)) {
 		return -1;
 	}
 	waveform->status.cur_status = LOADED;
@@ -117,7 +117,7 @@ int waveform_update(waveform_t *waveform) {
 }
 
 
-/** \brief Returns 1 if the waveform is allowed to transmit from the current status to the
+/**  Returns 1 if the waveform is allowed to transmit from the current status to the
  * new_status passed as second parameter, zero otherwise
  */
 static int waveform_status_is_valid(waveform_t *waveform, waveform_status_t *new_status) {
@@ -157,7 +157,7 @@ static int waveform_status_is_valid(waveform_t *waveform, waveform_status_t *new
 	return 0;
 }
 /**
- * \brief Modifies the status of a waveform. The structure waveform_status_t is defined as
+ *  Modifies the status of a waveform. The structure waveform_status_t is defined as
  * typedef struct {
  * 	waveform_status_enum cur_status;
  * 	int next_timeslot;
@@ -180,7 +180,7 @@ int waveform_status_set(waveform_t *waveform, waveform_status_t *new_status) {
 
 	memcpy(&waveform->status,new_status,sizeof(waveform_status_t));
 
-	if (waveform_send(waveform, CMD_SET)) {
+	if (waveform_send(waveform, CMD_SET, WAVEFORM_STATUS)) {
 		return -1;
 	}
 	if (new_status->cur_status == STOP) {
@@ -192,8 +192,39 @@ int waveform_status_set(waveform_t *waveform, waveform_status_t *new_status) {
 	return 0;
 }
 
+
 /**
- * \brief returns true if the Status is LOADED, INIT, RUN or PAUSE
+ * Changes the waveform mode to name
+ */
+int waveform_mode_set(waveform_t* waveform, char *name) {
+	int i;
+	int j;
+	int tstamp = rtdal_time_slot();
+	mdebug("waveform_id=%d name=%s\n",waveform->id,name);
+	for (i=0;i<waveform->nof_modes;i++) {
+		if (!strcmp(waveform->modes[i].name,name)) {
+			break;
+		}
+	}
+	if (i==waveform->nof_modes) {
+		aerror_msg("mode %s not found\n",name);
+		return -1;
+	}
+	for (j=0;j<waveform->nof_modules;j++) {
+		waveform->modules[j].mode.next_mode = i;
+		waveform->modules[j].mode.next_tslot = tstamp+10+waveform->modules[j].stage;
+	}
+
+	if (waveform_send(waveform, CMD_SET, WAVEFORM_MODE)) {
+		return -1;
+	}
+
+	return 0;
+}
+
+
+/**
+ *  returns true if the Status is LOADED, INIT, RUN or PAUSE
  */
 int waveform_status_is_loaded(waveform_status_t *status) {
 	mdebug("status=%d\n",status->cur_status);
@@ -202,13 +233,12 @@ int waveform_status_is_loaded(waveform_status_t *status) {
 }
 
 /**
- * \brief returns true if the waveform is in status RUN or PAUSE
+ *  returns true if the waveform is in status RUN or PAUSE
  */
 int waveform_status_is_running(waveform_status_t *status) {
 	mdebug("status=%d\n",status->cur_status);
 	return (status->cur_status == RUN || status->cur_status == PAUSE);
 }
-
 
 
 /**

@@ -73,6 +73,12 @@ typedef enum {
 } waveform_status_enum;
 
 typedef struct {
+	int cur_mode;
+	int next_mode;
+	int next_tslot;
+}module_mode_t;
+
+typedef struct {
 	variable_t *variables;
 	interface_t *inputs;
 	interface_t *outputs;
@@ -91,8 +97,9 @@ typedef struct {
 	int nof_variables;
 	int nof_inputs;
 	int nof_outputs;
-	int cur_mode;
+	module_mode_t mode;
 	int nof_modes;
+	int stage;
 } module_t;
 
 

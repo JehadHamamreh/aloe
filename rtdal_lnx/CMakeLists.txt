@@ -12,17 +12,44 @@ if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 	set (ALCORE_LNX_VERSION_MINOR 0)
 endif()
 
+# find UHD driver
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+find_package(UHD)
+find_package(Boost COMPONENTS thread)
+if (UHD_FOUND AND Boost_FOUND)
+		include_directories(${UHD_INCLUDE_DIRS})
+		set(COMPILE_DAC "-DHAVE_UHD")
+		set(DAC_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/dac/uhd/uhd_imp.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/dac/uhd/uhd_parser.c")
+else()
+	message("UHD not found. USRP devices won't be supported")
+	set(COMPILE_DAC "")	
+	set(DAC_SOURCES "")
+endif()
+
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dac/include")
 
 file(GLOB_RECURSE rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
 # runcf executable
-add_executable(runcf ${rtdal_SOURCES})
-target_link_libraries (runcf "-Wl,--whole-archive" oesr)
-target_link_libraries (runcf "-Wl,--no-whole-archive" rt dl)
+add_executable(runcf ${rtdal_SOURCES} ${DAC_SOURCES})
+set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${COMPILE_DAC} -Wno-format")
 
+target_link_libraries (runcf "-Wl,--whole-archive" oesr)
+
+if (UHD_FOUND AND Boost_FOUND)
+	target_link_libraries (runcf "-Wl,--no-whole-archive" pthread ${Boost_LIBRARIES} ${UHD_LIBRARIES})
+else()
+	target_link_libraries (runcf "-Wl,--no-whole-archive" pthread rt dl)
+endif()
+
+if (UHD_FOUND)
+	set_target_properties(runcf PROPERTIES LINKER_FLAGS "-u rtdal_uhd_set_freq")
+endif()
+
+set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
 # install runcf

@@ -104,6 +104,7 @@ int man_platform_config(man_platform_t *_platform, string config_file) {
 	platform = _platform;
 	platform->nof_nodes = 1;
 	platform->nof_processors = machine.nof_cores;
+	platform->ts_length_us = machine.ts_len_us;
 	for (int i=0;i<platform->nof_processors;i++) {
 		platform->nodes[0].processors[i].node = &platform->nodes[0];
 		platform->processors[i] = &platform->nodes[0].processors[i];

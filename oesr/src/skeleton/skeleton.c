@@ -7,8 +7,8 @@
 #include "params.h"
 #include "skeleton.h"
 
-#define MAX_INPUTS 		10
-#define MAX_OUTPUTS 	10
+#define MAX_INPUTS 		30
+#define MAX_OUTPUTS 	30
 #define MAX_VARIABLES 	50
 
 extern const int input_sample_sz;
@@ -32,10 +32,6 @@ counter_t counter;
 void *input_ptr[MAX_INPUTS], *output_ptr[MAX_OUTPUTS];
 int rcv_len[MAX_INPUTS], snd_len[MAX_OUTPUTS];
 
-#ifdef _ALOE_OLD_SKELETON
-char *input_buffer, *output_buffer;
-#endif
-
 void *ctx;
 
 void init_memory() {
@@ -50,11 +46,6 @@ void init_memory() {
 	nof_vars=0;
 	mlog=NULL;
 	counter=NULL;
-
-#ifdef _ALOE_OLD_SKELETON
-	input_buffer=NULL;
-	output_buffer=NULL;
-#endif
 
 }
 
@@ -122,26 +113,6 @@ int init_interfaces(void *ctx) {
 		}
 	}
 
-#ifdef _ALOE_OLD_SKELETON
-
-	if (!input_buffer) {
-		input_buffer = malloc(nof_input_itf*input_max_samples*input_sample_sz);
-		if (!input_buffer) {
-			perror("malloc");
-			return -1;
-		}
-	}
-	if (!output_buffer) {
-		output_buffer = malloc(nof_output_itf*output_max_samples*output_sample_sz);
-		if (!output_buffer) {
-			perror("malloc");
-			return -1;
-		}
-	}
-
-#endif
-
-
 	return 1;
 }
 
@@ -165,14 +136,6 @@ void close_interfaces(void *ctx) {
 			}
 		}
 	}
-#ifdef _ALOE_OLD_SKELETON
-	if (input_buffer) {
-		free(input_buffer);
-	}
-	if (output_buffer) {
-		free(output_buffer);
-	}
-#endif
 
 }
 
@@ -353,29 +316,7 @@ int Run(void *_ctx) {
 		}
 	}
 
-	memset(snd_len,0,sizeof(int)*nof_input_itf);
-
-	/* for legacy aloe modules */
-#ifdef _ALOE_OLD_SKELETON
-
-	for (i=0;i<nof_input_itf;i++) {
-		if (input_ptr[i]) {
-			memcpy(&input_buffer[i*input_max_samples*input_sample_sz],input_ptr[i],
-					rcv_len[i]*input_sample_sz);
-		}
-	}
-
-	/* This is the module DSP function */
-	moddebug("work ts=%d\n",oesr_tstamp(ctx));
-	oesr_counter_start(counter);
-	n = work(input_buffer,output_buffer);
-	oesr_counter_stop(counter);
-	moddebug("work exec time: %d us\n",oesr_counter_usec(counter));
-	if (n<0) {
-		return -1;
-	}
-
-#else
+	memset(snd_len,0,sizeof(int)*nof_output_itf);
 
 #ifdef MOD_DEBUG
 	oesr_counter_start(counter);
@@ -389,8 +330,6 @@ int Run(void *_ctx) {
 		return -1;
 	}
 
-#endif
-
 	memset(rcv_len,0,sizeof(int)*nof_input_itf);
 
 	for (i=0;i<nof_output_itf;i++) {
@@ -398,15 +337,6 @@ int Run(void *_ctx) {
 			snd_len[i] = n*output_sample_sz;
 		}
 	}
-
-#ifdef _ALOE_OLD_SKELETON
-	for (i=0;i<nof_output_itf;i++) {
-		if (output_ptr[i]) {
-			memcpy(output_ptr[i],&output_buffer[i*output_max_samples*output_sample_sz],snd_len[i]);
-		}
-	}
-
-#endif
 
 	for (i=0;i<nof_input_itf;i++) {
 		if (input_ptr[i]) {
@@ -443,26 +373,11 @@ int get_input_samples(int idx) {
 }
 
 int set_output_samples(int idx, int len) {
-	if (idx<0 || idx>nof_input_itf)
+	if (idx<0 || idx>nof_output_itf)
 			return -1;
 	snd_len[idx] = len*output_sample_sz;
 	return 0;
 }
-
-#ifdef _ALOE_OLD_SKELETON
-int get_input_max_samples() {
-	return input_max_samples;
-}
-
-int get_output_max_samples() {
-	return output_max_samples;
-}
-
-void* param_get_addr(char *name) {
-	aerror("Warning: the function param_get_addr() is deprecated, use param_addr() instead. ");
-	return NULL;
-}
-#endif
 
 int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type) {
 	if (type) {

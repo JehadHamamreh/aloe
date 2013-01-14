@@ -13,7 +13,6 @@ set(MODULE_REPOS_NAME "default")
 
 set(CMAKE_C_FLAGS "-Wall -Winline -Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC")
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)
 set(OESR_INCLUDE ${CMAKE_SOURCE_DIR}/oesr/include)

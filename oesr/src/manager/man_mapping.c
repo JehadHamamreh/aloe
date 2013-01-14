@@ -16,18 +16,47 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include "defs.h"
 #include "man_mapping.h"
 #include "man_platform.h"
 #include "nod_waveform.h"
 #include "mempool.h"
 
-static int mapping_alloc(mapping_t *m, int nof_modules) {
+#include "mapper.h"
+
+struct platform_resources plat;
+struct waveform_resources wave;
+struct preprocessing preproc;
+struct mapping_algorithm malg;
+struct cost_function costf;
+struct mapping_result result;
+
+
+static int mapping_alloc(mapping_t *m, int nof_modules, int nof_processors) {
+	int i;
+
 	mdebug("addr=0x%x, nof_modules=%d\n",m,nof_modules);
 	if (m->p_res) return -1;
 	m->p_res = (int*) pool_alloc(nof_modules,sizeof(int));
 	if (!m->p_res) return -1;
 	memset(m->modules_x_node,0,sizeof(int)*MAX(nodes));
+
+    wave.c = calloc(1, sizeof (float) * nof_modules);
+    wave.force = calloc(1, sizeof (int) * nof_modules);
+    wave.b = calloc(1, sizeof (float*) * nof_modules);
+    for (i = 0; i < nof_modules; i++) {
+        wave.b[i] = calloc(1, sizeof (float) * nof_modules);
+    }
+    plat.C = calloc(1, sizeof (int) * nof_processors);
+    plat.B = calloc(1, sizeof (float*) * nof_processors);
+    for (i = 0; i < nof_processors; i++) {
+        plat.B[i] = calloc(1, sizeof (float) * nof_processors);
+    }
+    result.P_m = m->p_res;
+
+
 	return 0;
 }
 
@@ -44,19 +73,61 @@ static int mapping_free(mapping_t *m) {
 
 /** USES oesr_man_ERROR to describe any mapping error */
 int setup_algorithm(mapping_t *m) {
+	malg.type = tw;
+	malg.w = 4;
+	costf.q = 0.5;
+	costf.mhop = 0;
+    preproc.ord = no_ord;
+    plat.arch = fd;
+
 	return 0;
 }
 
 /** USES oesr_man_ERROR to describe any mapping error */
-int generate_model(mapping_t *m) {
+int generate_model(mapping_t *m, waveform_t *waveform, man_platform_t *platform) {
+	int i,j,k;
+
+	plat.nof_processors = platform->nof_processors;
+
+	for (i=0;i<platform->nof_processors;i++) {
+		plat.C[i] = platform->ts_length_us;
+	}
+
+	for (i=0;i<platform->nof_processors;i++) {
+		for (j=0;j<platform->nof_processors;j++) {
+			plat.B[i][j] = 1000000;
+		}
+	}
+
+	wave.nof_tasks = waveform->nof_modules;
+	for (i=0;i<waveform->nof_modules;i++) {
+		wave.c[i] = waveform->modules[i].c_mopts[0];
+		wave.force[i] = -1;
+	}
+
+	for (i = 0; i < waveform->nof_modules; i++) {
+        for (j = 0; j < waveform->modules[i].nof_outputs; j++) {
+			for (k = 0; k < waveform->nof_modules; k++) {
+				if (waveform->modules[i].outputs[j].remote_module_id ==
+						waveform->modules[k].id) {
+					wave.b[i][k] += (float) waveform->modules[i].outputs[j].total_mbpts/1000;
+				}
+			}
+        }
+    }
+
 	return 0;
 }
 
 /** USES oesr_man_ERROR to describe any mapping error */
 int call_algorithm(mapping_t *m, waveform_t *waveform, man_platform_t *platform) {
-	int i;
-	for (i=0;i<waveform->nof_modules;i++) {
-		m->p_res[i]=i%platform->nof_processors;
+
+    m->cost = mapper(&preproc, &malg, &costf, &plat, &wave, &result);
+	if (m->cost == infinite) {
+		printf("Error loading waveform. Not enough resources\n");
+		return -1;
+	} else {
+		return 0;
 	}
 	return 0;
 }
@@ -81,16 +152,16 @@ int mapping_map(mapping_t *m, waveform_t *waveform) {
 		aerror("oesr_man not initialized\n");
 		return -1;
 	}
-	if (mapping_alloc(m,waveform->nof_modules)) {
+	if (mapping_alloc(m,waveform->nof_modules,platform->nof_processors)) {
 		return -1;
 	}
 	if (setup_algorithm(m)) {
 		goto free;
 	}
-	if (generate_model(m)) {
+	if (generate_model(m, waveform, platform)) {
 		goto free;
 	}
-	if (call_algorithm(m,waveform, platform)) {
+	if (call_algorithm(m, waveform, platform)) {
 		goto free;
 	}
 	memset(m->modules_x_node,0,sizeof(int)*MAX(nodes));

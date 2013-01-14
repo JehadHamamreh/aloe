@@ -16,6 +16,6 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int fft_init(int size, int _is_complex);
+int fft_init(int _nof_plans, int *_size, int _is_complex);
 int fft_execute(void **inp, double *pl_signals, int *signal_lengths);
 void fft_destroy();

@@ -16,6 +16,7 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include <dlfcn.h>
 #include "defs.h"
 #include "rtdal_error.h"
@@ -24,8 +25,12 @@
 #include "pipeline.h"
 
 lstrdef(tmp);
+lstrdef(tmp2);
+lstrdef(tmp3);
 
 extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
+
+extern char libs_path[255];
 
 /**
  * Loads a process binary into memory. The process must have been created using
@@ -39,13 +44,16 @@ int rtdal_process_launch(rtdal_process_t *obj) {
 	RTDAL_ASSERT_PARAM(obj);
 	char *error;
 
-	snprintf(tmp,LSTR_LEN,"/usr/local/lib/%s",obj->attributes.binary_path);
-	obj->dl_handle = dlopen(tmp, RTLD_NOW);
+	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
+	snprintf(tmp2,LSTR_LEN,"cp %s/%s %s",libs_path,obj->attributes.binary_path,tmp);
+	system(tmp2);
 
+	obj->dl_handle = dlopen(tmp,RTLD_NOW);
 	if (!obj->dl_handle) {
 		RTDAL_DLERROR(dlerror());
 		return -1;
 	}
+
 	dlerror();
 
 	*(void**) (&obj->run_point) = dlsym(obj->dl_handle, "_run_cycle");
@@ -77,6 +85,10 @@ int rtdal_process_remove(r_proc_t process) {
 	}
 
 	dlclose(obj->dl_handle);
+
+	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
+	snprintf(tmp2,LSTR_LEN,"rm %s",tmp);
+	system(tmp2);
 
 	obj->pid = 0;
 

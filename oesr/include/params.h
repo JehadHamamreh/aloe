@@ -65,35 +65,11 @@ int param_get_int_name(char *name, int *value);
 int param_get_float_name(char *name, float *value);
 
 
-/** this interface is deprecated */
-#ifdef _ALOE_OLD_SKELETON
-void *param_get_addr(char *name);
-#endif
-
-
-
-
-
-
-
-
-
-#ifdef _ALOE_OLD_SKELETON
-enum stat_update {OFF, READ, WRITE};
-struct utils_variables {
-	char *name;
-	int type;
-	int size;
-	void *value;
-	enum stat_update update_mode;
-};
-#else
 struct utils_variables {
 	char *name;
 	int size;
 	void *value;
 };
-#endif
 
 typedef struct utils_variables user_var_t;
 

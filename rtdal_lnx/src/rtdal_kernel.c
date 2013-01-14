@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <semaphore.h>
+#include <libconfig.h>
 
 #include "rtdal_kernel.h"
 #include "str.h"
@@ -37,6 +39,12 @@
 #include "rtdal_timer.h"
 #include "futex.h"
 
+#ifdef HAVE_UHD
+#include "dac_cfg.h"
+#include "uhd.h"
+struct dac_cfg dac_cfg;
+#endif
+
 #define KERNEL_SIG_THREAD_SPECIFIC SIGRTMIN
 #define N_THREAD_SPECIFIC_SIGNALS 6
 const int thread_specific_signals[N_THREAD_SPECIFIC_SIGNALS] =
@@ -46,6 +54,9 @@ const int thread_specific_signals[N_THREAD_SPECIFIC_SIGNALS] =
 int *core_mapping;
 int nof_cores;
 
+char libs_path[255];
+
+static int using_uhd;
 static rtdal_context_t rtdal;
 static rtdal_timer_t kernel_timer;
 static long int timeslot_us;
@@ -66,7 +77,6 @@ FILE *trace_buffer = NULL;
 char *debug_trace_addr;
 size_t debug_trace_sz;
 FILE *debug_trace_file;
-
 
 
 /**
@@ -131,6 +141,7 @@ inline void kernel_tslot_run() {
 }
 
 static int first_cycle = 0;
+sem_t dac_sem;
 /**
  * This function is called by the internal timer, a DAC event or by the sync_slave,
  * after the reception of a synchronization packet.
@@ -143,10 +154,30 @@ static void kernel_cycle(void *x, struct timespec *time) {
 	}
 	kernel_tslot_run();
 	pipeline_sync_threads();
+	if (clock_source == SINGLE_TIMER && using_uhd) {
+		sem_post(&dac_sem);
+	}
 }
+
+#ifdef HAVE_UHD
+static void dac_cycle(void) {
+	struct timespec time;
+	if (clock_source == DAC) {
+		clock_gettime(CLOCK_MONOTONIC,&time);
+		kernel_cycle(NULL,&time);
+	} else {
+		if (!sigwait_stops) {
+			sem_wait(&dac_sem);
+		}
+	}
+}
+#endif
 
 inline static int kernel_initialize_setup_clock() {
 	struct timespec start_time;
+#ifdef HAVE_UHD
+	struct sched_param param;
+#endif
 
 	/* access to kernel sync function is not allowed */
 	rtdal.machine.slave_sync_kernel = NULL;
@@ -177,6 +208,14 @@ inline static int kernel_initialize_setup_clock() {
 		futex_wake(&multi_timer_futex);
 		break;
 	case DAC:
+#ifdef HAVE_UHD
+		param.sched_priority = rtdal.machine.kernel_prio-2;
+		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
+		uhd_init(&dac_cfg, &rtdal.machine.ts_len_us,dac_cycle);
+		param.sched_priority = rtdal.machine.kernel_prio;
+		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
+#endif
+		break;
 	case SYNC_SLAVE:
 		/* enable access to kernel_cycle function */
 		rtdal.machine.slave_sync_kernel = kernel_cycle;
@@ -213,7 +252,7 @@ int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex) {
 
 	if (rtdal_task_new_thread(&obj->thread,
 			tmp_thread_fnc, tmp_thread_arg, DETACHABLE,
-			rtdal.machine.kernel_prio-2, core_mapping[obj->id],0)) {
+			rtdal.machine.kernel_prio-3, core_mapping[obj->id],0)) {
 		rtdal_perror();
 		return -1;
 	}
@@ -319,6 +358,7 @@ static int kernel_initialize(void) {
 
 	pthread_mutex_init(&rtdal.mutex,NULL);
 
+
 	/* Set self priority to rtdal.machine.kernel_prio */
 	if (kernel_initialize_set_kernel_priority()) {
 		return -1;
@@ -338,6 +378,7 @@ static int kernel_initialize(void) {
 	if (kernel_initialize_setup_clock()) {
 		return -1;
 	}
+
 
 	return 0;
 }
@@ -422,7 +463,7 @@ static void sigwait_loop(void) {
 			printf("Caught SIGINT, exiting\n");
 			fflush(stdout);
 			goto out;
-		} else if (signum != SIGWINCH) {
+		} else if (signum != SIGWINCH && signum != SIGCHLD) {
 			printf("Got signal %d, exiting\n", signum);
 			fflush(stdout);
 			goto out;
@@ -459,7 +500,7 @@ static void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 
 	signal_received++;
 
-	printf("[ts=%d] signal %d received\n",rtdal_time_slot(),signum);
+	hdebug("[ts=%d] signal %d received\n",rtdal_time_slot(),signum);
 
 	/* try to find the thread that caused the signal */
 
@@ -569,6 +610,7 @@ static void go_out() {
 	write_debug_trace();
 	hdebug("tslot=%d\n",rtdal_time_slot());
 	sigwait_stops = 1;
+	sem_post(&dac_sem);
 	kernel_timer.stop = 1;
 	for (int i=0;i<rtdal.machine.nof_cores;i++) {
 		if (rtdal.machine.clock_source == MULTI_TIMER) {
@@ -577,6 +619,11 @@ static void go_out() {
 			rtdal.pipelines[i].stop = 1;
 		}
 	}
+#ifdef HAVE_UHD
+	if (using_uhd) {
+		uhd_close();
+	}
+#endif
 	usleep(100000);
 	check_threads();
 }
@@ -651,13 +698,98 @@ int parse_cores(char *str) {
 	}
 }
 
+int parse_config(char *config_file) {
+	config_t config;
+	int ret = -1;
+	config_setting_t *rtdal;
+	const char *tmp;
+	int single_timer;
+	int time_slot_us;
+
+	config_init(&config);
+	if (!config_read_file(&config, config_file)) {
+		aerror_msg("line %d - %s: \n", config_error_line(&config),
+				config_error_text(&config));
+		goto destroy;
+	}
+
+	rtdal = config_lookup(&config, "rtdal");
+	if (!rtdal) {
+		aerror("Error parsing config file: rtdal section not found.\n");
+		goto destroy;
+	}
+
+	if (!config_setting_lookup_int(rtdal, "time_slot_us", &time_slot_us)) {
+		aerror("time_slot_us field not defined\n");
+		goto destroy;
+	}
+
+	if (!config_setting_lookup_string(rtdal, "cores", &tmp)) {
+		aerror("cores field not defined\n");
+		goto destroy;
+	}
+	nof_cores = parse_cores((char*) tmp);
+	if (nof_cores < 0) {
+		printf("Error invalid cores %s\n",tmp);
+		exit(0);
+	}
+
+	if (!config_setting_lookup_bool(rtdal, "use_usrp", &using_uhd)) {
+		aerror("use_usrp field not defined\n");
+		goto destroy;
+	}
+
+	if (!config_setting_lookup_bool(rtdal, "timer_mode_single", &single_timer)) {
+		aerror("timer_mode_single field not defined\n");
+		goto destroy;
+	}
+	if (using_uhd) {
+		if (single_timer) {
+			clock_source = SINGLE_TIMER;
+		} else {
+			clock_source = DAC;
+		}
+	} else {
+		if (single_timer) {
+			clock_source = SINGLE_TIMER;
+		} else {
+			clock_source = MULTI_TIMER;
+		}
+	}
+	if (!config_setting_lookup_string(rtdal, "path_to_libs", &tmp)) {
+		aerror("path_to_libs field not defined\n");
+		goto destroy;
+	}
+	strcpy(libs_path,tmp);
+
+	if (using_uhd) {
+#ifdef HAVE_UHD
+		uhd_readcfg(&dac_cfg);
+#endif
+	}
+	if (using_uhd) {
+#ifdef HAVE_UHD
+		timeslot_us = (long int) 1000000*((float) dac_cfg.NsamplesOut/dac_cfg.outputFreq);
+#endif
+	} else {
+		timeslot_us = time_slot_us;
+	}
+	ret=0;
+destroy:
+	config_destroy(&config);
+	return ret;
+}
 
 int main(int argc, char **argv) {
 
-
-	if (argc!=4 && argc!=5) {
-		printf("Usage: %s ts_us nof_cores path_to_waveform_model [-s]\n",argv[0]);
+	if (argc!=3) {
+		printf("Usage: %s path_to_waveform_model config_file\n",argv[0]);
 		return -1;
+	}
+
+	if (parse_config(argv[2])) {
+		aerror_msg("Error parsing file config %s\n",argv[2]);
+		exit(0);
 	}
 
 #ifdef DEBUG_TRACE
@@ -669,29 +801,25 @@ int main(int argc, char **argv) {
 
 	kernel_pid = getpid();
 
-	timeslot_us = atol(argv[1]);
-	if (timeslot_us <= 0) {
-		printf("Error invalid timeslot %d\n",(int) timeslot_us);
-		exit(0);
-	}
-	rtdal.machine.nof_cores = parse_cores(argv[2]);
-	nof_cores = rtdal.machine.nof_cores;
-	if (rtdal.machine.nof_cores <= 0) {
-		printf("Error invalid cores %s\n",argv[2]);
-		exit(0);
-	}
+	rtdal.machine.nof_cores = nof_cores;
 
-	clock_source = MULTI_TIMER;
-	if (argc == 5) {
-		if (!strcmp("-s",argv[4])) {
-			clock_source = SINGLE_TIMER;
-		}
+	if (using_uhd) {
+#ifdef HAVE_UHD
+		struct sched_param param;
+		sem_init(&dac_sem, 0, 0);
+		param.sched_priority = rtdal.machine.kernel_prio-3;
+		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
+		uhd_init(&dac_cfg, &rtdal.machine.ts_len_us,dac_cycle);
+		param.sched_priority = rtdal.machine.kernel_prio;
+		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
+#endif
 	}
 
 	print_license();
 	if (getuid()) {
 		printf("Run as root to run in real-time mode\n\n");
 	}
+
 	printf("Time slot:\t%d us\nPlatform:\t%d cores\nTimer:\t\t%s\n\n", (int) timeslot_us,
 			rtdal.machine.nof_cores,(clock_source==MULTI_TIMER)?"Multi":"Single");
 
@@ -701,16 +829,13 @@ int main(int argc, char **argv) {
 		goto clean_and_exit;
 	}
 
-	if (rtdal_task_new(NULL,_run_main,argv[3])) {
+	if (rtdal_task_new(NULL,_run_main,argv[1])) {
 		rtdal_perror("rtdal_task_new");
 		goto clean_and_exit;
 	}
 
-
 	/* the main thread runs the sigwait loop */
 	sigwait_loop();
-
-
 
 clean_and_exit:
 	exit(0);
@@ -723,3 +848,26 @@ static void print_license() {
     "This is free software, and you are welcome to redistribute it\n"
     "under certain conditions. See license.txt\n\n",ALOE_VERSION, ALOE_YEAR);
 }
+
+
+/** @TODO MOVE THIS TO RTDAL_DAC
+ *
+ */
+#ifdef HAVE_UHD
+
+
+int rtdal_uhd_set_freq(float freq) {
+	dac_cfg.outputFreq = (double) freq;
+	return 0;
+}
+int rtdal_uhd_set_block_len(int len) {
+	dac_cfg.NsamplesOut = len;
+	return 0;
+}
+void *rtdal_uhd_buffer(int int_ch) {
+	return dac_cfg.dacoutbuff[0];
+}
+
+
+
+#endif

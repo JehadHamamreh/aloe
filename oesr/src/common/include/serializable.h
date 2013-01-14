@@ -28,8 +28,12 @@ enum variable_serialize_data {
 	NONE, CP_VALUE, CP_INIT
 };
 
+enum waveform_serialize_action {
+	WAVEFORM_LOAD, WAVEFORM_STATUS, WAVEFORM_MODE
+};
+
 int waveform_serialize(waveform_t *dest, packet_t *pkt, int loading_node_id,
-		enum variable_serialize_data copy_data);
+		enum waveform_serialize_action action, enum variable_serialize_data copy_data);
 int waveform_unserializeTo(packet_t *pkt, waveform_t *dest,
 		enum variable_serialize_data copy_data);
 

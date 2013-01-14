@@ -50,6 +50,8 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
+		moddebug("rcv_len=%d\n",get_input_samples(i));
+
 		if (get_input_samples(i)) {
 			out_len = RATE*get_input_samples(i)+TOTALTAIL;
 			turbo_coder(input,output,get_input_samples(i));

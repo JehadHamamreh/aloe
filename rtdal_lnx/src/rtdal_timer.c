@@ -22,7 +22,10 @@
 #include <signal.h>
 #include <time.h>
 #include <error.h>
+
+#ifdef EN_TIMERFD
 #include <sys/timerfd.h>
+#endif
 
 #include "defs.h"
 #include "rtdal_timer.h"
@@ -37,7 +40,7 @@
  *
  * @todo: compare performance with posix timer
  */
-
+#ifdef EN_TIMERFD
 void timer_close(rtdal_timer_t *info) {
 	close(info->timer_fd);
 }
@@ -105,7 +108,7 @@ inline int timer_wait_period (rtdal_timer_t *info)
 
 	return 0;
 }
-
+#endif
 void* timer_run_thread(void* x) {
 	rtdal_timer_t *obj = (rtdal_timer_t*) x;
 
@@ -116,13 +119,16 @@ void* timer_run_thread(void* x) {
 	switch(obj->mode) {
 	case NANOSLEEP:
 		return nanoclock_timer_run_thread(obj);
+#ifdef EN_TIMERFD
 	case TIMERFD:
 		return timerfd_timer_run_thread(obj);
+#endif
 	default:
 		aerror_msg("Unknown timer mode %d\n", obj->mode);
 		return NULL;
 	}
 }
+#ifdef EN_TIMERFD
 
 void* timerfd_timer_run_thread(rtdal_timer_t* obj) {
 	int s;
@@ -158,7 +164,7 @@ timer_destroy:
 	pthread_exit(&s);
 	return NULL;
 }
-
+#endif
 inline static void timespec_add_us(struct timespec *t, long int us) {
 	t->tv_nsec += us;
 	if (t->tv_nsec >= 1000000000) {

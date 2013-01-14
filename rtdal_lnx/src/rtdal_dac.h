@@ -47,6 +47,8 @@ int rtdal_dac_set_freq(r_dac_t obj, float freq);
 int rtdal_dac_set_block_len(r_dac_t obj, int len);
 int rtdal_dac_set_sample_type(r_dac_t obj, int type);
 int rtdal_dac_set_buffer_sz(r_dac_t obj, int in, int out);
+int rtdal_dac_set_opts(r_dac_t obj, string opts);
+int rtdal_dac_set_freq(r_dac_t obj, float freq);
 r_itf_t rtdal_dac_channel(r_dac_t obj, int int_ch);
 
 #endif

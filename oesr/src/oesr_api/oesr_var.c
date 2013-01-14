@@ -17,6 +17,7 @@
  */
 
 #include <stddef.h>
+#include "rtdal.h"
 #include "oesr.h"
 #include "oesr_context.h"
 #include "nod_waveform.h"
@@ -80,10 +81,15 @@ int oesr_var_param_value(void *context, var_t parameter, void* value, int size) 
 	nod_module_t *module = (nod_module_t*) ctx->module;
 	variable_t *variable = (variable_t*) parameter;
 
-	sdebug("id=0x%x, size=%d, value=0x%x, cur_mode=%d\n",parameter,size,value,module->parent.cur_mode);
+	sdebug("id=0x%x, size=%d, value=0x%x, cur_mode=%d\n",parameter,size,value,module->parent.mode.cur_mode);
 
 	cpy_sz = (variable->size > size)?size:variable->size;
-	memcpy(value, variable->init_value[module->parent.cur_mode], (size_t) cpy_sz);
+	if (module->parent.mode.next_tslot &&
+			module->parent.mode.next_tslot <= rtdal_time_slot()) {
+		module->parent.mode.cur_mode = module->parent.mode.next_mode;
+		module->parent.mode.next_tslot = 0;
+	}
+	memcpy(value, variable->init_value[module->parent.mode.cur_mode], (size_t) cpy_sz);
 	sdebug("id=0x%x, copied=%d\n", parameter, cpy_sz);
 	return cpy_sz;
 }

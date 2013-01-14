@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "defs.h"
-
+#include "str.h"
 #include "oesr_man.h"
 #include "waveform.h"
 #include "nod_waveform.h"
@@ -12,22 +12,30 @@
 
 waveform_t waveform;
 
+int print_modes(waveform_t *waveform) {
+	int i;
+	for (i=0;i<waveform->nof_modes;i++) {
+		printf("\t%d:\t%s\n",i,waveform->modes[i].desc);
+	}
+	return 0;
+}
+
 int print_execinfo(waveform_t *waveform, int tslot_us) {
 	int i;
 	const char *t;
 	int total_cpu=0;
 	printf("\t========================= Execinfo: %s ==============\n\n",waveform->name);
-	printf("\tName\t\t  Mean Exec (us)   Max Exec (us) Mean Ini -> End (us)  Max Ini -> End (us)\n");
+	printf("\tName\t\t  Mean Exec (us)   Max Exec (us) Mean Ini -> End (us)  Processor Id\n");
 	for (i=0;i<waveform->nof_modules;i++) {
-		if (strlen(waveform->modules[i].name)>8) {
+		if (strlen(waveform->modules[i].name)>=8) {
 			t="\t";
 		} else {
 			t="\t\t";
 		}
-		printf("\t%s%s%16.2f%16d%8.2f -> %8.2f  %8d -> %5d\n",waveform->modules[i].name,t,
+		printf("\t%s%s%16.2f%16d%8.2f -> %8.2f  %13d\n",waveform->modules[i].name,t,
 				waveform->modules[i].execinfo.mean_exec_us,waveform->modules[i].execinfo.max_exec_us,
 				waveform->modules[i].execinfo.mean_start_us,waveform->modules[i].execinfo.mean_rel_us,
-				waveform->modules[i].execinfo.max_start_us,waveform->modules[i].execinfo.max_rel_us);
+				waveform->modules[i].processor_idx);
 		total_cpu += waveform->modules[i].execinfo.t_exec[0].tv_usec;
 	}
 	printf("\tTotal\t\t%11d (%.2f%%)\n",total_cpu, (float) 100*total_cpu/tslot_us);
@@ -38,6 +46,7 @@ int print_execinfo(waveform_t *waveform, int tslot_us) {
 void *_run_main(void *arg) {
 	int c;
 	int tslen;
+	int mode;
 	rtdal_machine_t machine;
 	strcpy(waveform.model_file,arg);
 	strcpy(waveform.name,arg);
@@ -75,12 +84,24 @@ void *_run_main(void *arg) {
 					"\t<p>\tSet PAUSE\n"
 					"\t<t>\tSet STEP\n"
 					"\t<s>\tStop waveform\n"
+					"\t<m>\tSet waveform mode\n"
 					"\t<e>\tView execution time\n"
 					"\n<Ctr+C>\tExit\n");
 		}
 		c = getchar();
 		new_status.cur_status = LOADED;
 		switch((char) c) {
+		case 'm':
+			getchar();
+			print_modes(&waveform);
+			printf("\nEnter waveform mode (index): ");
+			scanf("%d",&mode);
+			printf("\nSwitching to '%s'...\n",waveform.modes[mode].desc);
+			if (waveform_mode_set(&waveform,waveform.modes[mode].name)) {
+				aerror("setting waveform mode\n");
+				break;
+			}
+			break;
 		case 'l':
 			if (waveform_load(&waveform)) {
 				aerror("loading waveform\n");

@@ -17,7 +17,7 @@
  */
 
 #define NUMREGS     3
-#define MAX_LONG_CB 5114
+#define MAX_LONG_CB 6114
 
 #define RATE 3
 #define TOTALTAIL 12

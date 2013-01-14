@@ -27,7 +27,6 @@
 
 /*#define DEBUG_TRACE
 */
-
 /** Returns the number of samples (of size input_sample_sz) received from the input port
  * idx.
  * \returns non-negative integer on success or -1 if idx is not a valid interface.
@@ -40,30 +39,16 @@ int get_input_samples(int idx);
  */
 int set_output_samples(int idx, int len);
 
-#ifdef _ALOE_OLD_SKELETON
-void* param_get_addr(char *name);
-#endif
-
-
 
 #ifdef _COMPILE_MEX
 #include "mex.h"
 #endif
 
 
-#ifdef _ALOE_OLD_SKELETON
-int initialize();
-int stop();
-#define in(ptr,idx) &ptr[idx*INPUT_MAX_DATA]
-#define out(ptr,idx) &ptr[idx*OUTPUT_MAX_DATA]
-int get_input_max_samples();
-int get_output_max_samples();
-#else
 int work(void **input, void **output);
 int initialize();
 int stop();
 int generate_input_signal(void *input, int *input_length);
-#endif
 
 
 #ifdef _COMPILE_ALOE
@@ -129,8 +114,8 @@ extern log_t mlog;
 
 #ifdef _COMPILE_ALOE
 #define moddebug(_fmt, ...) \
-	do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: " _fmt, oesr_module_name(ctx),__func__,\
-			__VA_ARGS__);} while(0);
+	do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
+			oesr_tstamp(ctx),__VA_ARGS__);} while(0);
 #else
 #define moddebug(_fmt, ...) \
 	do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug]\t[%s()]: " _fmt, __func__,\

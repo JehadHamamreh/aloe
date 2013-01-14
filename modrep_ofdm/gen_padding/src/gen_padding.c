@@ -87,9 +87,10 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
+		moddebug("rcv_len=%d\n",get_input_samples(i));
 
 		if ((get_input_samples(i)) % nof_packets) {
-			moderror_msg("Received samples (%d) should multiple of nof_packetss (%d)\n",
+			moderror_msg("Received samples (%d) should multiple of nof_packets (%d)\n",
 					get_input_samples(i), nof_packets);
 			return -1;
 		}

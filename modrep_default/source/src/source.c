@@ -103,10 +103,12 @@ int work(void **inp, void **out) {
 		return -1;
 	}
 
+#ifdef _COMPILE_ALOE
 	if (block_length != last_block_length) {
-		modinfo_msg("Select block_length: block_length=%d\n",block_length);
+		modinfo_msg("Select block_length: block_length=%d at tslot=%d\n",block_length,oesr_tstamp(ctx));
 		last_block_length = block_length;
 	}
+#endif
 
 	snd_samples = generators[i].work(out,block_length);
 

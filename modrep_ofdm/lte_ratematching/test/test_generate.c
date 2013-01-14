@@ -21,9 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <oesr.h>
-#include "test_generate.h"
-#include "templatelegacy_interfaces.h"
+#include <skeleton.h>
+#include <params.h>
+
+#define INCLUDE_DEFS_ONLY
+#include "lte_ratematching.h"
 
 int offset=0;
 
@@ -35,29 +37,37 @@ int offset=0;
  *
  * @param lengths Save on n-th position the number of samples generated for the n-th interface
  */
-int generate_input_signal(input_t *input, int *lengths)
+int generate_input_signal(void *in, int *lengths)
 {
 	int i;
-	int *block_length = param_get_addr("block_length");
-	if (!block_length) {
-		moderror("Parameter block_length undefined\n");
+	input_t *input = in;
+	int block_length;
+	pmid_t blen_id;
+	int size;
+
+	blen_id = param_id("block_length");
+	if (!blen_id) {
+		moderror("Parameter block_length not found\n");
 		return -1;
 	}
-	if (!*block_length) {
-		moderror("Parameter block_length is zero\n");
+	if (!param_get_int(blen_id,&block_length)) {
+		moderror("Getting integer parameter block_length\n");
 		return -1;
 	}
-	if (*block_length > get_input_max_samples()) {
-		moderror_msg("Block length %d too large\n",*block_length);
-		return -1;
-	}
+
+	modinfo_msg("Parameter block_length is %d\n",block_length);
+
 
 	/** HERE INDICATE THE LENGTH OF THE SIGNAL */
-	lengths[0] = *block_length;
+	lengths[0] = block_length;
 
-	for (i=0;i<*block_length;i++) {
-		__real__ input[i] = (i+offset)%(*block_length);
-		__imag__ input[i] = (*block_length-i-1+offset)%(*block_length);
+	for (i=0;i<block_length;i++) {
+#ifdef GENERATE_COMPLEX
+		__real__ input[i] = (float) ((i+offset)%(block_length));
+		__imag__ input[i] = (float) ((block_length-i-1+offset)%(block_length));
+#else
+		input[i] = (i+offset)%(block_length);
+#endif
 	}
 	offset++;
 	return 0;

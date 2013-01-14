@@ -40,7 +40,6 @@ static unsigned int poly;
 int initialize() {
 
 	if (param_get_int(param_id("mode"),&mode) != 1) {
-		modinfo("Parameter mode not configured. Set to 'add'\n");
 		mode = MODE_ADD;
 	}
 
@@ -54,8 +53,6 @@ int initialize() {
 
 	poly_id = param_id("poly");
 	if (param_get_int(poly_id,&poly) != 1) {
-		modinfo_msg("Parameter poly not configured. Set to 0x%x\n",
-				DEFAULT_POLY);
 		poly = DEFAULT_POLY;
 		poly_id = NULL;
 	}
@@ -75,6 +72,7 @@ int work(void **inp, void **out) {
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		if (get_input_samples(i)) {
+			moddebug("rcv_len=%d\n",get_input_samples(i));
 			memcpy(out[i],inp[i],sizeof(input_t)*get_input_samples(i));
 			input = out[i];
 			n = icrc(0, input, get_input_samples(i), long_crc, poly, mode == MODE_ADD);

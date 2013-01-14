@@ -152,15 +152,9 @@ int rtdal_itf_get_delay(r_itf_t obj);
  * TODO: documentent this
  * @{
  */
-r_dac_t rtdal_dac_get(string address);
-int rtdal_dac_set_scheduler(r_dac_t obj, void (*ts_begin_fnc)(void), int thread_prio);
-int rtdal_dac_start(r_dac_t obj);
-int rtdal_dac_set_opts(r_dac_t obj, string opts);
-int rtdal_dac_set_freq(r_dac_t obj, float freq);
-int rtdal_dac_set_block_len(r_dac_t obj, int len);
-int rtdal_dac_set_sample_type(r_dac_t obj, int type);
-int rtdal_dac_set_buffer_size(r_dac_t obj, int in, int out);
-r_itf_t rtdal_dac_channel(r_dac_t obj, int int_ch);
+int rtdal_uhd_set_freq(float freq);
+int rtdal_uhd_set_block_len(int len);
+void *rtdal_uhd_buffer(int int_ch);
 /**@} */
 
 

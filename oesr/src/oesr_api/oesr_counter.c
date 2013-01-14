@@ -59,8 +59,10 @@ int oesr_counter_close(counter_t counter) {
 	sdebug("context=0x%x, counter_id=%d\n",ctx,cnt->id);
 	OESR_ASSERT_PARAM(counter);
 	variable_t *variable = cnt->variable;
-	variable->id = 0;
-	variable->size = 0;
+	if (variable) {
+		variable->id = 0;
+		variable->size = 0;
+	}
 	cnt->id = 0;
 	cnt->variable = NULL;
 	return 0;

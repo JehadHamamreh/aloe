@@ -24,102 +24,134 @@
 #define INCLUDE_DEFS_ONLY
 #include "plp_sink.h"
 
-static int fft_size;
+#define NOF_PLANS 5
+
+static int fft_size[NOF_PLANS];
 static int is_complex;
-static double norm;
+static double norm[NOF_PLANS];
+static int nof_plans;
 
-fftwf_complex *c_in_fft, *c_out_fft;
-fftwf_plan c_plan;
 
-fftw_plan r_plan;
-double *r_in_fft, *r_out_fft;
+fftwf_complex *c_in_fft[NOF_PLANS], *c_out_fft[NOF_PLANS];
+fftwf_plan c_plan[NOF_PLANS];
 
-int fft_init(int _size, int _is_complex) {
-	fft_size = _size;
-	is_complex = _is_complex;
+fftw_plan r_plan[NOF_PLANS];
+double *r_in_fft[NOF_PLANS], *r_out_fft[NOF_PLANS];
 
-	if (!fft_size) {
+int fft_init(int _nof_plans, int *_size, int _is_complex) {
+	int i;
+
+	nof_plans = _nof_plans;
+
+	if (nof_plans > NOF_PLANS) {
 		return -1;
 	}
 
-	if (is_complex) {
-		c_in_fft = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex)*fft_size);
-		c_out_fft = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex)*fft_size);
-		c_plan = fftwf_plan_dft_1d(fft_size, c_in_fft, c_out_fft, -1, 0);
-		if (!c_plan) {
-			return -1;
-		}
-	} else {
-		r_in_fft = (double*) fftw_malloc(sizeof(double)*fft_size);
-		r_out_fft = (double*) fftw_malloc(sizeof(double)*fft_size);
-		r_plan = fftw_plan_r2r_1d(fft_size, r_in_fft, r_out_fft,
-				FFTW_R2HC,0);
-		if (!r_plan) {
-			return -1;
-		}
-	}
+	is_complex = _is_complex;
 
-	/* Normalizatize DFT/IDFT output*/
-	norm = 1/sqrt(fft_size);
+	for (i=0;i<nof_plans;i++) {
+		fft_size[i] = _size[i];
+
+		if (is_complex) {
+			c_in_fft[i] = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex)*fft_size[i]);
+			c_out_fft[i] = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex)*fft_size[i]);
+			c_plan[i] = fftwf_plan_dft_1d(fft_size[i], c_in_fft[i], c_out_fft[i], -1, 0);
+			if (!c_plan[i]) {
+				return -1;
+			}
+		} else {
+			r_in_fft[i] = (double*) fftw_malloc(sizeof(double)*fft_size[i]);
+			r_out_fft[i] = (double*) fftw_malloc(sizeof(double)*fft_size[i]);
+			r_plan[i] = fftw_plan_r2r_1d(fft_size[i], r_in_fft[i], r_out_fft[i],
+					FFTW_R2HC,0);
+			if (!r_plan[i]) {
+				return -1;
+			}
+		}
+
+		/* Normalizatize DFT/IDFT output*/
+		norm[i] = 1/sqrt(fft_size[i]);
+
+	}
 
 	return 0;
 }
 
 int c_fft_execute(void **inp, double *pl_signals, int *signal_lengths) {
-	int i,j,len;
-	memset(c_in_fft,0,sizeof(_Complex float)*fft_size);
+	int i,j,p,len;
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
-		len = MIN(signal_lengths[i],fft_size);
-		if (inp[i]) {
-			memcpy(c_in_fft,inp[i],len*sizeof(_Complex float));
-
-			fftwf_execute(c_plan);
-
-			for (j=0;j<len;j++) {
-				c_out_fft[j] /= fft_size;
-				pl_signals[i*INPUT_MAX_SAMPLES+j] =
-						10*log10((__real__ c_out_fft[j])*(__real__ c_out_fft[j])+
-						(__imag__ c_out_fft[j])*(__imag__ c_out_fft[j]));
-				if (isinf(-pl_signals[i*INPUT_MAX_SAMPLES+j])) {
-					pl_signals[i*INPUT_MAX_SAMPLES+j] = -60;
-				}
+		if (signal_lengths[i]) {
+			for (p=0;p<nof_plans;p++) {
+				if (signal_lengths[i] == fft_size[p])
+					break;
 			}
-		} else {
-			memset(&pl_signals[i*INPUT_MAX_SAMPLES],0,sizeof(double)*len);
+			if (p==nof_plans)
+				p=0;
+
+			len = fft_size[p];
+
+			memset(c_in_fft[p],0,sizeof(_Complex float)*len);
+
+
+			if (inp[i]) {
+				memcpy(c_in_fft[p],inp[i],len*sizeof(_Complex float));
+
+				fftwf_execute(c_plan[p]);
+
+				for (j=0;j<len;j++) {
+					c_out_fft[p][j] /= len;
+					pl_signals[i*INPUT_MAX_SAMPLES+j] =
+							10*log10((__real__ c_out_fft[p][j])*(__real__ c_out_fft[p][j])+
+							(__imag__ c_out_fft[p][j])*(__imag__ c_out_fft[p][j]));
+					if (isinf(-pl_signals[i*INPUT_MAX_SAMPLES+j])) {
+						pl_signals[i*INPUT_MAX_SAMPLES+j] = -60;
+					}
+				}
+			} else {
+				memset(&pl_signals[i*INPUT_MAX_SAMPLES],0,sizeof(double)*len);
+			}
 		}
 	}
+	return len;
 }
 
 
 int r_fft_execute(void **inp, double *pl_signals, int *signal_lengths) {
-	int i,j,len;
+	int p,i,j,len;
 	float *input;
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
-		len = MIN(signal_lengths[i],fft_size);
+		for (p=0;p<nof_plans;p++) {
+			if (signal_lengths[i] == fft_size[p])
+				break;
+		}
+		if (p==nof_plans)
+			p=0;
+		len=fft_size[p];
+
 		if (inp[i]) {
 			input = inp[i];
 			for (j=0;j<len;j++) {
-				r_in_fft[j] = (double) input[j];
+				r_in_fft[p][j] = (double) input[j];
 			}
 
-			fftw_execute(r_plan);
+			fftw_execute(r_plan[p]);
 
-			pl_signals[0] = r_out_fft[0]*r_out_fft[0];
+			pl_signals[0] = r_out_fft[p][0]*r_out_fft[p][0];
 			for (j=0;j<(len+1)/2-1;j++) {
-				r_out_fft[j] /= fft_size;
-				r_out_fft[len-j-1] /= fft_size;
+				r_out_fft[p][j] /= len;
+				r_out_fft[p][len-j-1] /= len;
 				pl_signals[i*INPUT_MAX_SAMPLES+j] =
-						r_out_fft[j]*r_out_fft[j]+
-						r_out_fft[len-j-1]*r_out_fft[len-j-1];
+						r_out_fft[p][j]*r_out_fft[p][j]+
+						r_out_fft[p][len-j-1]*r_out_fft[p][len-j-1];
 				pl_signals[i*INPUT_MAX_SAMPLES+j] = 10*log10(pl_signals[i*INPUT_MAX_SAMPLES+j]);
 				if (isinf(-pl_signals[i*INPUT_MAX_SAMPLES+j])) {
 					pl_signals[i*INPUT_MAX_SAMPLES+j] = -30;
 				}
 			}
 			if (len % 2 == 0) {
-				pl_signals[i*INPUT_MAX_SAMPLES+len/2-1] = 20*log10(r_out_fft[len/2]);
+				pl_signals[i*INPUT_MAX_SAMPLES+len/2-1] = 20*log10(r_out_fft[p][len/2]);
 				if (isinf(-pl_signals[i*INPUT_MAX_SAMPLES+len/2-1])) {
 					pl_signals[i*INPUT_MAX_SAMPLES+len/2-1] = -30;
 				}
@@ -128,6 +160,7 @@ int r_fft_execute(void **inp, double *pl_signals, int *signal_lengths) {
 			memset(&pl_signals[i*INPUT_MAX_SAMPLES],0,sizeof(double)*len);
 		}
 	}
+	return len;
 }
 
 int fft_execute(void **inp, double *pl_signals, int *signal_lengths) {
@@ -135,23 +168,25 @@ int fft_execute(void **inp, double *pl_signals, int *signal_lengths) {
 	float *input;
 
 	if (is_complex) {
-		c_fft_execute(inp,pl_signals,signal_lengths);
+		return c_fft_execute(inp,pl_signals,signal_lengths);
 	} else {
-		r_fft_execute(inp,pl_signals,signal_lengths);
+		return r_fft_execute(inp,pl_signals,signal_lengths);
 	}
-
-	return 0;
 }
 
 void fft_destroy() {
-	if (is_complex) {
-		fftwf_destroy_plan(c_plan);
-		fftwf_free(c_in_fft);
-		fftwf_free(c_out_fft);
-	} else {
-		fftw_free(r_in_fft);
-		fftw_free(r_out_fft);
-		fftw_destroy_plan(r_plan);
+	int p;
+
+	for (p=0;p<nof_plans;p++) {
+		if (is_complex) {
+			fftwf_destroy_plan(c_plan[p]);
+			fftwf_free(c_in_fft[p]);
+			fftwf_free(c_out_fft[p]);
+		} else {
+			fftw_free(r_in_fft[p]);
+			fftw_free(r_out_fft[p]);
+			fftw_destroy_plan(r_plan[p]);
+		}
 	}
 }
 

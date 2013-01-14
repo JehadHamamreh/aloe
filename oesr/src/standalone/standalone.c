@@ -64,7 +64,7 @@ inline int get_input_samples(int idx) {
 }
 
 inline int set_output_samples(int idx, int len) {
-	if (idx<0 || idx>nof_input_itf)
+	if (idx<0 || idx>nof_output_itf)
 			return -1;
 	output_lengths[idx] = len;
 	return 0;
@@ -133,12 +133,18 @@ int main(int argc, char **argv)
 	_Complex float *tmp_c;
 	double *plot_buff_r;
 	double *plot_buff_c;
+	int run_times;
 
 	allocate_memory();
 
 	parameters = NULL;
 
 	parse_paramters(argc, argv);
+
+	run_times=1;
+	if (param_get(param_id("run_times"),&run_times,sizeof(int),NULL) != sizeof(int)) {
+		run_times=1;
+	}
 
 	if (generate_input_signal(input_data, input_lengths)) {
 		printf("Error generating input signal\n");
@@ -156,7 +162,6 @@ int main(int argc, char **argv)
 		exit(1); /* the reason for exiting should be printed out beforehand */
 	}
 
-#ifndef _ALOE_OLD_SKELETON
 	for (i=0;i<nof_input_itf;i++) {
 		input_ptr[i] = &input_data[i*input_max_samples*input_sample_sz];
 	}
@@ -164,15 +169,10 @@ int main(int argc, char **argv)
 		output_ptr[i] = &output_data[i*output_max_samples*output_sample_sz];
 	}
 	clock_gettime(CLOCK_MONOTONIC,&tdata[1]);
-	ret = work(input_ptr, output_ptr);
+	for (i=0;i<run_times;i++) {
+		ret = work(input_ptr, output_ptr);
+	}
 	clock_gettime(CLOCK_MONOTONIC,&tdata[2]);
-
-#else
-
-	clock_gettime(CLOCK_MONOTONIC,&tdata[1]);
-	ret = work(input_data, output_data);
-	clock_gettime(CLOCK_MONOTONIC,&tdata[2]);
-#endif
 
 	stop();
 	if (ret == -1) {
@@ -390,18 +390,4 @@ int parse_paramters(int argc, char**argv)
 	}
 	return 0;
 }
-
-
-#ifdef _ALOE_OLD_SKELETON
-int get_input_max_samples() {
-	return input_max_samples;
-}
-
-int get_output_max_samples() {
-	return output_max_samples;
-}
-#endif
-
-
-
 

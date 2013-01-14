@@ -286,8 +286,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	format_input(IN);
 
-
-#ifndef _ALOE_OLD_SKELETON
 	for (i=0;i<nof_input_itf;i++) {
 		input_ptr[i] = &input_buffer[i*input_max_samples*input_sample_sz];
 	}
@@ -295,9 +293,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		output_ptr[i] = &output_buffer[i*output_max_samples*output_sample_sz];
 	}
 	out_samples = work(input_ptr, output_ptr);
-#else
-	out_samples = work(input_buffer,output_buffer);
-#endif
 
 	if (out_samples < 0) {
 		mexErrMsgTxt("Error in module work() function\n");

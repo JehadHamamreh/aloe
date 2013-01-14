@@ -346,7 +346,7 @@ static int read_mopts_mode(config_setting_t *cfg, module_t *mod, waveform_t *w) 
 	return 1;
 }
 
-static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w) {
+static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int instance_id) {
 	const char *tmp;
 	int n_vars,i;
 	int imopts;
@@ -356,12 +356,20 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w) {
 		aerror("Missing module name\n");
 		return 0;
 	}
-	strcpy(mod->name, tmp);
+	if (instance_id != -1) {
+		sprintf(mod->name,"%s_%d",tmp,instance_id);
+	} else {
+		strcpy(mod->name, tmp);
+	}
 	if (!config_setting_lookup_string(cfg, "binary", &tmp)) {
 		aerror_msg("binary field not found in module %s\n",mod->name);
 		return 0;
 	}
 	strcpy(mod->binary, tmp);
+	if (!config_setting_lookup_int(cfg, "stage", &mod->stage)) {
+		aerror_msg("stage field not found in module %s\n",mod->name);
+		return 0;
+	}
 	mopts = config_setting_get_member(cfg, "mopts");
 	if (config_setting_type(mopts) == CONFIG_TYPE_INT) {
 		for (i=0;i<w->nof_modes;i++) {
@@ -482,8 +490,9 @@ int waveform_parse(waveform_t* w) {
 	aassert(w);
 	int ret;
 	config_setting_t *modules, *modcfg, *interfaces, *itfcfg, *modes, *modecfg;
-	int nof_modules, nof_itfs,nof_modes;
-	int i;
+	int nof_modules, nof_root_modules,nof_itfs,nof_modes;
+	int i,j,k;
+	int instances;
 	module_t *mod;
 	ret = -1;
 
@@ -528,7 +537,19 @@ int waveform_parse(waveform_t* w) {
 		aerror("Section modules not found\n");
 		goto destroy;
 	}
-	nof_modules = config_setting_length(modules);
+	nof_root_modules = config_setting_length(modules);
+	nof_modules = 0;
+
+	/* find multiple instances modules */
+	for (i=0;i<nof_root_modules;i++) {
+		modcfg = config_setting_get_elem(modules, (unsigned int) i);
+		if (config_setting_lookup_int(modcfg, "instances", &instances)) {
+			nof_modules += instances;
+		} else {
+			nof_modules ++;
+		}
+	}
+
 	pardebug("found %d modules\n",nof_modules);
 	if (!nof_modules) {
 		aerror("Any module was found\n");
@@ -539,17 +560,24 @@ int waveform_parse(waveform_t* w) {
 		goto destroy;
 	}
 	/* first read all modules */
-	for (i=0;i<nof_modules;i++) {
+	k=0;
+	for (i=0;i<nof_root_modules;i++) {
 		pardebug("parsing module %d\n",i);
 		mod = &w->modules[i];
 		modcfg = config_setting_get_elem(modules, (unsigned int) i);
-		assert(modcfg);
-		if (!read_module(modcfg,mod, w)) {
-			aerror_msg("parsing module %d\n",i);
-			goto destroy;
+		if (!config_setting_lookup_int(modcfg, "instances", &instances)) {
+			instances = 1;
 		}
-		w->modules[i].waveform = w;
-		w->modules[i].nof_modes = w->nof_modes;
+		for (j=0;j<instances;j++) {
+			mod = &w->modules[k];
+			if (!read_module(modcfg,mod, w, (instances==1)?-1:j)) {
+				aerror_msg("parsing module %d\n",i);
+				goto destroy;
+			}
+			mod->waveform = w;
+			mod->nof_modes = w->nof_modes;
+			k++;
+		}
 	}
 	interfaces = config_lookup(&config, "interfaces");
 	if (!interfaces) {

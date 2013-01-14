@@ -27,8 +27,7 @@ typedef void updateable;
 
 typedef struct {
 	float C[MAX(processors)];
-	float B[MAX(processors)];
-	float I[MAX(processors)][MAX(processors)];
+	float B[MAX(processors)][MAX(processors)];
 	float C_rem[MAX(processors)];
 	float B_rem[MAX(processors)];
 } man_platform_model_t;

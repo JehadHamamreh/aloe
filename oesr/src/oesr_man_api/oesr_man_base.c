@@ -46,7 +46,7 @@ int oesr_man_initialize(string platform_conf, int max_waveforms) {
 	memset(&oesr_man, 0, sizeof(oesr_man_context_t));
 
 	man_packet = &oesr_man.platform.packet;
-	if (packet_init(&oesr_man.platform.packet, 5*1024)) {
+	if (packet_init(&oesr_man.platform.packet, 64*1024)) {
 		aerror("initializing packet\n");
 		return -1;
 	}

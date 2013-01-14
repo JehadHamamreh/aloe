@@ -32,7 +32,7 @@
  * \returns 0 on success -1 on error
  */
 int waveform_serialize(waveform_t *src, packet_t *pkt, int loading_node_id,
-		enum variable_serialize_data copy_data) {
+		enum waveform_serialize_action action, enum variable_serialize_data copy_data) {
 	serdebug("src=0x%x, pkt=0x%x, loading_node_id=%d, copy_data=%d, wave_id=%d, "
 			"waveform_status=%d\n",src,pkt, loading_node_id,copy_data,
 			src->status.cur_status, src->id, src->status.cur_status);
@@ -40,7 +40,11 @@ int waveform_serialize(waveform_t *src, packet_t *pkt, int loading_node_id,
 	aassert(src);
 	aassert(pkt);
 
-	if (src->status.cur_status == PARSED) {
+	tmp = (int) action;
+	add_i(&action);
+
+	switch(action) {
+	case WAVEFORM_LOAD:
 		tmp = (int) copy_data;
 		add_i(&tmp);
 		add_i(&src->id);
@@ -70,9 +74,30 @@ int waveform_serialize(waveform_t *src, packet_t *pkt, int loading_node_id,
 					return -1;
 			}
 		}
-	} else {
+	break;
+	case WAVEFORM_STATUS:
 		if (packet_add_data(pkt, &src->status,sizeof(waveform_status_t)))
 			return -1;
+	break;
+	case WAVEFORM_MODE:
+		nof_modules = 0;
+		for (i=0;i<src->nof_modules;i++) {
+			man_node_t *node = src->modules[i].node;
+			if (loading_node_id == node->id) {
+				nof_modules++;
+			}
+		}
+		serdebug("nof_modules=%d\n",nof_modules);
+		add_i(&nof_modules);
+		for (i=0;i<src->nof_modules;i++) {
+			man_node_t *node = src->modules[i].node;
+			if (loading_node_id == node->id) {
+				serdebug("serialize module %d\n",i);
+				add_i(&src->modules[i].id);
+				packet_add_data(pkt,&src->modules[i].mode,sizeof(module_mode_t));
+			}
+		}
+	break;
 	}
 	return 0;
 }
@@ -152,23 +177,29 @@ int module_serialize(module_t *src, packet_t *pkt, enum variable_serialize_data 
 	add_i(&src->processor_idx);
 	add_i(&src->exec_position);
 	add_i(&src->nof_modes);
-	add_i(&src->cur_mode);
-	if (packet_add_data(pkt,src->name,STR_LEN)) return -1;
-	if (packet_add_data(pkt,src->binary,STR_LEN)) return -1;
-	if (execinfo_serialize(&src->execinfo,pkt)) return -1;
+	add_i(&src->mode.cur_mode);
+	if (packet_add_data(pkt,src->name,STR_LEN))
+		return -1;
+	if (packet_add_data(pkt,src->binary,STR_LEN))
+		return -1;
+	if (execinfo_serialize(&src->execinfo,pkt))
+		return -1;
 	add_i(&src->nof_variables);
 	add_i(&src->nof_inputs);
 	add_i(&src->nof_outputs);
 	serdebug("nof_inputs=%d, nof_outputs=%d, nof_variables=%d\n",src->nof_inputs,src->nof_outputs,
 			src->nof_variables);
 	for (i=0;i<src->nof_variables;i++) {
-		if (variable_serialize(&src->variables[i],pkt,copy_data,src->nof_modes)) return -1;
+		if (variable_serialize(&src->variables[i],pkt,copy_data,src->nof_modes))
+			return -1;
 	}
 	for (i=0;i<src->nof_inputs;i++) {
-		if (interface_serialize(&src->inputs[i],pkt)) return -1;
+		if (interface_serialize(&src->inputs[i],pkt))
+			return -1;
 	}
 	for (i=0;i<src->nof_outputs;i++) {
-		if (interface_serialize(&src->outputs[i],pkt)) return -1;
+		if (interface_serialize(&src->outputs[i],pkt))
+			return -1;
 	}
 	return 0;
 }
@@ -186,7 +217,8 @@ int module_unserializeTo(packet_t *pkt, module_t *dest, enum variable_serialize_
 	get_i(&dest->processor_idx);
 	get_i(&dest->exec_position);
 	get_i(&dest->nof_modes);
-	get_i(&dest->cur_mode);
+	get_i(&dest->mode.cur_mode);
+	dest->mode.next_tslot = 0;
 	if (packet_get_data(pkt,dest->name,STR_LEN)) return -1;
 	if (packet_get_data(pkt,dest->binary,STR_LEN)) return -1;
 	if (execinfo_unserializeTo(pkt,&dest->execinfo)) return -1;
@@ -231,13 +263,16 @@ int variable_serialize(variable_t *src, packet_t *pkt, enum variable_serialize_d
 
 	switch(copy_data) {
 	case CP_INIT:
-		if (packet_add_data(pkt,src->name,STR_LEN)) return -1;
+		if (packet_add_data(pkt,src->name,STR_LEN))
+			return -1;
 		for (i=0;i<nof_modes;i++) {
-			if (packet_add_data(pkt,src->init_value[i],src->size)) return -1;
+			if (packet_add_data(pkt,src->init_value[i],src->size))
+				return -1;
 		}
 		break;
 	case CP_VALUE:
-		if (packet_add_data(pkt,src->cur_value,src->size)) return -1;
+		if (packet_add_data(pkt,src->cur_value,src->size))
+			return -1;
 		break;
 	case NONE:
 		add_i(&src->window);

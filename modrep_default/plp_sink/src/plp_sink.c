@@ -41,9 +41,12 @@ static int plp_initiated=0;
 static int fft_initiated=0;
 static int interval_ts, last_tstamp;
 static int print_not_received;
+static int last_rcv_samples;
 
 static int is_complex;
-static int fft_size;
+
+static int fft_sizes[] = {960,1920,3840,7680,15360};
+
 
 void setup_legends();
 
@@ -64,6 +67,8 @@ int initialize() {
 	int i;
 	int mode;
 	int tslen;
+
+	last_rcv_samples=0;
 
 	setup_legends();
 	if (param_get_int(param_id("is_complex"),&is_complex) != 1) {
@@ -95,22 +100,10 @@ int initialize() {
 		}
 	}
 
-	fftsize_id = param_id("fft_size");
-	if (fftsize_id == NULL) {
-		modinfo("Warning parameter fft_size not defined. Set to default (128)\n");
-		fft_size = FFT_DEFAULT_SZ;
-	} else {
-		if (param_get_int(fftsize_id,&fft_size) != 1) {
-			moderror("Error getting parameter fft_size\n");
-			return -1;
-		}
-	}
 	if (mode == MODE_PSD) {
-		if (fft_init(fft_size, is_complex)) {
-			moderror_msg("Initiating FFT for size %d\n",fft_size);
+		if (fft_init(5,fft_sizes, is_complex)) {
+			moderror("Initiating FFT\n");
 			return -1;
-		} else {
-			modinfo_msg("Initiated FFT for size %d\n",fft_size);
 		}
 		fft_initiated = 1;
 	}
@@ -138,6 +131,8 @@ int work(void **inp, void **out) {
 	int mode;
 	float *r_input;
 	_Complex float *c_input;
+	int fft_size;
+
 	strdef(xlabel);
 
 	if (mode_id != NULL) {
@@ -154,6 +149,13 @@ int work(void **inp, void **out) {
 			signal_lengths[2*n+1] = signal_lengths[2*n];
 		} else {
 			signal_lengths[n] = get_input_samples(n);
+		}
+		if (get_input_samples(n) != last_rcv_samples) {
+			last_rcv_samples = get_input_samples(n);
+#ifdef _COMPILE_ALOE
+			modinfo_msg("Receiving %d samples at tslot %d\n",last_rcv_samples,
+					oesr_tstamp(ctx));
+#endif
 		}
 	}
 
@@ -234,7 +236,7 @@ int work(void **inp, void **out) {
 
 		set_legend(fft_legends,NOF_INPUT_ITF);
 
-		fft_execute(inp,pl_signals,signal_lengths);
+		fft_size = fft_execute(inp,pl_signals,signal_lengths);
 		for (i=0;i<NOF_INPUT_ITF;i++) {
 			if (signal_lengths[i]) {
 				if (!is_complex) {
