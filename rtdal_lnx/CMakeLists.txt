@@ -51,6 +51,5 @@ endif()
 
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-
 # install runcf
 install(TARGETS runcf DESTINATION bin)
