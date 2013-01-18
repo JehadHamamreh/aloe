@@ -28,9 +28,6 @@
 #include <string.h>
 #include "uhd.h"
 #include "dac_cfg.h"
-//#define PRINT_INTERVAL
-
-#define COPY_FOR
 
 /***********************************************************************
  * Test result variables
@@ -46,11 +43,15 @@ unsigned long long num_seq_errors = 0;
 int save_period[SAVE_LEN];
 int save_idx=0;
 
+struct timeval t[3];
+double mean_interval=0;
+int ct=0;
+struct dac_cfg *def_cfg;
 
 /***********************************************************************
  * Benchmark RX Rate
  **********************************************************************/
-void benchmark_rx_rate(uhd::usrp::multi_usrp::sptr usrp, const std::string &rx_cpu,
+void rx_thread(uhd::usrp::multi_usrp::sptr usrp, const std::string &rx_cpu,
 		const std::string &rx_otw, struct dac_cfg *cfg, void (*sync)(void), long int *tslen_ptr){
 
     double rx_rate=0;
@@ -78,7 +79,6 @@ void benchmark_rx_rate(uhd::usrp::multi_usrp::sptr usrp, const std::string &rx_c
 		if (cfg->inputFreq!=rx_rate) {
 			usrp->set_rx_rate(cfg->inputFreq);
 			rx_rate=cfg->inputFreq;
-			std::cout << "Changing RX Frequency" << std::endl;
 		}
 
 	    double x=(double) cfg->NsamplesOut/rx_rate;
@@ -129,18 +129,10 @@ void time_interval(struct timeval * tdata)
     }
 }
 
-struct timeval t[3];
-double mean_interval=0;
-int ct=0;
-struct dac_cfg *def_cfg;
-
-
-
-
 /***********************************************************************
  * Benchmark TX Rate
  **********************************************************************/
-void benchmark_tx_rate(uhd::usrp::multi_usrp::sptr usrp,
+void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
 		const std::string &tx_cpu, const std::string &tx_otw, struct dac_cfg *cfg,
 		void (*sync_ts)(void), long int *tslen_ptr){
 
@@ -160,8 +152,9 @@ void benchmark_tx_rate(uhd::usrp::multi_usrp::sptr usrp,
     md.time_spec = usrp->get_time_now() + uhd::time_spec_t(0.05);
     md.has_time_spec = false;
 
-    std::vector<std::complex<float> > buff(100000);
-    std::vector<std::complex<float> *> buffs(usrp->get_tx_num_channels(), &buff.front());
+//    std::vector<std::complex<float> *> buffs(usrp->get_tx_num_channels(), cfg->dacoutbuff[0]);
+    std::vector<void *> buffs;
+    buffs.push_back(cfg->dacoutbuff[0]); //only 1 channel is used
 
     while (not boost::this_thread::interruption_requested()) {
     	/* Poll if sampling frequency has changed */
@@ -173,7 +166,7 @@ void benchmark_tx_rate(uhd::usrp::multi_usrp::sptr usrp,
 		}
 
 	    sync_ts();
-#ifdef COPY_FOR
+	    /*
 	    if (cfg->NsamplesOut<buff.size()) {
 		    for (size_t n = 0; n < cfg->NsamplesOut; n++){
 				buff[n] = cfg->dacoutbuff[0][n];
@@ -182,9 +175,7 @@ void benchmark_tx_rate(uhd::usrp::multi_usrp::sptr usrp,
 	    	std::cout << "Error trying to send too many samples: " << cfg->NsamplesOut << ". Buffer size is " << buff.size() << std::endl;
 	    	break;
 	    }
-#else
-	    memcpy(&buff.front(),cfg->dacoutbuff[0],cfg->NsamplesOut*sizeof(_Complex float));
-#endif
+	    */
 	    n = tx_stream->send(buffs, cfg->NsamplesOut, md);
 		num_tx_samps += n;
         md.has_time_spec = false;
@@ -233,9 +224,7 @@ void uhd_setcfg(struct main_conf *main, struct dac_cfg *cfg) {
 	std::string args=std::string("");
 
 	//create a usrp device
-	printf("Creating the usrp device with: %s...\n",args.c_str());
 	usrp = uhd::usrp::multi_usrp::make(args);
-	printf("Using Device: %s\n",usrp->get_pp_string().c_str());
 
 	usrp->set_tx_rate(cfg->outputFreq);
 	cfg->outputFreq = usrp->get_tx_rate();
@@ -260,36 +249,29 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
 
     //spawn the receive test thread
     if (main_cfg.chain_is_tx==0) {
-#ifdef kk
     	/** Set receive chain */
 		for(size_t chan = 0; chan < usrp->get_rx_num_channels(); chan++) {
 			double freq = cfg->inputRFFreq;
 			if (freq>0) {
-				std::cout << boost::format("Setting TX Freq: %f MHz...") % (freq/1e6) << std::endl;
 				usrp->set_rx_freq(freq, chan);
-				std::cout << boost::format("Actual TX Freq: %f MHz...") % (usrp->get_rx_freq(chan)/1e6) << std::endl << std::endl;
 			}
 
 			//set the rf gain
 			double gain = cfg->rx_gain;
 			if (gain>0) {
-				std::cout << boost::format("Setting TX Gain: %f dB...") % gain << std::endl;
 				usrp->set_rx_gain(gain, chan);
-				std::cout << boost::format("Actual TX Gain: %f dB...") % usrp->get_rx_gain(chan) << std::endl << std::endl;
 			}
 
 			//set the IF filter bandwidth
 			double bw = cfg->rx_bw;
 			if (bw>0) {
-				std::cout << boost::format("Setting TX Bandwidth: %f MHz...") % bw << std::endl;
 				usrp->set_rx_bandwidth(bw, chan);
-				std::cout << boost::format("Actual TX Bandwidth: %f MHz...") % usrp->get_rx_bandwidth(chan) << std::endl << std::endl;
 			}
 		}
-#endif
+
     	double x=(double) cfg->NsamplesOut/cfg->inputFreq;
     	*timeSlotLength=(int) 1000000*x;
-		thread_group.create_thread(boost::bind(&benchmark_rx_rate, usrp, rx_cpu, rx_otw,cfg,sync,timeSlotLength));
+		thread_group.create_thread(boost::bind(&rx_thread, usrp, rx_cpu, rx_otw,cfg,sync,timeSlotLength));
     }
 
     //spawn the transmit test thread
@@ -299,32 +281,25 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
 		for(size_t chan = 0; chan < usrp->get_tx_num_channels(); chan++) {
 			double freq = cfg->outputRFFreq;
 			if (freq>0) {
-				printf("Setting TX Freq: %f MHz...\n",(freq/1e6));
 				usrp->set_tx_freq(freq, chan);
-				printf("Actual TX Freq: %f MHz...\n",(usrp->get_tx_freq(chan)/1e6));
 			}
 
 			//set the rf gain
 			double gain = cfg->tx_gain;
 			if (gain>0.0) {
-				printf("Setting TX Gain: %f dB...\n",gain);
 				usrp->set_tx_gain(gain, chan);
-				printf("Actual TX Gain: %f dB...\n",usrp->get_tx_gain(chan));
 			}
 
 			//set the IF filter bandwidth
 			double bw = cfg->tx_bw;
 			if (bw>0.0) {
-				printf("Setting TX Bandwidth: %f MHz...\n",bw);
 				usrp->set_tx_bandwidth(bw, chan);
-				printf("Actual TX Bandwidth: %f MHz...\n",usrp->get_tx_bandwidth(chan));
 			}
 		}
 
 		double x=(double) cfg->NsamplesOut/cfg->outputFreq;
 		*timeSlotLength=(int) 1000000*x;
-		thread_group.create_thread(boost::bind(&benchmark_tx_rate, usrp, tx_cpu, tx_otw,cfg,sync,timeSlotLength));
-		thread_group.create_thread(boost::bind(&benchmark_tx_rate_async_helper, usrp));
+		thread_group.create_thread(boost::bind(&tx_thread, usrp, tx_cpu, tx_otw,cfg,sync,timeSlotLength));
 	}
 	return 1;
 }
@@ -336,7 +311,7 @@ void uhd_close() {
     thread_group.join_all();
 
     //print summary
-    printf(
+    /*printf(
         "Benchmark rate summary:\n"
         "  Num received samples:    %llu\n"
         "  Num dropped samples:     %llu\n"
@@ -346,5 +321,5 @@ void uhd_close() {
         "  Num underflows detected: %llu\n"
     ,num_rx_samps , num_dropped_samps , num_overflows , num_tx_samps ,
     num_seq_errors , num_underflows);
-
+	*/
 }

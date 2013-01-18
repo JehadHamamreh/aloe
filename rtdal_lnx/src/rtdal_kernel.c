@@ -701,7 +701,7 @@ int parse_cores(char *str) {
 int parse_config(char *config_file) {
 	config_t config;
 	int ret = -1;
-	config_setting_t *rtdal;
+	config_setting_t *rtdal,*dac;
 	const char *tmp;
 	int single_timer;
 	int time_slot_us;
@@ -763,7 +763,47 @@ int parse_config(char *config_file) {
 	strcpy(libs_path,tmp);
 
 	if (using_uhd) {
+		dac = config_lookup(&config, "dac");
+		if (!dac) {
+			aerror("Error parsing config file: dac section not found.\n");
+			goto destroy;
+		}
+
 #ifdef HAVE_UHD
+		double tmp;
+		if (!config_setting_lookup_float(dac, "samp_freq", &dac_cfg.inputFreq)) {
+			aerror("samp_freq field not defined\n");
+			goto destroy;
+		}
+		dac_cfg.outputFreq = dac_cfg.inputFreq;
+
+		if (!config_setting_lookup_float(dac, "rf_freq", &dac_cfg.inputRFFreq)) {
+			aerror("rf_freq field not defined\n");
+			goto destroy;
+		}
+		dac_cfg.outputRFFreq = dac_cfg.inputRFFreq;
+
+		if (!config_setting_lookup_float(dac, "rf_gain", &tmp)) {
+			aerror("rf_gain field not defined\n");
+			goto destroy;
+		}
+		dac_cfg.tx_gain = tmp;
+		dac_cfg.rx_gain = tmp;
+
+		if (!config_setting_lookup_int(dac, "block_size", &dac_cfg.NsamplesIn)) {
+			aerror("block_size field not defined\n");
+			goto destroy;
+		}
+		dac_cfg.NsamplesOut = dac_cfg.NsamplesIn;
+
+		if (!config_setting_lookup_bool(dac, "chain_is_tx", &dac_cfg.chain_is_tx)) {
+			aerror("chain_is_tx field not defined\n");
+			goto destroy;
+		}
+
+		dac_cfg.sampleType = 0;
+		dac_cfg.nof_channels = 1;
+
 		uhd_readcfg(&dac_cfg);
 #endif
 	}

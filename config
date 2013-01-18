@@ -24,3 +24,12 @@ rtdal:
 	path_to_libs="/usr/local/lib";
 	
 };
+
+dac:
+{
+	samp_freq=1777777;
+	block_size=960;
+	rx_freq=1000000000;
+	rx_gain=0;
+	chain_is_tx=true;
+};

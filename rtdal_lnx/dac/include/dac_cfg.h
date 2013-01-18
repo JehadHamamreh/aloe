@@ -27,6 +27,7 @@ extern "C" struct dac_cfg {
 	float rx_gain;
 	float tx_bw;
 	float rx_bw;
+	int chain_is_tx;
 	int NsamplesIn;
 	int NsamplesOut;
 	_Complex float dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
@@ -49,6 +50,7 @@ struct dac_cfg {
 	float rx_gain;
 	float tx_bw;
 	float rx_bw;
+	int chain_is_tx;
 	int NsamplesIn;
 	int NsamplesOut;
 	_Complex float dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
