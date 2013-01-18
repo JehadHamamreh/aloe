@@ -146,6 +146,11 @@ int main(int argc, char **argv)
 		run_times=1;
 	}
 
+	if (initialize()) {
+		printf("Error initializing\n");
+		exit(1); /* the reason for exiting should be printed out beforehand */
+	}
+
 	if (generate_input_signal(input_data, input_lengths)) {
 		printf("Error generating input signal\n");
 		exit(1);
@@ -155,11 +160,6 @@ int main(int argc, char **argv)
 		if (!input_lengths[i]) {
 			printf("Warning, input interface %d has zero length\n",i);
 		}
-	}
-
-	if (initialize()) {
-		printf("Error initializing\n");
-		exit(1); /* the reason for exiting should be printed out beforehand */
 	}
 
 	for (i=0;i<nof_input_itf;i++) {
