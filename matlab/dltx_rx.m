@@ -34,5 +34,10 @@ for i=1:Ncycles
     
 end
 
+%% Noise + CFO here
+
 %% Synchronization
+% This is a straightforward freq domain correlation
+% Maybe a time-domain corr would be much faster 
 find_pss_freq(out_freq);
+
