@@ -1,3 +1,6 @@
+
+% This script generates the LTE DL signal, fft length is 128 and mod is QPSK. 
+
 Ncycles = 20;
 modulation = 1;
 mode = 0;
@@ -15,7 +18,7 @@ ifft_params={{'direction',int32(1)},{'mirror',int32(0)},{'normalize',int32(1)},{
 cyclic_params={{'ofdm_symbol_sz',int32(128)},{'cyclic_prefix_sz',int32(9)},{'first_cyclic_prefix_sz',int32(10)}};
 
 
-%% DSP
+%% Transmitter
 output=[]; 
 input=[];  
 out_freq=[];
@@ -23,12 +26,13 @@ for i=1:Ncycles
     in_bits = randi(2,2*nofSYMBxSlot(i),1)==1;
 	    
     out_modulator = am_gen_modulator(in_bits,modulator_params);	
-    out_padding = am_lte_resourMappD(out_modulator,{{'slot_idx',int32(i-1)}});
-    out_freq = [out_freq out_padding];
+    out_resmap = am_lte_resourMappD(out_modulator,{{'slot_idx',int32(i-1)}});
+    out_freq = [out_freq out_resmap];
     out_ifft = am_gen_dft(out_padding,ifft_params);
     out_cyclic = am_gen_cyclic(out_ifft,cyclic_params);
     output = [output out_cyclic]; 
     
 end
 
+%% Synchronization
 find_pss_freq(out_freq);
