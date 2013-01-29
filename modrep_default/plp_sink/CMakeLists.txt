@@ -1,18 +1,13 @@
 # This configuration is for the aloe++ skeleton
 
-
-#include fftw3 directories
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
-find_package(FFTW REQUIRED)
 find_package(Plplot REQUIRED)
-include_directories(${FFTW_INCLUDE_DIRS} ${PLPLOT_INCLUDE_DIR})
+
+include_directories(${PLPLOT_INCLUDE_DIR})
 
 # set-up the program libraries here
-set(LIBRARIES m ${FFTW_LIBRARIES} ${PLPLOT_LIBRARIES})
-
-
-
+set(LIBRARIES ${PLPLOT_LIBRARIES} m gen_libs_dft)
 
 
 if (${MODULE_REPOS_NAME} STREQUAL "") 
@@ -24,7 +19,7 @@ file(GLOB_RECURSE TEST_SOURCES "test/*.c")
 
 get_filename_component(module ${CMAKE_CURRENT_SOURCE_DIR} NAME) 
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../gen_libs/)
 
 # aloe module
 add_library(${module}-aloe SHARED ${SOURCES})

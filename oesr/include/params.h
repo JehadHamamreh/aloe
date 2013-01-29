@@ -59,9 +59,21 @@ int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type);
 pmid_t param_id(char *name);
 
 
+/**
+ * @returns -1 on error, 0 if parameter found but not integer, 1 on success
+ */
 int param_get_int(pmid_t id, int *value);
+/**
+ * @returns -1 on error, 0 if parameter found but not integer, 1 on success
+ */
 int param_get_float(pmid_t id, float *value);
+/**
+ * @returns -1 on error, 0 on success
+ */
 int param_get_int_name(char *name, int *value);
+/**
+ * @returns -1 on error, 0 on success
+ */
 int param_get_float_name(char *name, float *value);
 
 

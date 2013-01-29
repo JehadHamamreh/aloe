@@ -11,8 +11,8 @@
 #define MAX_OUTPUTS 	30
 #define MAX_VARIABLES 	50
 
-extern const int input_sample_sz;
-extern const int output_sample_sz;
+extern int input_sample_sz;
+extern int output_sample_sz;
 extern const int nof_input_itf;
 extern const int nof_output_itf;
 extern const int input_max_samples;

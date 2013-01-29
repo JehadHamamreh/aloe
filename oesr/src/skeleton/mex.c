@@ -36,8 +36,8 @@
 #endif
 
 
-extern const int input_sample_sz;
-extern const int output_sample_sz;
+extern int input_sample_sz;
+extern int output_sample_sz;
 extern const int nof_input_itf;
 extern const int nof_output_itf;
 extern const int input_max_samples;
@@ -45,7 +45,7 @@ extern const int output_max_samples;
 
 static int *input_len;
 static int *output_len;
-static int *array_dims;
+static int array_dims[2];
 
 static char *input_buffer;
 static char *output_buffer;
@@ -66,7 +66,7 @@ int get_input_samples(int idx) {
 	return input_len[idx];
 }
 int set_output_samples(int idx, int len) {
-	if (idx<0 || idx>nof_input_itf)
+	if (idx<0 || idx>nof_output_itf)
 			return -1;
 	output_len[idx] = len;
 	return 0;
@@ -136,14 +136,18 @@ void format_input_vector(void *buffer, const mxArray *in, int len) {
 	}
 
 	if (input_sample_sz == sizeof(_Complex float)) {
-		if (!mxIsComplex(in)) {
+		if (!mxIsDouble(in)){
 			mexErrMsgTxt("Module input is complex. Matlab signal must be complex too.\n");
 		}
 		in_real = mxGetPr(in);
-		in_imag = mxGetPi(in);
+		if (mxIsComplex(in))
+			in_imag = mxGetPi(in);
 		for (i=0;i<len;i++) {
 			__real__ c_buffer[i] = (float) in_real[i];
-			__imag__ c_buffer[i] = (float) in_imag[i];
+			if (mxIsComplex(in))
+				__imag__ c_buffer[i] = (float) in_imag[i];
+			else
+				__imag__ c_buffer[i] = 0;
 		}
 	} else if (input_sample_sz == sizeof(float)) {
 		if (!mxIsDouble(in)){
@@ -247,13 +251,16 @@ void parse_parameters(const mxArray *ctrl) {
 }
 
 void allocate_memory() {
-	input_len = mxCalloc(sizeof(int),nof_input_itf);
-	output_len = mxCalloc(sizeof(int),nof_output_itf);
-	input_buffer = mxCalloc(input_sample_sz,nof_input_itf*input_max_samples);
-	output_buffer = mxCalloc(output_sample_sz,nof_output_itf*output_max_samples);
-	input_ptr = mxCalloc(sizeof(void*), nof_input_itf);
-	output_ptr = mxCalloc(sizeof(void*), nof_output_itf);
-	array_dims = mxCalloc(sizeof(int),nof_input_itf);
+	if (nof_input_itf*input_sample_sz) {
+		input_len = mxCalloc(sizeof(int),nof_input_itf);
+		input_buffer = mxCalloc(input_sample_sz,nof_input_itf*input_max_samples);
+		input_ptr = mxCalloc(sizeof(void*), nof_input_itf);
+	}
+	if (nof_output_itf*output_sample_sz) {
+		output_len = mxCalloc(sizeof(int),nof_output_itf);
+		output_buffer = mxCalloc(output_sample_sz,nof_output_itf*output_max_samples);
+		output_ptr = mxCalloc(sizeof(void*), nof_output_itf);
+	}
 }
 
 
@@ -262,7 +269,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	int i;
 	int out_samples;
-	mxArray *cell;
+	mxArray *outcell;
 
 	if (nrhs != 2 && nrhs != 1) {
 		help();
@@ -279,12 +286,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	allocate_memory();
 
-	for (i=0;i<nof_output_itf;i++) {
-		array_dims[i]=1;
+	for (i=0;i<2;i++) {
+		array_dims[i]=nof_output_itf;
 	}
-	fill_input_lengths(IN);
 
-	format_input(IN);
+	if (nof_input_itf > 0) {
+		fill_input_lengths(IN);
+		format_input(IN);
+	}
 
 	for (i=0;i<nof_input_itf;i++) {
 		input_ptr[i] = &input_buffer[i*input_max_samples*input_sample_sz];
@@ -309,10 +318,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	}
 
 	if (nof_output_itf>1) {
-		OUT = mxCreateCellArray(nof_output_itf,array_dims);
+		OUT=mxCreateCellMatrix(nof_output_itf,1);
+
 		for (i=0;i<nof_output_itf;i++) {
-			cell = mxGetCell(OUT,i);
-			save_output(&cell,&output_buffer[i*output_max_samples*output_sample_sz],output_len[i]);
+			save_output(&outcell,&output_buffer[i*output_max_samples*output_sample_sz],output_len[i]);
+			mxSetCell(OUT,i,outcell);
 		}
 	} else {
 		save_output(&OUT,&output_buffer[0],output_len[0]);

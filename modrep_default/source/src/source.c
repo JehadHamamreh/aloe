@@ -23,7 +23,7 @@
 #include <params.h>
 
 #include "source.h"
-#include "generators.h"
+#include "generators/generators.h"
 
 pmid_t blen_id, gen_id;
 int cnt=0;
@@ -36,6 +36,7 @@ static int last_block_length;
  * The available generators are defined in generators.h
  * \param block_length Number of items (bits or samples) to generate
  * \param generator Integer indicating the generator (see generators.h)
+ *
  */
 int initialize() {
 	int size;

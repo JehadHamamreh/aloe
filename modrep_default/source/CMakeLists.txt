@@ -1,7 +1,7 @@
 # This configuration is for the aloe++ skeleton
 
 # set-up the program libraries here
-set(LIBRARIES m rt)
+set(LIBRARIES m gen_libs_generators)
 
 if (${MODULE_REPOS_NAME} STREQUAL "") 
 	set(MODULE_REPOS_NAME "default")
@@ -13,7 +13,7 @@ file(GLOB_RECURSE TEST_SOURCES "test/*.c")
 
 get_filename_component(module ${CMAKE_CURRENT_SOURCE_DIR} NAME) 
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../gen_libs)
 
 # aloe module
 add_library(${module}-aloe SHARED ${SOURCES})

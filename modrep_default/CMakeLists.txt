@@ -7,10 +7,6 @@ set(MODULE_REPOS_NAME "modrep_default")
 if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 	cmake_minimum_required (VERSION 2.6)
 	project (modrep_default)
-
-	# The version number.
-	set (OECORE_VERSION_MAJOR 1)
-	set (OECORE_VERSION_MINOR 0)
 	
 else()
 	include_directories(${OESR_INCLUDE})

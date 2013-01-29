@@ -18,12 +18,15 @@
 
 #ifndef SKELETON_H
 #define SKELETON_H
-
+#include <oesr.h>
 #include <assert.h>
 #include <stdio.h>
 
 #define USE_LOG 0
 #define MOD_DEBUG 0
+
+/*#define PRINT_MEX
+*/
 
 /*#define DEBUG_TRACE
 */
@@ -76,7 +79,7 @@ extern log_t mlog;
 
 
 /* Info and error messages print */
-#define INFOSTR "[info at "
+#define INFOSTR "[info]: "
 #define ERRSTR "[error at "
 
 #ifdef _COMPILE_ALOE
@@ -87,25 +90,25 @@ extern log_t mlog;
 #define WHEREARG  __FILE__, __LINE__
 #endif
 
-#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
-
 #ifdef _COMPILE_MEX
-#undef DEBUGPRINT2
+#ifdef PRINT_MEX
 #define DEBUGPRINT2(out,...)       mexPrintf(__VA_ARGS__)
+#else
+#define DEBUGPRINT2(out,...)
 #endif
-
-#ifdef _COMPILE_ALOE
-#undef DEBUGPRINT2
+#elif _COMPILE_ALOE
 #define DEBUGPRINT2(out,...)       if (mlog && USE_LOG) { oesr_log_printf(mlog,__VA_ARGS__); }\
 					else {fprintf(out, __VA_ARGS__); }
+#else
+#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
 #endif
 
 
 #define aerror_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
 #define aerror(a)  DEBUGPRINT2(stderr, ERRSTR WHERESTR a, WHEREARG)
 
-#define ainfo(a) DEBUGPRINT2(stdout, INFOSTR WHERESTR a, WHEREARG)
-#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+#define ainfo(a) DEBUGPRINT2(stdout, INFOSTR a)
+#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR _fmt, __VA_ARGS__)
 
 #define modinfo 		ainfo
 #define modinfo_msg 	ainfo_msg

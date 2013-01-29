@@ -25,7 +25,7 @@
 
 #include "plp_sink.h"
 #include "plp.h"
-#include "fft.h"
+#include "dft/dft.h"
 
 pmid_t mode_id, fftsize_id;
 
@@ -36,6 +36,7 @@ static char c_legends[2*NOF_INPUT_ITF][STR_LEN];
 static char fft_legends[2*NOF_INPUT_ITF][STR_LEN];
 static int signal_lengths[2*NOF_INPUT_ITF];
 
+static float f_pl_signals[2*NOF_INPUT_ITF*INPUT_MAX_SAMPLES];
 static double pl_signals[2*NOF_INPUT_ITF*INPUT_MAX_SAMPLES];
 static int plp_initiated=0;
 static int fft_initiated=0;
@@ -45,10 +46,47 @@ static int last_rcv_samples;
 
 static int is_complex;
 
-static int fft_sizes[] = {960,1920,3840,7680,15360};
-
+const int precomputed_dft_len[] = {960,1920,3840,7680,15360};
+#define NOF_PRECOMPUTED_DFT 5
+dft_plan_t plans[NOF_PRECOMPUTED_DFT];
+#define MAX_EXTRA_PLANS	5
+dft_plan_t extra_plans[MAX_EXTRA_PLANS];
 
 void setup_legends();
+
+
+dft_plan_t* find_plan(int dft_size) {
+	int i;
+	for (i=0;i<NOF_PRECOMPUTED_DFT;i++) {
+		if (plans[i].size == dft_size) {
+			return &plans[i];
+		}
+	}
+	return NULL;
+}
+
+
+dft_plan_t* generate_new_plan(int dft_size) {
+	int i;
+
+	modinfo_msg("Warning, no plan was precomputed for size %d. Generating.\n",dft_size);
+	for (i=0;i<MAX_EXTRA_PLANS;i++) {
+		if (!extra_plans[i].size) {
+			if (is_complex) {
+				if (dft_plan_c2r(dft_size, FORWARD, &extra_plans[i])) {
+					return NULL;
+				}
+			} else {
+				if (dft_plan_r2r(dft_size, FORWARD, &extra_plans[i])) {
+					return NULL;
+				}
+			}
+			extra_plans[i].options = DFT_PSD | DFT_OUT_DB | DFT_NORMALIZE;
+			return &extra_plans[i];
+		}
+	}
+	return NULL;
+	}
 
 /**
  * @ingroup plp_sink
@@ -69,6 +107,9 @@ int initialize() {
 	int tslen;
 
 	last_rcv_samples=0;
+
+	memset(plans,0,sizeof(dft_plan_t)*NOF_PRECOMPUTED_DFT);
+	memset(extra_plans,0,sizeof(dft_plan_t)*MAX_EXTRA_PLANS);
 
 	setup_legends();
 	if (param_get_int(param_id("is_complex"),&is_complex) != 1) {
@@ -101,9 +142,19 @@ int initialize() {
 	}
 
 	if (mode == MODE_PSD) {
-		if (fft_init(5,fft_sizes, is_complex)) {
-			moderror("Initiating FFT\n");
-			return -1;
+		if (is_complex) {
+			if (dft_plan_multi_c2r(precomputed_dft_len, FORWARD, NOF_PRECOMPUTED_DFT, plans)) {
+				moderror("Precomputing plans\n");
+				return -1;
+			}
+		} else {
+			if (dft_plan_multi_r2r(precomputed_dft_len, FORWARD, NOF_PRECOMPUTED_DFT, plans)) {
+				moderror("Precomputing plans\n");
+				return -1;
+			}
+		}
+		for (i=0;i<NOF_PRECOMPUTED_DFT;i++) {
+			plans[i].options = DFT_PSD | DFT_OUT_DB | DFT_NORMALIZE;
 		}
 		fft_initiated = 1;
 	}
@@ -127,11 +178,11 @@ int initialize() {
  * Prints or displays the signal according to the selected mode.
  */
 int work(void **inp, void **out) {
-	int n,i;
+	int n,i,j;
 	int mode;
 	float *r_input;
 	_Complex float *c_input;
-	int fft_size;
+	dft_plan_t *plan;
 
 	strdef(xlabel);
 
@@ -144,7 +195,7 @@ int work(void **inp, void **out) {
 	}
 	memset(signal_lengths,0,sizeof(int)*2*NOF_INPUT_ITF);
 	for (n=0;n<NOF_INPUT_ITF;n++) {
-		if (is_complex) {
+		if (is_complex && mode != MODE_PSD) {
 			signal_lengths[2*n] = get_input_samples(n)/2;
 			signal_lengths[2*n+1] = signal_lengths[2*n];
 		} else {
@@ -236,13 +287,27 @@ int work(void **inp, void **out) {
 
 		set_legend(fft_legends,NOF_INPUT_ITF);
 
-		fft_size = fft_execute(inp,pl_signals,signal_lengths);
 		for (i=0;i<NOF_INPUT_ITF;i++) {
 			if (signal_lengths[i]) {
-				if (!is_complex) {
-					signal_lengths[i] = fft_size/2;
+				plan = find_plan(signal_lengths[i]);
+				c_input = inp[i];
+				r_input = inp[i];
+				if (!plan) {
+					if ((plan = generate_new_plan(signal_lengths[i])) == NULL) {
+						moderror("Generating plan.\n");
+						return -1;
+					}
+				}
+				if (is_complex) {
+					dft_run_c2r(plan, c_input, &f_pl_signals[i*INPUT_MAX_SAMPLES]);
 				} else {
-					signal_lengths[i] = fft_size;
+					dft_run_r2r(plan, r_input, &f_pl_signals[i*INPUT_MAX_SAMPLES]);
+				}
+				/*if (!is_complex) {
+					signal_lengths[i] = signal_lengths[i]/2;
+				}*/
+				for (j=0;j<signal_lengths[i];j++) {
+					pl_signals[i*INPUT_MAX_SAMPLES+j] = (double) f_pl_signals[i*INPUT_MAX_SAMPLES+j];
 				}
 			}
 		}
@@ -267,7 +332,8 @@ int stop() {
 	}
 	if (fft_initiated) {
 		moddebug("destoying fft %d\n",1);
-		fft_destroy();
+		dft_plan_free_vector(plans, NOF_PRECOMPUTED_DFT);
+		dft_plan_free_vector(extra_plans, MAX_EXTRA_PLANS);
 	}
 	return 0;
 }
