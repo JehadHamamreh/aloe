@@ -1,6 +1,7 @@
 function [ output ] = lte_channel( input, params)
 
-    output=input+sqrt(params.sigma2)*randn(size(input));
+    noise = sqrt(params.fft_size/params.Ntot)*(sqrt(params.sigma2)*(randn(size(input))+1i*randn(size(input))));
+    output=input+noise;
 
 end
 

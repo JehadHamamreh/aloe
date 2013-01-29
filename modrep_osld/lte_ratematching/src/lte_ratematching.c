@@ -23,7 +23,7 @@
 
 #include "lte_ratematching.h"
 #include "ratematching.h"
-#include "grid.h"
+#include "lte_lib/grid.h"
 
 pmid_t out_len_id,rvidx_id,tslot_idx_id,fft_size_id;
 pmid_t mcs_id,cp_long_id,nrb_id;

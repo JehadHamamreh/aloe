@@ -13,7 +13,7 @@ file(GLOB_RECURSE TEST_SOURCES "test/*.c")
 
 get_filename_component(module ${CMAKE_CURRENT_SOURCE_DIR} NAME) 
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/modrep_default/gen_libs)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/modrep_default/gen_libs ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 # aloe module
 add_library(${module}-aloe SHARED ${SOURCES})

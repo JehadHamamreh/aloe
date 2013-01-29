@@ -4,7 +4,7 @@
 set(LIBRARIES m rt lte_lib)
 
 # set-up program includes here
-include_directories(/usr/local/include/ ${LTELIB_INCLUDE_DIR})
+include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 
