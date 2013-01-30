@@ -27,3 +27,15 @@ complex_t sum_c(complex_t *x, int len) {
 	return y;
 }
 
+void vec_sum_c(complex_t *z, complex_t *x, complex_t *y, int len) {
+	int i;
+	for (i=0;i<len;i++) {
+		z[i] = x[i]+y[i];
+	}
+}
+void vec_mult_c(complex_t *x,complex_t h, int len) {
+	int i;
+	for (i=0;i<len;i++) {
+		x[i] *= h;
+	}
+}

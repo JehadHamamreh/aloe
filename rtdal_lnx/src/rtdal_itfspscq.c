@@ -97,13 +97,13 @@ int rtdal_itfspscq_request(r_itf_t obj, void **ptr) {
 	return 1;
 }
 
-int rtdal_itfspscq_push(r_itf_t obj, int len) {
+int rtdal_itfspscq_push(r_itf_t obj, int len, int tstamp) {
 	cast(obj,itf);
 	if (spscq_is_full(itf)) {
 		RTDAL_SETERROR(RTDAL_ERROR_NOSPACE);
 		return 0;
 	}
-	itf->packets[itf->write].tstamp = rtdal_time_slot()+itf->parent.delay;
+	itf->packets[itf->write].tstamp = tstamp+itf->parent.delay;
 	itf->packets[itf->write].len = len;
 	itf->packets[itf->write].valid = 1;
 	itf->write += (itf->write+1 >= itf->max_msg) ? (1-itf->max_msg) : 1;
@@ -113,7 +113,7 @@ int rtdal_itfspscq_push(r_itf_t obj, int len) {
 	return 1;
 }
 
-int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len) {
+int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len, int tstamp) {
 	cast(obj,itf);
 	RTDAL_ASSERT_PARAM(ptr);
 	RTDAL_ASSERT_PARAM(len);
@@ -121,7 +121,6 @@ int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len) {
 	*ptr = NULL;
 	*len = 0;
 
-	int tstamp = rtdal_time_slot();
 	if (spscq_is_empty(itf)) {
 		qdebug("[empty] read=%d, tstamp=%d\n",itf->read,itf->packets[itf->read].tstamp);
 		return 0;
@@ -131,7 +130,8 @@ int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len) {
 		return 0;
 	}
 	if (itf->packets[itf->read].tstamp < tstamp) {
-		qdebug("[late] read=%d tstamp=%d ara=%d\n",itf->read,itf->packets[itf->read].tstamp,tstamp);
+		printf("[late-%d] read=%d tstamp=%d ara=%d\n",itf->parent.id,itf->read,itf->packets[itf->read].tstamp,tstamp);
+		rtdal_itfspscq_release(obj);
 	}
 
 	qdebug("[ok] read=%d, tstamp=%d (now=%d)\n",itf->read,itf->packets[itf->read].tstamp,tstamp);
@@ -203,7 +203,7 @@ int rtdal_itfspscq_send(r_itf_t obj, void* buffer, int len) {
 	memcpy(ptr, buffer, (size_t) len);
 
 	hdebug("put pkt for 0x%x pkt 0x%x\n",obj,ptr);
-	return rtdal_itfspscq_push(obj,len);
+	return rtdal_itfspscq_push(obj,len,rtdal_time_slot());
 }
 
 int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len) {
@@ -214,7 +214,7 @@ int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len) {
 	int n, plen;
 	void *ptr;
 
-	if ((n = rtdal_itfspscq_pop(obj, &ptr, &plen)) != 1) {
+	if ((n = rtdal_itfspscq_pop(obj, &ptr, &plen, rtdal_time_slot())) != 1) {
 		return n;
 	}
 	if (plen > len) {

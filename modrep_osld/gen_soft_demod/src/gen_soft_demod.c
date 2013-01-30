@@ -123,9 +123,6 @@ int work(void **inp, void **out) {
 		moderror_msg("Invalid modulation %d. Specify 0 for BPSK, 1 for QPSK,"
 				"2 for 16QAM, or 3 for 64QAM\n", modulation);
 		return -1;
-	} else {
-		modinfo_msg("Modulation type is %d (0: BPSK, 1: QPSK, 2: 16QAM,"
-				"3: 64QAM)\n",modulation);
 	}
 	if (sigma2 < 0) {
 		moderror_msg("Noise variance %f. Must be greater than 0.\n", sigma2);

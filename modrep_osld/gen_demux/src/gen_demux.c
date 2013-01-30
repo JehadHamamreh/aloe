@@ -105,7 +105,7 @@ int work(void **inp, void **out) {
 	if ((rcv_len - sum_special_output_lengths) % (nof_outputs-nof_special_outputs)) {
 		moderror_msg("Received length %d is not multiple of the number of output interfaces %d\n",
 				rcv_len,nof_outputs);
-		return -1;
+		return 0;
 	}
 
 	out_len = (rcv_len - sum_special_output_lengths) / (nof_outputs-nof_special_outputs);

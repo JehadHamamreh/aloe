@@ -19,14 +19,15 @@
 
 
 /**
- * @defgroup lte_ratematching lte_ratematching
+ * @defgroup template gen_channel
+ *
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef char input_t;
-typedef char output_t;
+typedef _Complex float input_t;
+typedef _Complex float output_t;
 
 #define OUTPUT_MAX_SAMPLES 	14*2048
 #define INPUT_MAX_SAMPLES 	14*2048
@@ -39,12 +40,6 @@ typedef char output_t;
 /**@} */
 
 
-
-
-
-
-
-
 /********* do not need to modify beyond here */
 
 
@@ -55,8 +50,8 @@ const int input_max_samples = INPUT_MAX_SAMPLES;
 const int output_max_samples = OUTPUT_MAX_SAMPLES;
 
 /* leave these two lines unmodified */
-int input_sample_sz = sizeof(input_t);
-int output_sample_sz = sizeof(output_t);
+const int input_sample_sz = sizeof(input_t);
+const int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */
 const int nof_input_itf = NOF_INPUT_ITF;

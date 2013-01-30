@@ -45,8 +45,9 @@ static int print_not_received;
 static int last_rcv_samples;
 
 static int is_complex;
+int fft_size;
 
-const int precomputed_dft_len[] = {960,1920,3840,7680,15360};
+const int precomputed_dft_len[] = {1024,960,1920,3840,7680};
 #define NOF_PRECOMPUTED_DFT 5
 dft_plan_t plans[NOF_PRECOMPUTED_DFT];
 #define MAX_EXTRA_PLANS	5
@@ -117,7 +118,7 @@ int initialize() {
 		return -1;
 	}
 
-	if (param_get_int(param_id("print_not_received"),&print_not_received)!=1) {
+	if (param_get_int_name("print_not_received",&print_not_received)!=1) {
 		print_not_received = 0;
 	}
 	modinfo_msg("print_not_received=%d\n",print_not_received);
@@ -142,6 +143,8 @@ int initialize() {
 	}
 
 	if (mode == MODE_PSD) {
+		fft_size=0;
+		param_get_int_name("fft_size",&fft_size);
 		if (is_complex) {
 			if (dft_plan_multi_c2r(precomputed_dft_len, FORWARD, NOF_PRECOMPUTED_DFT, plans)) {
 				moderror("Precomputing plans\n");
@@ -289,6 +292,9 @@ int work(void **inp, void **out) {
 
 		for (i=0;i<NOF_INPUT_ITF;i++) {
 			if (signal_lengths[i]) {
+				if (fft_size) {
+					signal_lengths[i] = signal_lengths[i]>fft_size?fft_size:signal_lengths[i];
+				}
 				plan = find_plan(signal_lengths[i]);
 				c_input = inp[i];
 				r_input = inp[i];

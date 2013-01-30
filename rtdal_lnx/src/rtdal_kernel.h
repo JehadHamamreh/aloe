@@ -19,7 +19,7 @@
 #ifndef rtdal_KERNEL_H
 #define rtdal_KERNEL_H
 
-#define KERNEL_DEB_TIME
+//#define KERNEL_DEB_TIME
 
 
 

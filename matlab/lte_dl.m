@@ -1,8 +1,8 @@
 clear
 addpath('/usr/local/mex');
 
-M=1000;
-snr_db=linspace(-2,2,10);
+M=1;
+snr_db=10;%linspace(-2,2,10);
 
 lte_params=lte_readparams(2);
 

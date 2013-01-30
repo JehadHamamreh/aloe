@@ -90,8 +90,8 @@ inline static void pipeline_run_thread_print_time(pipeline_t *obj) {
 	time_t tdata;
 	rtdal_time_get(&tdata);
 	if (!(obj->ts_counter%10000))
-		printf("Pipeline %d running %d modules at TS=%d\t Start: %d:%d\n",obj->id, obj->nof_processes,
-				rtdal_time_slot(),
+		printf("Pipeline %d running %d modules at TS=%d. RTF=%d\t Start: %d:%d\n",obj->id, obj->nof_processes,
+				rtdal_time_slot(),obj->rtfaults,
 				(int) tdata.tv_sec, (int) tdata.tv_usec);
 #endif
 
@@ -138,13 +138,9 @@ inline static void pipeline_run_time_slot(pipeline_t *obj) {
 
 void pipeline_run_from_timer(void *arg, struct timespec *time) {
 	pipeline_t *obj = (pipeline_t*) arg;
-	time_t realtime;
-#ifdef KERNEL_DEB_TIME
-	rtdal_time_get(&realtime);
-	hdebug("now is %d:%d\n",realtime.tv_sec,realtime.tv_usec);
-#else
+	struct timespec realtime;
+
 	hdebug("now is %d:%d\n",time->tv_sec,time->tv_nsec);
-#endif
 
 	if (!timer_first_cycle && time) {
 		rtdal_time_reset_realtime(time);
@@ -156,6 +152,11 @@ void pipeline_run_from_timer(void *arg, struct timespec *time) {
 	}
 
 	pipeline_run_time_slot(obj);
+
+	if (DEBUG_TIME) {
+		clock_gettime(CLOCK_MONOTONIC,&realtime);
+		tdebug("%d,%d,%d,%d,%d\n",obj->id,time->tv_sec,time->tv_nsec,realtime.tv_sec,realtime.tv_nsec);
+	}
 }
 
 /**
@@ -214,8 +215,11 @@ int pipeline_rt_fault(pipeline_t *obj) {
 	}
 #else
 	obj->finished = 1;
+	obj->rtfaults++;
+#ifdef PRINT_RT_FAULT
 	printf("+++[ts=%d]+++ RT-Fault: Process %d/%d still running in pipeline %d\n",
 			obj->ts_counter, obj->running_process_idx, obj->nof_processes, obj->id);
+#endif
 #endif
 	return 0;
 }
@@ -238,7 +242,7 @@ int pipeline_add(pipeline_t *obj, rtdal_process_t *process) {
 			process->pid,process->attributes.exec_position);
 	RTDAL_ASSERT_PARAM(obj);
 	RTDAL_ASSERT_PARAM(process);
-	int exec_pos, i;
+	int exec_pos, i=0;
 	rtdal_process_t *p = NULL;
 
 	exec_pos = process->attributes.exec_position;

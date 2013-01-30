@@ -30,16 +30,24 @@ static int long_crc;
 static int mode;
 static unsigned int poly;
 
+/*#define PRINT_BLER
+*/
+#define EXEC_MIN_INTERVAL_MS 1000
+int interval_ts;
+int tscnt;
+int total_errors, total_pkts;
+
 /** @ingroup gen_crc gen_crc
  *
  * \param long_crc Length of the CRC (default 24)
- * \param mode 0: add CRC; 1: check last long_crc bits with the teoretical CRC (default ADD)
- * \param poly CRC polynomi, in hexadecimal (default 0x1864CFB)
+ * \param direction 0: add CRC; 1: check last long_crc bits with the theoretical CRC (default ADD)
+ * \param poly CRC polynomy, in hexadecimal (default 0x1864CFB)
  */
 
 int initialize() {
+	int tslen;
 
-	if (param_get_int(param_id("mode"),&mode) != 1) {
+	if (param_get_int(param_id("direction"),&mode) != 1) {
 		mode = MODE_ADD;
 	}
 
@@ -57,6 +65,19 @@ int initialize() {
 		poly_id = NULL;
 	}
 
+
+#ifdef _COMPILE_ALOE
+	tslen = oesr_tslot_length(ctx);
+	if (tslen > EXEC_MIN_INTERVAL_MS*1000) {
+		interval_ts = 1;
+	} else {
+		interval_ts = (EXEC_MIN_INTERVAL_MS*1000)/tslen;
+		modinfo_msg("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
+	}
+#endif
+	total_errors=0;
+	total_pkts=0;
+	tscnt=0;
 	return 0;
 }
 
@@ -64,7 +85,8 @@ int initialize() {
  * Adds a CRC to every received packet from each interface
  */
 int work(void **inp, void **out) {
-	int i, n;
+	int i;
+	unsigned int n;
 	input_t *input;
 
 	if (poly_id) param_get_int(poly_id,&poly);
@@ -76,11 +98,26 @@ int work(void **inp, void **out) {
 			memcpy(out[i],inp[i],sizeof(input_t)*get_input_samples(i));
 			input = out[i];
 			n = icrc(0, input, get_input_samples(i), long_crc, poly, mode == MODE_ADD);
-			if (n == -1) {
-				moderror("Running icrc\n");
-				return -1;
+
+			if (mode==MODE_CHECK) {
+				if (n) {
+					total_errors++;
+				}
+				total_pkts++;
+				set_output_samples(i,get_input_samples(i)-long_crc);
+
+				tscnt++;
+				if (tscnt==interval_ts) {
+					tscnt=0;
+					#ifdef PRINT_BLER
+					printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+							total_pkts,total_errors,(float)total_errors/total_pkts);
+					#endif
+				}
+
+			} else {
+				set_output_samples(i,get_input_samples(i)+long_crc);
 			}
-			set_output_samples(i,get_input_samples(i)+long_crc);
 		}
 	}
 	return 0;

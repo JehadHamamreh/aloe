@@ -20,8 +20,8 @@
 #define MAX(a) a##_MAX
 
 
-#define rtdal_process_MAX 	100
-#define rtdal_itfspscq_MAX 	50
+#define rtdal_process_MAX 	200
+#define rtdal_itfspscq_MAX 	500
 #define rtdal_itfphysic_MAX 5
 #define rtdal_periodic_MAX 	10
 #define pipeline_MAX		5

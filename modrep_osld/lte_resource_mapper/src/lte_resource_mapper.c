@@ -186,6 +186,8 @@ int initialize() {
 			tslot_idx, nof_fft_x_lteslot, SSSseq, gridSLOT);
 	}
 
+	tslot_idx = 0;
+
 	return 0;
 }
 
@@ -209,9 +211,14 @@ int work(void **inp, void **out) {
 	output_t *output_refsig;
 	int nsamples_refsig;
 
+	if (!get_input_samples(0)) {
+		return 0;
+	}
+
 	if (tslot_idx_id) {
 		param_get_int(tslot_idx_id, &tslot_idx);
 	}
+
 	moddebug("tslot_idx=%d\n",tslot_idx);
 
 	input = inp[0];
@@ -229,7 +236,7 @@ int work(void **inp, void **out) {
 	if (rcv_samples != get_input_samples(0)) {
 		moderror_msg("Received %d samples but expected %d (tslot_idx=%d, direction=%d)\n",
 				get_input_samples(0),rcv_samples, tslot_idx,direction);
-		return -1;
+		return 0;
 	}
 
 	if (!direction) {
@@ -255,9 +262,11 @@ int work(void **inp, void **out) {
 			snd_samples += deallocateDataOneUser (OFDM_grid, fft_size, i,
 							nof_fft_x_lteslot, &input[k*nof_fft_x_lteslot*fft_size],
 							&output[snd_samples]);
-			nsamples_refsig += deallocateCRS (OFDM_grid, fft_size,\
-					i, nof_fft_x_lteslot, &input[k*nof_fft_x_lteslot*fft_size],
-					&output_refsig[nsamples_refsig]);
+			if (output_refsig) {
+				nsamples_refsig += deallocateCRS (OFDM_grid, fft_size,\
+						i, nof_fft_x_lteslot, &input[k*nof_fft_x_lteslot*fft_size],
+						&output_refsig[nsamples_refsig]);
+			}
 			k++;
 		}
 

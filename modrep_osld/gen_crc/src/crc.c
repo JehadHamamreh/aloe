@@ -35,29 +35,22 @@ unsigned int icrc1(unsigned int crc, unsigned short onech,int long_crc,
   return tmp;
 }
 
-unsigned int icrc(unsigned int crc, char *bufptr, unsigned int len,
+unsigned int icrc(unsigned int crc, char *bufptr, int len,
 		int long_crc,unsigned int poly, int paste_word) {
 
   int i,k;
-  unsigned short data;
+  unsigned int data;
   int stop;
   unsigned int ret;
 
   cword=crc;
   
-  if (!long_crc)
-    return -1;
-
-  if (long_crc!=8 && long_crc!=12 && long_crc!=16 && long_crc!=24) {
-    return -1;
-  }
-
   k=0;
   stop=0;
   while(!stop) {
     data=0;
     for (i=0;i<long_crc/2;i++) {
-      if (bufptr[k])
+      if (bufptr[k] && k<len)
         data|=(0x1<<(long_crc/2-1-i));
       k++;
       if (k==len) {
@@ -81,4 +74,5 @@ unsigned int icrc(unsigned int crc, char *bufptr, unsigned int len,
   }
   return (ret);
 }
+
 

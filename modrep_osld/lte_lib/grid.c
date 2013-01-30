@@ -383,7 +383,7 @@ int lte_get_tbs(int mcs, int nrb) {
 }
 
 int tb_2_cb(int x) {
-	return 3*(x+24)+12;
+	return 3*(x+LONG_CRC)+12;
 }
 
 int lte_get_cbits(int mcs, int nrb) {

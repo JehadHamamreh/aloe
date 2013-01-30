@@ -95,8 +95,8 @@ int rtdal_itf_release(r_itf_t obj) {
  * \param len Number of useful bytes in the packet.
  * \returns 1 on success, 0 if there is no space in the interface or -1 on error
  */
-int rtdal_itf_push(r_itf_t obj, int len) {
-	call(push,obj,len);
+int rtdal_itf_push(r_itf_t obj, int len, int tstamp) {
+	call(push,obj,len,tstamp);
 }
 
 
@@ -111,8 +111,8 @@ int rtdal_itf_push(r_itf_t obj, int len) {
  *
  * \returns 1 on success, 0 if there are no packets pending in the interface or -1 on error
  */
-int rtdal_itf_pop(r_itf_t obj, void **ptr, int *len) {
-	call(pop,obj,ptr,len);
+int rtdal_itf_pop(r_itf_t obj, void **ptr, int *len, int tstamp) {
+	call(pop,obj,ptr,len,tstamp);
 }
 
 int rtdal_itf_set_callback(r_itf_t obj, void (*fnc)(void), int prio) {

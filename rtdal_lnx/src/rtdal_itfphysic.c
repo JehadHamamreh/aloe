@@ -73,12 +73,12 @@ int rtdal_itfphysic_release(r_itf_t obj) {
 	return -1;
 }
 
-int rtdal_itfphysic_push(r_itf_t obj, int len) {
+int rtdal_itfphysic_push(r_itf_t obj, int len, int tstamp) {
 	aerror("Not yet implemented");
 	return -1;
 }
 
-int rtdal_itfphysic_pop(r_itf_t obj, void **ptr, int *len) {
+int rtdal_itfphysic_pop(r_itf_t obj, void **ptr, int *len, int tstamp) {
 	aerror("Not yet implemented");
 	return -1;
 }

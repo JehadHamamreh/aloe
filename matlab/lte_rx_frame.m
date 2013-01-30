@@ -26,7 +26,7 @@ function [ output ] = lte_rx_frame( input, params )
         cb_mod = am_gen_soft_demod(pdsch, {{'soft',int32(1)},{'modulation',int32(params.modulation)},{'sigma2',params.sigma2}}); % soft = 0: exact; soft = 1: approx. LLR
         cb_rm=am_lte_ratematching(cb_mod,unrm_params);
         cb_dec=am_lte_turbocode(cb_rm,{{'direction',int32(1)}});
-        tb_crc=cb_dec(1:(length(cb_dec)-24));
+        tb_crc=am_gen_crc(cb_dec,{{'direction',int32(1)}});
         output=[output tb_crc];
     end
 

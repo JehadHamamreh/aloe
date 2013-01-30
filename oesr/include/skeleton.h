@@ -24,6 +24,7 @@
 
 #define USE_LOG 0
 #define MOD_DEBUG 0
+#define ITF_DEBUG 0
 
 /*#define PRINT_MEX
 */
@@ -44,7 +45,7 @@ int set_output_samples(int idx, int len);
 
 
 #ifdef _COMPILE_MEX
-#include "mex.h"
+	#include "mex.h"
 #endif
 
 
@@ -55,9 +56,9 @@ int generate_input_signal(void *input, int *input_length);
 
 
 #ifdef _COMPILE_ALOE
-extern void *ctx;
-extern log_t mlog;
-#define INTERFACE_CONFIG
+	extern void *ctx;
+	extern log_t mlog;
+	#define INTERFACE_CONFIG
 #endif
 
 
@@ -79,36 +80,46 @@ extern log_t mlog;
 
 
 /* Info and error messages print */
-#define INFOSTR "[info]: "
+#ifdef _COMPILE_ALOE
+	#define INFOSTR "[info at "
+#else
+	#define INFOSTR "[info]: "
+#endif
+
 #define ERRSTR "[error at "
 
 #ifdef _COMPILE_ALOE
-#define WHERESTR  "%s, line %d]: "
-#define WHEREARG  oesr_module_name(ctx), __LINE__
+	#define WHERESTR  "%s]: "
+	#define WHEREARG  oesr_module_name(ctx)
 #else
-#define WHERESTR  "file %s, line %d]: "
-#define WHEREARG  __FILE__, __LINE__
+	#define WHERESTR  "file %s, line %d]: "
+	#define WHEREARG  __FILE__, __LINE__
 #endif
 
 #ifdef _COMPILE_MEX
-#ifdef PRINT_MEX
-#define DEBUGPRINT2(out,...)       mexPrintf(__VA_ARGS__)
-#else
-#define DEBUGPRINT2(out,...)
-#endif
+	#ifdef PRINT_MEX
+	#define DEBUGPRINT2(out,...)       mexPrintf(__VA_ARGS__)
+	#else
+	#define DEBUGPRINT2(out,...)
+	#endif
 #elif _COMPILE_ALOE
-#define DEBUGPRINT2(out,...)       if (mlog && USE_LOG) { oesr_log_printf(mlog,__VA_ARGS__); }\
-					else {fprintf(out, __VA_ARGS__); }
+	#define DEBUGPRINT2(out,...)       if (mlog && USE_LOG) { oesr_log_printf(mlog,__VA_ARGS__); }\
+						else {fprintf(out, __VA_ARGS__); }
 #else
-#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
+	#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
 #endif
 
 
 #define aerror_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
 #define aerror(a)  DEBUGPRINT2(stderr, ERRSTR WHERESTR a, WHEREARG)
 
-#define ainfo(a) DEBUGPRINT2(stdout, INFOSTR a)
-#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR _fmt, __VA_ARGS__)
+#ifdef _COMPILE_ALOE
+	#define ainfo(a) DEBUGPRINT2(debug_buffer, INFOSTR WHERESTR a, WHEREARG)
+	#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+#else
+	#define ainfo(a) DEBUGPRINT2(debug_buffer, INFOSTR a)
+	#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR _fmt, __VA_ARGS__)
+#endif
 
 #define modinfo 		ainfo
 #define modinfo_msg 	ainfo_msg
@@ -116,13 +127,16 @@ extern log_t mlog;
 #define moderror_msg 	aerror_msg
 
 #ifdef _COMPILE_ALOE
-#define moddebug(_fmt, ...) \
-	do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
+	#define moddebug(_fmt, ...) \
+		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
+				oesr_tstamp(ctx),__VA_ARGS__);} while(0);
+	#define itfdebug(_fmt, ...) \
+		do { if (ITF_DEBUG) fprintf(debug_buffer,"[itf_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
 			oesr_tstamp(ctx),__VA_ARGS__);} while(0);
 #else
-#define moddebug(_fmt, ...) \
-	do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug]\t[%s()]: " _fmt, __func__,\
-			__VA_ARGS__);} while(0);
+	#define moddebug(_fmt, ...) \
+		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug]\t[%s()]: " _fmt, __func__,\
+				__VA_ARGS__);} while(0);
 #endif
 
 #endif

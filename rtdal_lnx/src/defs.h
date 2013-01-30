@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 
-//#define DEBUG_TRACE
+#define DEBUG_TRACE
 
 #ifdef DEBUG_TRACE
 #ifndef _DEBUG_TRACE
@@ -36,6 +36,11 @@ extern FILE *trace_buffer;
 #define DEBUG_rtdal 0
 #define hdebug(_fmt, ...) \
 	do { if (DEBUG_rtdal) fprintf(debug_buffer,"[debug-rtdal]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+
+/* debug rtdal timing*/
+#define DEBUG_TIME 1
+#define tdebug(_fmt, ...) \
+	do { if (DEBUG_TIME) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
 
 
 /* debug spscq */

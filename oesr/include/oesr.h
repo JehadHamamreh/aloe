@@ -103,7 +103,7 @@ int oesr_module_id(void *context);
 /**@defgroup itf Interface functions
  * @{
  */
-#define OESR_ITF_DEFAULT_MSG 50
+#define OESR_ITF_DEFAULT_MSG 8
 typedef enum {
 	ITF_READ, ITF_WRITE
 }oesr_itf_mode_t;
@@ -114,8 +114,8 @@ int oesr_itf_read(itf_t itf, void* buffer, int size);
 int oesr_itf_status(itf_t itf);
 int oesr_itf_ptr_request(itf_t itf, void **ptr);
 int oesr_itf_ptr_release(itf_t itf);
-int oesr_itf_ptr_put(itf_t itf, int len);
-int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len);
+int oesr_itf_ptr_put(itf_t itf, int len, int tstamp);
+int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len, int tstamp);
 /**@} */
 
 /**@defgroup var Public variables and parameters functions

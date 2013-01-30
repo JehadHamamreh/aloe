@@ -100,6 +100,8 @@ int initialize() {
 		output_sample_sz=sizeof(char);
 	}
 
+	tslot_idx=0;
+
 	return 0;
 }
 
@@ -117,6 +119,10 @@ int work(void **inp, void **out) {
 	char *output_b;
 	float *input_f;
 	float *output_f;
+
+	if (!get_input_samples(0)) {
+		return 0;
+	}
 
 	if (out_len_id) {
 		if (param_get_int(out_len_id, &out_len) != 1) {

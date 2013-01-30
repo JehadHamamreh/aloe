@@ -88,7 +88,7 @@ int init_interfaces(void *ctx) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 					return 0;
 				} else {
-					oesr_perror("oesr_itf_create\n");
+					oesr_perror("creating input interface\n");
 					return -1;
 				}
 			} else {
@@ -102,11 +102,12 @@ int init_interfaces(void *ctx) {
 			outputs[i] = oesr_itf_create(ctx, i, ITF_WRITE, output_max_samples*output_sample_sz);
 			if (outputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTFOUND) {
-					moderror_msg("Output port %d does not exists. Please check waveform .app file\n",i);
+					modinfo_msg("Caution output port %d not connected,\n",i);
+				} else {
+					moderror_msg("Error creating output port %d\n",i);
+					oesr_perror("oesr_itf_create\n");
 					return -1;
 				}
-				oesr_perror("oesr_itf_create\n");
-				return -1;
 			} else {
 				moddebug("output_%d=0x%x\n",i,outputs[i]);
 			}
@@ -232,13 +233,6 @@ int Init(void *_ctx) {
 		check_ok = 1;
 	}
 
-	n = init_interfaces(ctx);
-	if (n == -1) {
-		return -1;
-	} else if (n == 0) {
-		return 0;
-	}
-
 	if (init_variables(ctx)) {
 		return -1;
 	}
@@ -254,6 +248,15 @@ int Init(void *_ctx) {
 		moddebug("error initializing module\n",oesr_tstamp(ctx));
 		return -1;
 	}
+
+	n = init_interfaces(ctx);
+	if (n == -1) {
+		return -1;
+	} else if (n == 0) {
+		return 0;
+	}
+
+	modinfo("Init OK\n");
 
 	moddebug("exit ts=%d\n",oesr_tstamp(ctx));
 	return 1;
@@ -280,6 +283,7 @@ int Stop(void *_ctx) {
 
 int Run(void *_ctx) {
 	ctx = _ctx;
+	int tstamp = oesr_tstamp(ctx);
 	moddebug("enter ts=%d\n",oesr_tstamp(ctx));
 	int i;
 	int n;
@@ -290,14 +294,14 @@ int Run(void *_ctx) {
 			input_ptr[i] = NULL;
 			rcv_len[i] = 0;
 		} else {
-			n = oesr_itf_ptr_get(inputs[i], &input_ptr[i], &rcv_len[i]);
+			n = oesr_itf_ptr_get(inputs[i], &input_ptr[i], &rcv_len[i], tstamp);
 			if (n == 0) {
-				moddebug("[ts=%d] received no input from %d\n",rtdal_time_slot(),i);
+				itfdebug("[ts=%d] received no input from %d\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_get");
 				return -1;
 			} else {
-				moddebug("[ts=%d] received %d bytes\n",rtdal_time_slot(),rcv_len[i]);
+				itfdebug("[ts=%d] received %d bytes\n",rtdal_time_slot(),rcv_len[i]);
 				rcv_len[i] /= input_sample_sz;
 			}
 		}
@@ -342,7 +346,7 @@ int Run(void *_ctx) {
 		if (input_ptr[i]) {
 			n = oesr_itf_ptr_release(inputs[i]);
 			if (n == 0) {
-				moddebug("[ts=%d] packet from interface %d not released\n",rtdal_time_slot(),i);
+				itfdebug("[ts=%d] packet from interface %d not released\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_release\n");
 				return -1;
@@ -351,9 +355,9 @@ int Run(void *_ctx) {
 	}
 	for (i=0;i<nof_output_itf;i++) {
 		if (output_ptr[i] && snd_len[i]) {
-			n = oesr_itf_ptr_put(outputs[i],snd_len[i]);
+			n = oesr_itf_ptr_put(outputs[i],snd_len[i],tstamp);
 			if (n == 0) {
-				moddebug("[ts=%d] no space left in output interface %d\n",rtdal_time_slot(),i);
+				itfdebug("[ts=%d] no space left in output interface %d\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_put\n");
 				return -1;

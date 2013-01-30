@@ -84,7 +84,7 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode,
 			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(OESR_ITF_DEFAULT_MSG,
 					size);
 			if (!rtdal_itf) {
-				OESR_HWERROR("rtdal_itfqueue");
+				OESR_HWERROR("rtdal_itfspscq_new");
 				return NULL;
 			}
 		} else {
@@ -226,10 +226,10 @@ int oesr_itf_ptr_release(itf_t itf) {
  * \return 1 on success, 0 if the packet could not be sent or -1 on error.
  *
  */
-int oesr_itf_ptr_put(itf_t itf, int len) {
+int oesr_itf_ptr_put(itf_t itf, int len, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_push(x->hw_itf, len);
+	return rtdal_itf_push(x->hw_itf, len, tstamp);
 }
 
 
@@ -243,8 +243,8 @@ int oesr_itf_ptr_put(itf_t itf, int len) {
  * \return 1 on success, 0 if there are no packets pending in the interface or -1 on error.
  *
  */
-int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len) {
+int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_pop(x->hw_itf, ptr, len);
+	return rtdal_itf_pop(x->hw_itf, ptr, len, tstamp);
 }

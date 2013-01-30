@@ -38,8 +38,8 @@ typedef char output_t;
 #define NOF_INPUT_ITF		1
 #define NOF_OUTPUT_ITF		1
 
-#define DEFAULT_LONG_CRC 	24
-#define DEFAULT_POLY		0x1864CFB
+#define DEFAULT_LONG_CRC 	16
+#define DEFAULT_POLY		0x8005/*0x1864CFB*/
 
 #define MODE_ADD	0
 #define MODE_CHECK	1

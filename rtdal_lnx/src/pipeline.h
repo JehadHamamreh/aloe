@@ -23,9 +23,9 @@
 #include "objects_max.h"
 #include "rtdal_process.h"
 #include "rtdal_timer.h"
-
+/*
 #define PRINT_TIME
-
+*/
 
 /**
  * A ProcThread is a POSIX-thread that runs in a single processor core with
@@ -58,7 +58,7 @@ typedef struct {
 	int finished;
 
 	int nof_processes;
-
+	int rtfaults;
 	int ts_counter;
 	/**
 	 * Indicates the execution position of the running module

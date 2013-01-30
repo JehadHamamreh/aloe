@@ -52,9 +52,6 @@ int initialize() {
 	}
 
 	first_cyclic_prefix_sz_id = param_id("first_cyclic_prefix_sz");
-	if (!first_cyclic_prefix_sz_id) {
-		modinfo("Parameter first_cyclic_prefix_sz undefined. Assuming equal to cyclic_prefix_sz\n");
-	}
 
 	if (NOF_INPUT_ITF != NOF_OUTPUT_ITF) {
 		moderror_msg("Fatal error, the number of input interfaces (%d) must be equal to the "

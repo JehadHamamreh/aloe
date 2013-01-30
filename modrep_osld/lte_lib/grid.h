@@ -25,7 +25,7 @@
  * @{
  */
 
-
+#define LONG_CRC 16
 
 /* Grid pattern identifiers */
 #define REFSIGN	'R'	/* Symbol for reference signals */

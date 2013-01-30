@@ -174,7 +174,7 @@ int mapping_map(mapping_t *m, waveform_t *waveform) {
 		man_processor_t *p = (man_processor_t*) platform->processors[m->p_res[i]];
 		waveform->modules[i].node = p->node;
 		waveform->modules[i].processor_idx = p->idx_in_node;
-		waveform->modules[i].exec_position = waveform->nof_modules-i-1;
+		waveform->modules[i].exec_position = i;/*waveform->nof_modules-i-1;*/
 		node = p->node,
 		m->modules_x_node[node->id]++;
 	}

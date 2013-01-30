@@ -24,7 +24,7 @@
 
 /* Constants */
 #define Nmax	20	/* Maximum number of processors */
-#define Mmax	50	/* Maximum number of application's tasks/processes/SDR functions */
+#define Mmax	100	/* Maximum number of application's tasks/processes/SDR functions */
 
 #define Wmax	10	/* Maximum number of processors */
 
