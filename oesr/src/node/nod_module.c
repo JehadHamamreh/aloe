@@ -208,7 +208,7 @@ int nod_module_stop(nod_module_t *module) {
 }
 
 
-/** \brief Returns a pointer to the first module's variable with name equal to the second parameter
+/** Returns a pointer to the first module's variable with name equal to the second parameter
  *
  */
 variable_t* nod_module_variable_get(nod_module_t *module, string name) {

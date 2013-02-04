@@ -100,6 +100,7 @@ typedef struct {
 	module_mode_t mode;
 	int nof_modes;
 	int stage;
+	int index;
 } module_t;
 
 
@@ -114,6 +115,13 @@ typedef struct {
 	strdef(opts);
 }waveform_mode_t;
 
+
+typedef struct {
+	int **newmodules_matrix;
+	int *y_len;
+	int x_len;
+}stage_config_t;
+
 /**
  * Inherits from General.Waveform class. After the waveform is loaded to a platform,
  the class allows to send status change commands and update the local objects with the
@@ -126,6 +134,7 @@ typedef struct {
 	module_t *modules;
 	waveform_status_t status;
 	waveform_mode_t modes[MAX(modes)];
+	stage_config_t stages;
 	int last_update_ts;
 	int status_timestamp_delay;
 	int modules_x_node[MAX(nodes)];
@@ -135,6 +144,7 @@ typedef struct {
 	strdef(model_file);
 	strdef(name);
 	int nof_modes;
+	int granularity_us;
 } waveform_t;
 
 module_t* waveform_find_module_id(waveform_t *w, int obj_id);

@@ -23,7 +23,7 @@
 #include "waveform.h"
 #include "mempool.h"
 
-/** \brief Returns a pointer to the first module with id the second parameter
+/** Returns a pointer to the first module with id the second parameter
  * \returns a non-null pointer if found or null otherwise
  */
 module_t* waveform_find_module_id(waveform_t *w, int module_id) {
@@ -37,7 +37,7 @@ module_t* waveform_find_module_id(waveform_t *w, int module_id) {
 	return &w->modules[i];
 }
 
-/** \brief Returns a pointer to the first module with name the second parameter
+/** Returns a pointer to the first module with name the second parameter
  * \returns a non-null pointer if found or null otherwise
  */
 module_t* waveform_find_module_name(waveform_t *w, char *name) {
@@ -51,7 +51,7 @@ module_t* waveform_find_module_name(waveform_t *w, char *name) {
 	return &w->modules[i];
 }
 
-/** \brief Allocates the memory for interfaces and variables in a module.
+/** Allocates the memory for interfaces and variables in a module.
  * \param nof_inputs Number of input interfaces to allocate
  * \param nof_outputs Number of output interfaces to allocate
  * \param nof_variables Number of variables to allocate

@@ -19,6 +19,7 @@
 #include "defs.h"
 #include "packet.h"
 #include "rtdal.h"
+#include "rtdal_machine.h"
 #include "nod_waveform.h"
 #include "mempool.h"
 #include "oesr_context.h"
@@ -299,7 +300,9 @@ int nod_waveform_status_init(nod_waveform_t *waveform) {
 int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_status) {
 	aassert(waveform);
 	aassert(new_status);
+	time_t ts;
 	int i;
+	
 	ndebug("waveform_id=%d, new_status=%d, next_ts=%d\n",waveform->id,
 			new_status->cur_status, new_status->next_timeslot);
 
@@ -315,6 +318,31 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 		if (nod_waveform_status_init(waveform)) {
 			return -1;
 		}
+		if (nod_waveform_run(waveform,1)) {
+			return -1;
+		}
+		printf("Precaching data\n");
+		rtdal_timeslot_set(10);
+		waveform->status.next_timeslot = rtdal_time_slot();
+		waveform->status.cur_status = RUN;
+		ts.tv_sec = 2;
+		ts.tv_usec = 0;
+		rtdal_sleep(&ts);
+		variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");
+		if (source) {
+			printf("Done. Flushing pipeline\n");
+			ts.tv_sec = 1;
+			ts.tv_usec = 0;
+			*((int*) source->init_value[0]) = 0;
+			rtdal_sleep(&ts);
+			*((int*) source->init_value[0]) = 1;
+			printf("Done\n");
+		}
+		waveform->status.next_timeslot = rtdal_time_slot();
+		waveform->status.cur_status = PAUSE;
+		for (i=0;i<waveform->nof_modules;i++) {
+			memset(&waveform->modules[i].parent.execinfo,0,sizeof(execinfo_t));
+		}
 		break;
 	case STOP:
 		if (nod_waveform_run(waveform,0)) {
@@ -325,6 +353,7 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 		}
 		break;
 	default:
+		rtdal_timeslot_set(1);
 		if (waveform->status.cur_status == STEP) {
 			for (i=0;i<waveform->nof_modules;i++) {
 				if (waveform->modules[i].parent.status != STEP) {
@@ -409,8 +438,10 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 	int nof_modules, tmp;
 	enum variable_serialize_data copy_data;
 	enum waveform_serialize_action action;
+	int granularity_us;
 	waveform_status_t new_status;
 	module_mode_t mode;
+	rtdal_machine_t machine;
 
 	aassert(pkt);
 	aassert(dest);
@@ -420,9 +451,18 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 
 	switch(action) {
 	case WAVEFORM_LOAD:
+		rtdal_machine(&machine);
+
 		get_i(&tmp);
 		copy_data = (enum variable_serialize_data) tmp;
 		get_i(&dest->id);
+		get_i(&granularity_us);
+		if (granularity_us) {
+			dest->tslot_multiplicity = machine.ts_len_us/granularity_us;
+		} else {
+			dest->tslot_multiplicity = 1;
+		}
+
 		if (packet_get_data(pkt,dest->name,STR_LEN)) return -1;
 
 		get_i(&dest->nof_modes);
@@ -433,7 +473,8 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 		}
 
 		get_i(&nof_modules);
-		ndebug("id=%d, copy_data=%d, nof_modules=%d\n",dest->id,tmp,nof_modules);
+		ndebug("id=%d, multiplicity=%d, copy_data=%d, nof_modules=%d\n",
+				dest->id,dest->tslot_multiplicity,tmp,nof_modules);
 		if (nod_waveform_alloc(dest,nof_modules)) return -1;
 		for (i=0;i<dest->nof_modules;i++) {
 			if (nod_module_alloc(&dest->modules[i])) return -1;

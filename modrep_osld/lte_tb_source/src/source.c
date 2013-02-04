@@ -26,7 +26,7 @@
 #include "lte_lib/grid.h"
 #include "generators/generators.h"
 
-pmid_t mcs_id,nrb_id;
+pmid_t mcs_id,nrb_id,en_id;
 generator_t *g;
 int last_block_length;
 
@@ -54,6 +54,7 @@ int initialize() {
 		moderror("Parameter nrb not found\n");
 		return -1;
 	}
+	en_id = param_id("enabled");
 
 	generator_init_random();
 
@@ -75,7 +76,16 @@ int work(void **inp, void **out) {
 	int mcs,nrb;
 	int block_length;
 	int i,j;
-	int snd_samples;
+	int snd_samples, en;
+
+	if (en_id) {
+		if (param_get_int(en_id,&en) == 1) {
+			if (en == 0) {
+				last_block_length = 0;
+				return 0;
+			}
+		}
+	}
 
 	if (param_get_int(mcs_id,&mcs) != 1) {
 		moderror("Getting integer parameter mcs\n");
@@ -99,7 +109,8 @@ int work(void **inp, void **out) {
 	}
 #endif
 
-	snd_samples = g->work(out[0],block_length);
+	//snd_samples = g->work(out[0],block_length);
+	snd_samples = block_length;
 
 	return snd_samples;
 }

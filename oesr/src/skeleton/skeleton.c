@@ -312,8 +312,8 @@ int Run(void *_ctx) {
 		} else {
 			n = oesr_itf_ptr_request(outputs[i], &output_ptr[i]);
 			if (n == 0) {
-				printf("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
-			} else if (n == -1) {
+/*				moderror_msg("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
+*/			} else if (n == -1) {
 				oesr_perror("oesr_itf_request");
 				return -1;
 			}

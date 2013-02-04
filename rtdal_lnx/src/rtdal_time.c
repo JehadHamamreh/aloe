@@ -42,7 +42,7 @@ int rtdal_time_reset() {
 
 	struct timespec x;
 
-	if (clock_gettime(CLOCK_MONOTONIC,&x)) {
+	if (clock_gettime(CLOCK_REALTIME,&x)) {
 		RTDAL_SYSERROR("clock_gettime");
 		return -1;
 	}
@@ -77,7 +77,7 @@ int rtdal_time_set(time_t *time) {
 	time_t tact;
 	struct timespec x;
 
-	if (clock_gettime(CLOCK_MONOTONIC,&x)) {
+	if (clock_gettime(CLOCK_REALTIME,&x)) {
 		RTDAL_SYSERROR("clock_gettime");
 		return -1;
 	}
@@ -98,7 +98,7 @@ int rtdal_time_get(time_t *time) {
 	time_t tact;
 	struct timespec x;
 
-	if (clock_gettime(CLOCK_MONOTONIC,&x)) {
+	if (clock_gettime(CLOCK_REALTIME,&x)) {
 		RTDAL_SYSERROR("clock_gettime");
 		return -1;
 	}

@@ -1,36 +1,41 @@
+main:
+{
+	/* if selected, each module is called waveform_granularity_us/time_slot times per timeslot */
+	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
+	waveform_granularity_us=0;
+	
+	precach_pipeline=true;
+};
+
 modules:
 {
 	source:
 	{
 		binary="modrep_osld/liblte_tb_source.so";	
-		mopts=4.18;
-		stage=1;
+		mopts=8;
 		variables=(
-			{name="mcs";value=0},{name="nrb";value=4;}
+			{name="enabled";value=1},{name="mcs";value=0},{name="nrb";value=4;}
 		);
 	};
 
 	crc_tb:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=5.55;
-		stage=2;
+		mopts=6;
 		variables=({name="long_crc";value=16;});
 	};	
 
 	coder:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
-		mopts=9.71;
-		stage=3;
+		mopts=12;
 		variables=({name="direction";value=0},{name="padding";value=0;});
 	};
 	
 	ratematching:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
-		mopts=21.38;
-		stage=4;
+		mopts=23;
 		variables=(
 			{name="direction";value=0},{name="mcs";value=0},{name="nrb";value=4;},
 			{name="fft_size";value=128;},{name="cp_is_long";value=0;},{name="lteslots_x_timeslot";value=2;},
@@ -41,16 +46,14 @@ modules:
 	modulator:
 	{
 		binary="modrep_osld/libgen_modulator.so";	
-		mopts=12.03;
-		stage=5;
+		mopts=11;
 		variables=({name="modulation";value=1;});
 	};
 
 	resmapp:
 	{
 		binary="modrep_osld/liblte_resource_mapper.so";	
-		mopts=13.38;
-		stage=6;
+		mopts=15;
 		variables=(
 			{name="direction";value=0;},{name="fft_size";value=128;},{name="lteslots_x_timeslot";value=2;});
 	};
@@ -58,8 +61,7 @@ modules:
 	demux_tx:
 	{
 		binary="modrep_osld/libgen_demux.so";	
-		mopts=10.05;
-		stage=7;
+		mopts=12;
 		variables=(
 			{name="nof_outputs";value=14;},{name="data_type";value=2;});
 	};
@@ -67,8 +69,7 @@ modules:
 	ifft:
 	{
 		binary="modrep_osld/libgen_dft.so";
-		mopts=9;
-		stage=8;
+		mopts=11;
 		instances=14
 		variables=(
 			{name="direction";value=1;},{name="mirror";value=1;},{name="normalize";value=1;},
@@ -79,8 +80,7 @@ modules:
 	cyclic_first:
 	{
 		binary="modrep_osld/libgen_cyclic.so";	
-		mopts=3;
-		stage=9;
+		mopts=4;
 		instances=2
 		variables=( {name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=10});
 	};
@@ -88,8 +88,7 @@ modules:
 	cyclic:
 	{
 		binary="modrep_osld/libgen_cyclic.so";	
-		mopts=3;
-		stage=9;
+		mopts=4;
 		instances=12
 		variables=({name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=9}	);
 	};
@@ -97,16 +96,14 @@ modules:
 	mux_tx:
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=10.13;
-		stage=10;
+		mopts=11;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
 
 	channel:
 	{
 		binary="modrep_default/libgen_channel.so";
-		mopts=39.66;
-		stage=11;
+		mopts=15;
 		variables=(
 			{name="variance";value=0.0},{name="gain_re";value=1.0},{name="gain_im";value=0.0}
 		);		
@@ -115,8 +112,7 @@ modules:
 	demux_rx:
 	{
 		binary="modrep_osld/libgen_demux.so";	
-		mopts=10.2;
-		stage=12;
+		mopts=12;
 		variables=({name="nof_outputs";value=14;},{name="data_type";value=2;},
 					{name="out_len_0";value=138},{name="out_len_7";value=138});
 	};
@@ -124,27 +120,24 @@ modules:
 	remcyclic_first:
 	{
 		binary="modrep_osld/libgen_remcyclic.so";	
-		mopts=3;
-		stage=13;
-		instances=2
+		mopts=4;
+		instances=2;
 		variables=({name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=10});
 	};
 
 	remcyclic:
 	{
 		binary="modrep_osld/libgen_remcyclic.so";	
-		mopts=3;
-		stage=14;
-		instances=12
+		mopts=4;
+		instances=12;
 		variables=({name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=9}	);
 	};
 	
 	fft:
 	{
 		binary="modrep_osld/libgen_dft.so";
-		mopts=9;
-		stage=15;
-		instances=14
+		mopts=11;
+		instances=14;
 		variables=(
 			{name="direction";value=0;},{name="mirror";value=2;},{name="normalize";value=1;},
 			{name="dft_size";value=128;},{name="psd";value=0},{name="out_db";value=0}
@@ -154,16 +147,14 @@ modules:
 	mux_rx:
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=10.64;
-		stage=16;
+		mopts=11;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
 	
 	resdemapp:
 	{
 		binary="modrep_osld/liblte_resource_mapper.so";	
-		mopts=11.22;
-		stage=17;
+		mopts=12;
 		variables=(
 			{name="direction";value=1;},{name="fft_size";value=128;},{name="lteslots_x_timeslot";value=2;});
 	};
@@ -171,8 +162,7 @@ modules:
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
-		mopts=60.22;
-		stage=18;
+		mopts=50;
 		variables=(
 			{name="soft";value=1;},{name="modulation";value=1;},{name="sigma2";value=0.1;});
 	};
@@ -180,8 +170,7 @@ modules:
 	unratematching:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
-		mopts=64.58;
-		stage=19;
+		mopts=65;
 		variables=(
 			{name="direction";value=1},{name="mcs";value=0},{name="nrb";value=4;},
 			{name="fft_size";value=128;},{name="cp_is_long";value=0;},{name="lteslots_x_timeslot";value=2;},
@@ -192,28 +181,60 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
-		mopts=266.7;
-		stage=20;
+		mopts=180;
 		variables=({name="direction";value=1},{name="padding";value=0;});
 	};
 
 	uncrc_tb:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=17.8;
-		stage=21;
+		mopts=5;
 		variables=({name="direction";value=1},{name="long_crc";value=16;});
 	};	
 	sink:
 	{
 		binary="modrep_default/libplp_sink.so";
-		mopts=15.7;
-		stage=22;
+		mopts=5;
 		variables=({name="is_complex";value=1},{name="mode";value=0});
 	};	
 	
 };
+/*
+join_stages=
+(
+	("source","crc_tb","coder","ratematching","modulator","resmapp","demux_tx"),
+	("ifft_0","cyclic_first_0"),
+	("ifft_1","cyclic_0"),
+	("ifft_2","cyclic_1"),
+	("ifft_3","cyclic_2"),
+	("ifft_4","cyclic_3"),
+	("ifft_5","cyclic_4"),
+	("ifft_6","cyclic_5"),
+	("ifft_7","cyclic_first_1"),
+	("ifft_8","cyclic_6"),
+	("ifft_9","cyclic_7"),
+	("ifft_10","cyclic_8"),
+	("ifft_11","cyclic_9"),
+	("ifft_12","cyclic_10"),
+	("ifft_13","cyclic_11"),
+	("remcyclic_first_0","fft_0"),
+	("remcyclic_0","fft_1"),
+	("remcyclic_1","fft_2"),
+	("remcyclic_2","fft_3"),
+	("remcyclic_3","fft_4"),
+	("remcyclic_4","fft_5"),
+	("remcyclic_5","fft_6"),
+	("remcyclic_first_1","fft_7"),
+	("remcyclic_6","fft_8"),
+	("remcyclic_7","fft_9"),
+	("remcyclic_8","fft_10"),
+	("remcyclic_9","fft_11"),
+	("remcyclic_10","fft_12"),
+	("remcyclic_11","fft_13"),
+	("mux_rx","resdemapp","demodulator","unratematching","decoder","uncrc_tb","sink")
 
+);
+*/
 interfaces:
 (
 	{src=("source",0);dest=("crc_tb",0)},
@@ -345,3 +366,4 @@ interfaces:
 	{src="decoder";dest="uncrc_tb"},	
 	{src="uncrc_tb";dest="sink"}
 );
+

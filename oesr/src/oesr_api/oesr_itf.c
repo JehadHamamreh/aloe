@@ -82,7 +82,7 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode,
 		/* is internal */
 		if (mode == ITF_WRITE) {
 			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(OESR_ITF_DEFAULT_MSG,
-					size);
+					size, nod_itf->delay);
 			if (!rtdal_itf) {
 				OESR_HWERROR("rtdal_itfspscq_new");
 				return NULL;

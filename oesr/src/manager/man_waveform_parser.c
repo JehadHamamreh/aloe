@@ -366,10 +366,7 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		return 0;
 	}
 	strcpy(mod->binary, tmp);
-	if (!config_setting_lookup_int(cfg, "stage", &mod->stage)) {
-		aerror_msg("stage field not found in module %s\n",mod->name);
-		return 0;
-	}
+
 	mopts = config_setting_get_member(cfg, "mopts");
 	if (config_setting_type(mopts) == CONFIG_TYPE_INT) {
 		for (i=0;i<w->nof_modes;i++) {
@@ -479,7 +476,69 @@ int realloc_interfaces(module_t *module) {
 	return 1;
 }
 
-/** \brief Fills the contents of the object w with the configuration of file w->model_file.
+int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
+
+	if (!maincfg) {
+		w->granularity_us = 0;
+		return 0;
+	}
+
+	if (!config_setting_lookup_int(maincfg, "waveform_granularity_us",
+			&w->granularity_us)) {
+		w->granularity_us = 0;
+	}
+
+	return 0;
+}
+
+int join_stages(waveform_t *w, config_setting_t *cfg) {
+	int i,j;
+	const char *name;
+	module_t *mod;
+	config_setting_t *stage;
+
+	if (!cfg) {
+		w->stages.x_len = 0;
+		return 0;
+	}
+
+	w->stages.x_len = config_setting_length(cfg);
+	if (!w->stages.x_len) {
+		w->stages.x_len= 0;
+		return 0;
+	}
+
+	if (!(w->stages.newmodules_matrix = pool_alloc(w->stages.x_len, sizeof(int*)))) {
+		return -1;
+	}
+	if (!(w->stages.y_len = pool_alloc(w->stages.x_len, sizeof(int)))) {
+		return -1;
+	}
+	for (i=0;i<w->stages.x_len;i++) {
+		if (!(stage = config_setting_get_elem(cfg, (unsigned int) i))) {
+			return -1;
+		}
+		if (!(w->stages.y_len[i] = config_setting_length(stage))) {
+			return -1;
+		}
+
+		if (!(w->stages.newmodules_matrix[i] = pool_alloc(w->stages.y_len[i],sizeof(int)))) {
+			return -1;
+		}
+		for (j=0;j<w->stages.y_len[i];j++) {
+			if (!(name = config_setting_get_string_elem(stage,(unsigned int) j))) {
+				return -1;
+			}
+			if (!(mod = waveform_find_module_name(w,(char*) name))) {
+				aerror_msg("Module %s not found in stage %d, position %d\n",name,i,j);
+			}
+			w->stages.newmodules_matrix[i][j] = mod->index;
+		}
+	}
+	return 0;
+}
+
+/** Fills the contents of the object w with the configuration of file w->model_file.
  * waveform_parse() allocates memory for modules, interfaces and variables as required by the model file.
  * It also generates the waveform resource model (c,b) and saves it in w->c and w->b.
  * This function uses LGPL libconfig library (http://www.hyperrealm.com/libconfig/).
@@ -489,7 +548,7 @@ int waveform_parse(waveform_t* w) {
 	/** @TODO: Use oesr_man error interface */
 	aassert(w);
 	int ret;
-	config_setting_t *modules, *modcfg, *interfaces, *itfcfg, *modes, *modecfg;
+	config_setting_t *modules, *modcfg, *interfaces, *itfcfg, *modes, *modecfg,*maincfg;
 	int nof_modules, nof_root_modules,nof_itfs,nof_modes;
 	int i,j,k;
 	int instances;
@@ -503,6 +562,12 @@ int waveform_parse(waveform_t* w) {
 				config_error_text(&config));
 		goto destroy;
 	}
+	maincfg = config_lookup(&config, "main");
+	if (waveform_main_config(w,maincfg)) {
+		aerror("Parsing section main\n");
+		goto destroy;
+	}
+
 	modes = config_lookup(&config, "modes");
 	if (!modes) {
 		pardebug("found %d mode\n",1);
@@ -576,9 +641,17 @@ int waveform_parse(waveform_t* w) {
 			}
 			mod->waveform = w;
 			mod->nof_modes = w->nof_modes;
+			mod->index = k;
 			k++;
 		}
 	}
+
+	/* join pipeline stages */
+	if (join_stages(w,config_lookup(&config, "join_stages"))) {
+		aerror("Parsing join_stages section\n");
+		goto destroy;
+	}
+
 	interfaces = config_lookup(&config, "interfaces");
 	if (!interfaces) {
 		aerror("Section interfaces not found\n");

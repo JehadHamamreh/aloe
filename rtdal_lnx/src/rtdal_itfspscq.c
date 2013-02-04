@@ -36,7 +36,6 @@ int rtdal_itfspscq_init(rtdal_itfspscq_t *itf) {
 	int i;
 
 	itf->parent.is_external = 0;
-	itf->parent.delay = 1;
 	itf->read = 0;
 	itf->write = 0;
 	itf->data = malloc(itf->max_msg*itf->max_msg_sz);
@@ -129,8 +128,7 @@ int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len, int tstamp) {
 		qdebug("[delay] read=%d, tstamp=%d\n",itf->read,itf->packets[itf->read].tstamp);
 		return 0;
 	}
-	if (itf->packets[itf->read].tstamp < tstamp) {
-		printf("[late-%d] read=%d tstamp=%d ara=%d\n",itf->parent.id,itf->read,itf->packets[itf->read].tstamp,tstamp);
+	if (itf->packets[itf->read].tstamp < tstamp && itf->parent.delay) {
 		rtdal_itfspscq_release(obj);
 	}
 

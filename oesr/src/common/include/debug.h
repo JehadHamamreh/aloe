@@ -17,7 +17,7 @@
  */
 
 
-//define DEBUG_TRACE
+//#define DEBUG_TRACE
 
 #ifdef DEBUG_TRACE
 #ifndef _DEBUG_TRACE
@@ -29,10 +29,23 @@ extern FILE *trace_buffer;
 #define debug_buffer stdout
 #endif
 
+#define OESR_API_GETTIME
+
 /* debug memory */
 #define DEBUG_POOL 0
 #define memdebug(_fmt, ...) \
 	do { if (DEBUG_POOL) fprintf(debug_buffer,"[debug-mempool]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+
+/* debug memory */
+#define DEBUG_MAPPING 0
+#define mapdebug(_fmt, ...) \
+	do { if (DEBUG_MAPPING) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
+
+/* debug execution time of modules (OESR_API_GETTIME) must be selected*/
+#define DEBUG_TIMEMOD 		0
+#define DEBUG_TIMEMOD_ID	-1
+#define tmdebug(_fmt, ...) \
+	do { if (DEBUG_TIMEMOD) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
 
 
 /* debug packet */

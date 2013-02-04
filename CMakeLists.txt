@@ -11,7 +11,14 @@ set (ALOE_VERSION_MINOR 2)
 
 set(MODULE_REPOS_NAME "default")
 
-set(CMAKE_C_FLAGS "-O2 -Wall -Winline -Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC")
+if(DEBUG)
+	message("-- Configuring debugging CFLAGS")
+	set(CFDEB "-O0 -g")
+else()
+	set(CFDEB "-O2")
+endif()
+
+set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC")
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)

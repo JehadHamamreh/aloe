@@ -22,8 +22,8 @@
 #include <skeleton.h>
 
 #include "gen_channel.h"
-#include "base/vector.h"
-#include "channel.h"
+/*#include "base/vector.h"
+*/#include "channel.h"
 
 pmid_t gain_re_id,gain_im_id,variance_id;
 
@@ -76,8 +76,10 @@ int work(void **inp, void **out) {
 		output = out[n];
 		rcv_samples = get_input_samples(0);
 		gen_noise_c(noise_vec,variance,rcv_samples);
+		/*
 		vec_sum_c(output,input,noise_vec,rcv_samples);
 		vec_mult_c(output,gain_c,rcv_samples);
+		*/
 	}
 	return rcv_samples;
 }

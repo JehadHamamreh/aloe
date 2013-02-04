@@ -21,7 +21,7 @@
 
 //#define KERNEL_DEB_TIME
 
-
+#define KERNEL_RT_PRIO sched_get_priority_max(SCHED_FIFO)
 
 #define ALOE_VERSION "ALOE++-0.2"
 #define ALOE_YEAR 2012
@@ -33,5 +33,12 @@
 void kernel_tslot_run();
 int rtdal_kernel_sigwait_thread();
 int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex);
+void kernel_cycle(void *x, struct timespec *time);
+void dac_cycle(void);
+void thread_signal_handler(int signum, siginfo_t *info, void *ctx);
+void kernel_exit();
+int parse_config(char *config_file);
+void sigwait_loop(void);
+int kernel_initialize_setup_signals();
 
 #endif

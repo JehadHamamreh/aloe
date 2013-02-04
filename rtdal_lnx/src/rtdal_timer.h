@@ -26,7 +26,7 @@
 #define TIMER_FUTEX_GUARD_SEC 	2
 #define KERNEL_OFFSET_USEC	30
 enum timer_mode {
-	NANOSLEEP, TIMERFD
+	NANOSLEEP, TIMERFD, XENOMAI
 };
 
 typedef struct
@@ -36,6 +36,7 @@ typedef struct
 	unsigned long long wakeups_missed;
 	struct itimerspec itval;
 	long int period;
+	int multiple;
 	int stop;
 	pthread_t *thread;
 	int *wait_futex;
@@ -44,6 +45,9 @@ typedef struct
 	enum timer_mode mode;
 } rtdal_timer_t;
 
+#ifdef __XENO__
+void *xenomai_timer_run_thread(rtdal_timer_t *obj);
+#endif
 void* nanoclock_timer_run_thread(rtdal_timer_t* x);
 void* timerfd_timer_run_thread(rtdal_timer_t* x);
 void *timer_run_thread(void *timer);

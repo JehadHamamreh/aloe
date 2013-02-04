@@ -203,7 +203,7 @@ int work(void **inp, void **out) {
 				if (float_UNRM_block(input_f,&output_f[i*out_len_block],in_len,
 						out_len_block,rvidx)) {
 					return -1;
-				}
+				}	
 			}
 
 		}

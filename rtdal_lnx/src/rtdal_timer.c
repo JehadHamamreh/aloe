@@ -32,6 +32,8 @@
 #include "rtdal.h"
 #include "futex.h"
 
+extern int timeslot;
+
 /***
  *
  * Timer api based on:
@@ -57,7 +59,7 @@ int timer_setup (rtdal_timer_t *info)
 	}
 
 	/* Create the timer */
-	fd = timerfd_create (CLOCK_MONOTONIC, 0);
+	fd = timerfd_create (CLOCK_REALTIME, 0);
 	if (fd == -1) {
 		perror("timerfd_create");
 		return -1;
@@ -117,6 +119,13 @@ void* timer_run_thread(void* x) {
 	}
 
 	switch(obj->mode) {
+	case XENOMAI:
+#ifdef __XENO__
+		return xenomai_timer_run_thread(obj);
+#else
+		aerror("Not compiled with xenomai support\n");
+		return NULL;
+#endif
 	case NANOSLEEP:
 		return nanoclock_timer_run_thread(obj);
 #ifdef EN_TIMERFD
@@ -182,7 +191,7 @@ void timespec_sub_us(struct timespec *t, long int us) {
 
 void* nanoclock_timer_run_thread(rtdal_timer_t* obj) {
 	int s;
-
+	int n;
 	assert(obj->period_function);
 
 	obj->stop = 0;
@@ -191,13 +200,19 @@ void* nanoclock_timer_run_thread(rtdal_timer_t* obj) {
 		obj->next.tv_sec+=TIMER_FUTEX_GUARD_SEC;
 		obj->next.tv_nsec=0;
 	} else {
-		clock_gettime(CLOCK_MONOTONIC, &obj->next);
+		clock_gettime(CLOCK_REALTIME, &obj->next);
 	}
+	n=0;
 	while(!obj->stop) {
 		timespec_add_us(&obj->next, obj->period);
-		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME,
+		clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME,
 				&obj->next, NULL);
-		obj->period_function(obj->arg, &obj->next);
+		
+		n++;
+		if (n>=obj->multiple) {
+			obj->period_function(obj->arg, &obj->next);
+			n=0;
+		}
 	}
 
 	s = 0;
@@ -205,4 +220,52 @@ void* nanoclock_timer_run_thread(rtdal_timer_t* obj) {
 	return NULL;
 }
 
-
+#ifdef __XENO__
+void *xenomai_timer_run_thread(rtdal_timer_t *obj) {
+	struct timespec period,start;
+	unsigned long overruns;
+	int s;
+	int n;
+	unsigned int tscnt=0;
+	struct timespec test;
+		
+	rtdal_task_print_sched();
+	
+	period.tv_sec=0;
+	period.tv_nsec=obj->period;
+	obj->stop = 0;
+	if (obj->wait_futex) {
+		futex_wait(obj->wait_futex);
+		obj->next.tv_sec+=3;
+		obj->next.tv_nsec=0;
+	} else {
+		clock_gettime(CLOCK_REALTIME, &obj->next);
+		obj->next.tv_sec++;
+	}
+	s=pthread_make_periodic_np(pthread_self(), &obj->next, &period);
+	if (s) {
+		printf("error %d\n",s);
+		return NULL;
+	}
+	printf("go!\n");
+	n=0;
+	while(!obj->stop) {
+		overruns=0;
+		if ((s=pthread_wait_np(&overruns))) {
+			if (s!=110)
+				printf("error2 %d\n",s);
+		}
+		if (overruns>0) {
+			printf("[%d] %d overrun\n",tscnt, overruns);
+		}
+		n++;
+		if (n>=obj->multiple) {
+			obj->period_function(obj->arg, &obj->next);
+			n=0;
+		}
+	}
+	s=0;
+	pthread_exit(&s);
+	return NULL;
+}
+#endif

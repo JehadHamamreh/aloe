@@ -44,6 +44,9 @@ void *_run_main(void *arg);
  * @{ */
 void rtdal_machine(rtdal_machine_t *machine);
 int rtdal_sleep(time_t *t);
+void rtdal_rtcontrol_enable(int enabled);
+void rtdal_timeslot_set(int ts_base_multiply);
+ 
 /**@} */
 
 
@@ -130,7 +133,7 @@ int rtdal_itfphysic_create(r_itf_t obj, string address);
 int rtdal_itfphysic_connect(r_itf_t obj);
 int rtdal_itfphysic_disconnect(r_itf_t obj);
 
-r_itf_t rtdal_itfspscq_new(int max_msg, int msg_sz);
+r_itf_t rtdal_itfspscq_new(int max_msg, int msg_sz, int delay);
 
 int rtdal_itf_remove(r_itf_t obj);
 int rtdal_itf_send(r_itf_t obj, void* buffer, int len);

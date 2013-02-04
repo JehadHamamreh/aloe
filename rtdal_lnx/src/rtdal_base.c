@@ -33,6 +33,11 @@
 static rtdal_context_t *context;
 extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
 
+/** Enables/Disables real-time control 
+*/
+void rtdal_rtcontrol_enable(int enabled) {
+	context->machine.rt_fault_opts = enabled?RT_FAULT_OPTS_HARD:0; 
+}
 
 
 /** Writes the machine structure into the buffer pointed by *machine
@@ -182,7 +187,7 @@ int rtdal_sleep(time_t *t) {
 	sleep.tv_sec = t->tv_sec;
 	sleep.tv_nsec = t->tv_usec*1000;
 
-	if (clock_nanosleep(CLOCK_MONOTONIC,0,&sleep,NULL)) {
+	if (clock_nanosleep(CLOCK_REALTIME,0,&sleep,NULL)) {
 		RTDAL_SYSERROR("clock_nanosleep");
 		return -1;
 	}
@@ -246,7 +251,7 @@ r_itf_t rtdal_itfphysic_get_id(int id) {
  * @param msg_sz Positive integer. Maximum message size
  * @return non-null value on success, zero on error
  */
-r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz) {
+r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz, int delay) {
 	hdebug("max_msg=%d,max_msg_sz=%d\n",max_msg,max_msg_sz);
 	assert(context);
 	RTDAL_ASSERT_PARAM_P(max_msg>=0);
@@ -266,7 +271,7 @@ r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz) {
 	hdebug("i=%d\n",i);
 	context->spscqs[i].max_msg = max_msg;
 	context->spscqs[i].max_msg_sz = max_msg_sz;
-
+	context->spscqs[i].parent.delay = delay;
 	context->spscqs[i].parent.id = i+1;
 
 	if (rtdal_itfspscq_init(&context->spscqs[i])) {

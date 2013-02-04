@@ -48,6 +48,8 @@ int waveform_serialize(waveform_t *src, packet_t *pkt, int loading_node_id,
 		tmp = (int) copy_data;
 		add_i(&tmp);
 		add_i(&src->id);
+		add_i(&src->granularity_us);
+
 		if (packet_add_data(pkt,src->name,STR_LEN)) return -1;
 
 		add_i(&src->nof_modes);

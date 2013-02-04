@@ -30,21 +30,29 @@
 #include "rtdal_time.h"
 #include "rtdal_kernel.h"
 #include "pipeline_sync.h"
+#include "defs.h"
+
+#define NSEC_DEB_LEN 120000
+struct timespec nsec_deb[NSEC_DEB_LEN];
+struct timespec nsec_deb2[NSEC_DEB_LEN];
+
 
 static int timer_first_cycle = 0;
 static int num_pipelines;
 static int is_first_in_cycle_count;
 
+extern int timeslot_p[MAX_PIPELINES];
 
 int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
 
 void pipeline_initialize(int _num_pipelines) {
 	hdebug("num_pipelines=%d\n",_num_pipelines);
 	num_pipelines = _num_pipelines;
-	pipeline_sync_initialize_;
+	pipeline_sync_initialize(num_pipelines);
 }
 
 inline void pipeline_sync_threads() {
+	hdebug("syncing\n",0);
 	pipeline_sync_threads_wake();
 }
 
@@ -104,7 +112,7 @@ inline static int is_first_in_cycle() {
 			& (num_pipelines - 1);
 }
 
-inline static void pipeline_run_time_slot(pipeline_t *obj) {
+inline static void pipeline_run_time_slot(pipeline_t *obj, struct timespec *time) {
 	int idx;
 	rtdal_process_t *run_proc;
 	hdebug("pipeid=%d, tslot=%d, nof_process=%d thread=%d\n",obj->id,obj->ts_counter,
@@ -116,6 +124,8 @@ inline static void pipeline_run_time_slot(pipeline_t *obj) {
 	run_proc = obj->first_process;
 	idx = 0;
 
+	if (!obj->id)
+		clock_gettime(CLOCK_REALTIME,&nsec_deb[obj->ts_counter]);
 	while(run_proc) {
 		hdebug("%d/%d: run=%d code=%d next=0x%x\n",idx,obj->nof_processes,run_proc->runnable,
 				run_proc->finish_code,run_proc->next);
@@ -130,15 +140,25 @@ inline static void pipeline_run_time_slot(pipeline_t *obj) {
 		run_proc = run_proc->next;
 		idx++;
 	}
+	if (!obj->id)
+		clock_gettime(CLOCK_REALTIME,&nsec_deb2[obj->ts_counter]);
 	obj->ts_counter++;
 	obj->finished = 1;
+	if (obj->ts_counter == NSEC_DEB_LEN) {
+		if (!obj->id) {
+		
+			for (idx=0;idx<NSEC_DEB_LEN;idx++) {
+				fprintf(stderr,"%d,%d\n",nsec_deb[idx].tv_nsec,nsec_deb2[idx].tv_nsec);
+				}
+		}
+		exit(0);
+	}
 }
 
 
 
 void pipeline_run_from_timer(void *arg, struct timespec *time) {
 	pipeline_t *obj = (pipeline_t*) arg;
-	struct timespec realtime;
 
 	hdebug("now is %d:%d\n",time->tv_sec,time->tv_nsec);
 
@@ -151,12 +171,7 @@ void pipeline_run_from_timer(void *arg, struct timespec *time) {
 		kernel_tslot_run();
 	}
 
-	pipeline_run_time_slot(obj);
-
-	if (DEBUG_TIME) {
-		clock_gettime(CLOCK_MONOTONIC,&realtime);
-		tdebug("%d,%d,%d,%d,%d\n",obj->id,time->tv_sec,time->tv_nsec,realtime.tv_sec,realtime.tv_nsec);
-	}
+	pipeline_run_time_slot(obj,time);
 }
 
 /**
@@ -174,7 +189,7 @@ void *pipeline_run_thread(void *self) {
 	pipeline_sync_thread_waits(obj->id);
 	hdebug("pipeid=%d start\n",obj->id);
 	while(!obj->stop) {
-		pipeline_run_time_slot(obj);
+		pipeline_run_time_slot(obj, NULL);
 		pipeline_sync_thread_waits(obj->id);
 	}
 	hdebug("pipeid=%d exiting\n",obj->id);
@@ -191,11 +206,12 @@ int pipeline_recover_thread(pipeline_t *obj) {
 		aerror("setting process error\n");
 		return -1;
 	}
+/*
 	if (kernel_initialize_create_pipeline(obj, NULL)) {
 		aerror("creating pipeline thread\n");
 		return -1;
 	}
-	return 0;
+*/	return 0;
 }
 
 /**  Called when there is an rtfault in the pipeline
@@ -204,12 +220,11 @@ int pipeline_rt_fault(pipeline_t *obj) {
 #ifdef KILL_RT_FAULT
 	hdebug("pipeline_id=%d, process_idx=%d\n",obj->id,obj->running_process_idx,obj->running_process_idx);
 	obj->finished = 1;
-	aerror_msg("RT-Fault detected at pipeline %d, process %d\n",obj->id,
+	aerror_msg("+++[ts=%d]+++ RT-Fault detected at pipeline %d, process %d\n",obj->ts_counter,obj->id,
 			obj->running_process_idx);
 	if (obj->thread) {
 		int s = pthread_kill(obj->thread,SIGUSR1);
 		if (s) {
-			rtdal_POSERROR(s, "pthread_kill");
 			return -1;
 		}
 	}
@@ -264,7 +279,7 @@ int pipeline_add(pipeline_t *obj, rtdal_process_t *process) {
 	/* middle */
 	i=0;
 	p = obj->first_process;
-	while(p->next && exec_pos < p->next->attributes.exec_position) {
+	while(p->next && exec_pos >= p->next->attributes.exec_position) {
 		p=p->next;
 		i++;
 	}

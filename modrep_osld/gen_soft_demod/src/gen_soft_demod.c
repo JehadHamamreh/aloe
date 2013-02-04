@@ -133,8 +133,7 @@ int work(void **inp, void **out) {
 	output = out[0];
 	rcv_samples = get_input_samples(0); /* number of input samples */
 	bits_per_symbol = get_bits_per_symbol(modulation);
-
-	if (soft == 0) { /* exact LLR */
+	if (soft == 0) {
 		switch (modulation) {
 			case BPSK:
 				llr_exact(input, output, rcv_samples, 2,
@@ -153,7 +152,7 @@ int work(void **inp, void **out) {
 				bits_per_symbol, tables.qam64, Sx.qam64, sigma2);
 				break;
 		}
-	} else { /* approx. LLR */
+	} else { 
 		switch (modulation) {
 			case BPSK:
 				llr_approx(input, output, rcv_samples, 2,

@@ -234,9 +234,9 @@ int work(void **inp, void **out) {
 	}
 
 	if (rcv_samples != get_input_samples(0)) {
-		moderror_msg("Received %d samples but expected %d (tslot_idx=%d, direction=%d)\n",
+/*		moderror_msg("Received %d samples but expected %d (tslot_idx=%d, direction=%d)\n",
 				get_input_samples(0),rcv_samples, tslot_idx,direction);
-		return 0;
+*/		return 0;
 	}
 
 	if (!direction) {

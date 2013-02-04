@@ -23,12 +23,15 @@ set(CMAKE_C_FLAGS "-Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC -rdynamic")
 set(CMAKE_SHARED_LINKER_FLAGS "-u _run_cycle")
 
 file(GLOB modules *) 
+set(GENLIBS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen_libs)
 
-
+add_subdirectory(gen_libs)
 foreach (_module ${modules})
 	if (IS_DIRECTORY ${_module})
 		if (NOT ${_module} STREQUAL ${CMAKE_BINARY_DIR})
-			add_subdirectory(${_module})
+			if (NOT ${_module} STREQUAL ${GENLIBS_INCLUDE_DIR})	
+				add_subdirectory(${_module})
+			endif()
 		endif()
 	endif()
 endforeach()

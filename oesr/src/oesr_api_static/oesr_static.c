@@ -29,6 +29,7 @@ int _call_init(void *module);
 int _call_stop(void *module);
 
 int _run_cycle(void* context) {
+	int i;
 	oesr_context_t *ctx = (oesr_context_t*) context;
 	nod_module_t *module = (nod_module_t*) ctx->module;
 	nod_waveform_t *waveform = (nod_waveform_t*) module->parent.waveform;
@@ -71,26 +72,34 @@ int _run_cycle(void* context) {
 	}
 
 	if (!module->changing_status && module->parent.status == RUN) {
+#ifdef OESR_API_GETTIME
 		/* save start time */
 		rtdal_time_get(&module->parent.execinfo.t_exec[1]);
-
+#endif
 
 		/* run aloe cycle */
-		if (Run(context)) {
-			sdebug("RUNERROR: module_id=%d\n",module->parent.id);
+		for (i=0;i<waveform->tslot_multiplicity;i++) {
+			if (Run(context)) {
+				sdebug("RUNERROR: module_id=%d\n",module->parent.id);
 
-			/* set run-time error code */
-			if (rtdal_process_seterror(module->process,RUNERROR)) {
-				aerror("rtdal_process_seterror");
+				/* set run-time error code */
+				if (rtdal_process_seterror(module->process,RUNERROR)) {
+					aerror("rtdal_process_seterror");
+				}
 			}
 		}
 		ctx->tstamp++;
+
 		/* save end time */
+#ifdef OESR_API_GETTIME
 		rtdal_time_get(&module->parent.execinfo.t_exec[2]);
 		rtdal_time_interval(module->parent.execinfo.t_exec);
 		nod_module_execinfo_add_sample(&module->parent.execinfo);
-		sdebug("module_id=%d exec_time=%d us\n",module->parent.id,
+		if (DEBUG_TIMEMOD_ID == module->parent.id || DEBUG_TIMEMOD_ID == -1) {
+			tmdebug("%d,%d\n",module->parent.id,
 				module->parent.execinfo.t_exec[0].tv_usec);
+		}
+#endif
 
 		/* compute execution time, exponential average, max, etc. and save data to mymodule.execinfo */
 #ifdef kk

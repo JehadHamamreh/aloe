@@ -45,6 +45,7 @@ typedef struct {
 	int nof_modules;
 	int id;
 	int finishing;
+	int tslot_multiplicity;
 	strdef(name);
 } nod_waveform_t;
 
