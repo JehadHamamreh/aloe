@@ -17,17 +17,27 @@
  */
 
 #include <stdio.h>
+#include <math.h>
+#include <string.h>
+
 #include <oesr.h>
 #include <params.h>
 #include <skeleton.h>
 
 #include "gen_channel.h"
-/*#include "base/vector.h"
-*/#include "channel.h"
+#include "base/vector.h"
+#include "channel.h"
 
-pmid_t gain_re_id,gain_im_id,variance_id;
+pmid_t scale_id,gain_re_id,gain_im_id,variance_id;
 
 input_t noise_vec[INPUT_MAX_SAMPLES];
+
+float snr_min,snr_max,snr_step, snr_current;
+int auto_mode,num_realizations,cnt_realizations;
+
+float get_variance(float snr_db,float scale) {
+	return sqrt(pow(10,-snr_db/10)*scale);
+}
 
 /**
  * @ingroup gen_channel
@@ -43,6 +53,18 @@ int initialize() {
 	gain_re_id = param_id("gain_re");
 	gain_im_id = param_id("gain_im");
 	variance_id = param_id("variance");
+	scale_id = param_id("noise_scale");
+
+	if (!param_get_float_name("snr_min",&snr_min)
+			&& !param_get_float_name("snr_max",&snr_max)
+			&& !param_get_float_name("snr_step",&snr_step)
+			&& !param_get_int_name("num_realizations",&num_realizations)) {
+		auto_mode=1;
+		snr_current=snr_min;
+		cnt_realizations=0;
+	} else {
+		auto_mode=0;
+	}
 
 	return 0;
 }
@@ -52,8 +74,12 @@ int work(void **inp, void **out) {
 	int n;
 	input_t *input;
 	output_t *output;
-	float gain_re,gain_im,variance;
+	float gain_re,gain_im,variance,scale;
 	_Complex float gain_c;
+
+	if (!get_input_samples(0)) {
+		return 0;
+	}
 
 	if (param_get_float(gain_re_id, &gain_re) != 1) {
 		moderror("Error getting parameter gain_re\n");
@@ -63,9 +89,26 @@ int work(void **inp, void **out) {
 		moderror("Error getting parameter gain_im\n");
 		return -1;
 	}
-	if (param_get_float(variance_id, &variance) != 1) {
-		moderror("Error getting parameter variance\n");
+	if (param_get_float(scale_id, &scale) != 1) {
+		moderror("Error getting parameter scale\n");
 		return -1;
+	}
+	if (!auto_mode) {
+		if (param_get_float(variance_id, &variance) != 1) {
+			moderror("Error getting parameter variance\n");
+			return -1;
+		}
+	} else if (auto_mode == 1) {
+		variance = get_variance(snr_current,scale);
+		cnt_realizations++;
+		if (cnt_realizations >= num_realizations) {
+			snr_current += snr_step;
+			cnt_realizations=0;
+		}
+		if (snr_current >= snr_max) {
+			auto_mode=2;
+			variance=0;
+		}
 	}
 
 	__real__ gain_c = gain_re;
@@ -75,11 +118,14 @@ int work(void **inp, void **out) {
 		input = inp[n];
 		output = out[n];
 		rcv_samples = get_input_samples(0);
-		gen_noise_c(noise_vec,variance,rcv_samples);
-		/*
-		vec_sum_c(output,input,noise_vec,rcv_samples);
+		if (variance != 0) {
+			gen_noise_c(noise_vec,variance,rcv_samples);
+			vec_sum_c(output,input,noise_vec,rcv_samples);
+		} else {
+			memcpy(output,input,rcv_samples*sizeof(input_t));
+		}
 		vec_mult_c(output,gain_c,rcv_samples);
-		*/
+
 	}
 	return rcv_samples;
 }

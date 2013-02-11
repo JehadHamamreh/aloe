@@ -3,7 +3,7 @@ rtdal:
 {
 	use_usrp=false; 	/* Set to true to send samples to the USRP (reception is unsupported) */
 							
-	timer_mode_single=true; /* If use_usrp=true and timer_mode_single=true, the clock source
+	timer_mode_single=false; /* If use_usrp=true and timer_mode_single=true, the clock source
 								is the GPP. If timer_mode_single=false, clock source is USRP.
 								For Ethernet USRP, use timer_mode_single=true, 
 								For USB USRP, use timer_mode_single=true
@@ -13,16 +13,16 @@ rtdal:
 							   	for best real-time control. 
 							 */
 	
-	time_slot_us=4000; 		/* time slot length, in microseconds
+	time_slot_us=5000; 		/* time slot length, in microseconds
 								IGNORED if use_usrp=true 
 							*/
-	cores="1";			/* Options: 
+	cores="1";				/* Options: 
 								- single value n uses 0..n cores
 								- comma-separated values, e.g. 0,3,5 uses cores 0, 3 and 5. 
 								- to use a single core, use 1, for instance, to use core 1
 							*/
 						
-	path_to_libs="/usr/local/lib";
+	path_to_libs="./lib";
 	
 };
 

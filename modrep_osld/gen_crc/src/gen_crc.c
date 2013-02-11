@@ -35,6 +35,7 @@ static unsigned int poly;
 int interval_ts;
 int tscnt;
 int total_errors, total_pkts;
+int print_nof_pkts,print_nof_pkts_cnt;
 
 /** @ingroup gen_crc gen_crc
  *
@@ -46,8 +47,14 @@ int total_errors, total_pkts;
 int initialize() {
 	int tslen;
 
-	if (param_get_int(param_id("direction"),&mode) != 1) {
+	if (param_get_int_name("direction",&mode)) {
 		mode = MODE_ADD;
+	}
+
+	if (param_get_int_name("print_nof_pkts",&print_nof_pkts)) {
+		print_nof_pkts = 0;
+	} else {
+		print_nof_pkts_cnt = 0;
 	}
 
 	long_crc_id = param_id("long_crc");
@@ -105,13 +112,24 @@ int work(void **inp, void **out) {
 				total_pkts++;
 				set_output_samples(i,get_input_samples(i)-long_crc);
 
-				tscnt++;
-				if (tscnt==interval_ts) {
-					tscnt=0;
-					#ifdef PRINT_BLER
-					printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
-							total_pkts,total_errors,(float)total_errors/total_pkts);
-					#endif
+				if (!print_nof_pkts) {
+					tscnt++;
+					if (tscnt==interval_ts) {
+						tscnt=0;
+						#ifdef PRINT_BLER
+						printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+								total_pkts,total_errors,(float)total_errors/total_pkts);
+						#endif
+					}
+				} else {
+					print_nof_pkts_cnt++;
+					if (print_nof_pkts_cnt == print_nof_pkts) {
+						print_nof_pkts_cnt=0;
+						printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+								total_pkts,total_errors,(float)total_errors/total_pkts);
+						total_pkts=0;
+						total_errors=0;
+					}
 				}
 
 			} else {

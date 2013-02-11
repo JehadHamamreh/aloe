@@ -103,9 +103,12 @@ modules:
 	channel:
 	{
 		binary="modrep_default/libgen_channel.so";
-		mopts=15;
+		mopts=1000;
 		variables=(
-			{name="variance";value=0.0},{name="gain_re";value=1.0},{name="gain_im";value=0.0}
+			{name="variance";value=0.0},{name="gain_re";value=1.0},{name="gain_im";value=0.0},
+		/*	{name="snr_min";value=3.0},{name="snr_max";value=9.0},{name="snr_step";value=0.1}, 
+			{name="num_realizations";value=10000},*/
+			{name="noise_scale";value=1.778}
 		);		
 	};
 	
@@ -189,7 +192,9 @@ modules:
 	{
 		binary="modrep_osld/libgen_crc.so";
 		mopts=5;
-		variables=({name="direction";value=1},{name="long_crc";value=16;});
+		variables=({name="direction";value=1},{name="long_crc";value=16;}
+				/*	,{name="print_nof_pkts";value=10000} */
+			); 
 	};	
 	sink:
 	{
@@ -199,7 +204,7 @@ modules:
 	};	
 	
 };
-/*
+
 join_stages=
 (
 	("source","crc_tb","coder","ratematching","modulator","resmapp","demux_tx"),
@@ -234,7 +239,7 @@ join_stages=
 	("mux_rx","resdemapp","demodulator","unratematching","decoder","uncrc_tb","sink")
 
 );
-*/
+
 interfaces:
 (
 	{src=("source",0);dest=("crc_tb",0)},

@@ -124,8 +124,6 @@ inline static void pipeline_run_time_slot(pipeline_t *obj, struct timespec *time
 	run_proc = obj->first_process;
 	idx = 0;
 
-	if (!obj->id)
-		clock_gettime(CLOCK_REALTIME,&nsec_deb[obj->ts_counter]);
 	while(run_proc) {
 		hdebug("%d/%d: run=%d code=%d next=0x%x\n",idx,obj->nof_processes,run_proc->runnable,
 				run_proc->finish_code,run_proc->next);
@@ -140,19 +138,9 @@ inline static void pipeline_run_time_slot(pipeline_t *obj, struct timespec *time
 		run_proc = run_proc->next;
 		idx++;
 	}
-	if (!obj->id)
-		clock_gettime(CLOCK_REALTIME,&nsec_deb2[obj->ts_counter]);
+
 	obj->ts_counter++;
 	obj->finished = 1;
-	if (obj->ts_counter == NSEC_DEB_LEN) {
-		if (!obj->id) {
-		
-			for (idx=0;idx<NSEC_DEB_LEN;idx++) {
-				fprintf(stderr,"%d,%d\n",nsec_deb[idx].tv_nsec,nsec_deb2[idx].tv_nsec);
-				}
-		}
-		exit(0);
-	}
 }
 
 
