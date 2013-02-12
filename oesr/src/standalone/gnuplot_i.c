@@ -441,7 +441,9 @@ void gnuplot_plot_x(
     /* Write data to this file  */
     for (i=0 ; i<n ; i++) {
 		sprintf(line, "%g\n", d[i]);
-		write(tmpfd, line, strlen(line));
+		if (write(tmpfd, line, strlen(line)) == -1) {
+			return;
+		}
     }
     close(tmpfd) ;
 
@@ -536,7 +538,9 @@ void gnuplot_plot_xy(
     /* Write data to this file  */
     for (i=0 ; i<n; i++) {
         sprintf(line, "%g %g\n", x[i], y[i]) ;
-		write(tmpfd, line, strlen(line));
+		if (write(tmpfd, line, strlen(line)) == -1) {
+			return;
+		}
     }
     close(tmpfd) ;
 

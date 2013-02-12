@@ -88,7 +88,7 @@ int oesr_log_write(log_t log, char *str) {
 	OESR_ASSERT_PARAM(log);
 	OESR_ASSERT_PARAM(str);
 	sdebug("log_id=%s, buffer_len=%d\n",l->id, strnlen(l->buffer,LSTR_LEN));
-	strncat(l->buffer,str,LSTR_LEN);
+	strncat(l->buffer,str,LSTR_LEN-1-strnlen(str,STR_LEN));
 	return 0;
 }
 

@@ -168,6 +168,7 @@ int main(int argc, char **argv)
 	for (i=0;i<nof_output_itf;i++) {
 		output_ptr[i] = &output_data[i*output_max_samples*output_sample_sz];
 	}
+	ret = 0;
 	clock_gettime(CLOCK_MONOTONIC,&tdata[1]);
 	for (i=0;i<run_times;i++) {
 		ret = work(input_ptr, output_ptr);

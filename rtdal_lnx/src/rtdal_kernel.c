@@ -208,7 +208,7 @@ static int kernel_initialize_create_pipelines() {
 }
 
 
-static int kernel_initialize_set_kernel_priority() {
+int kernel_initialize_set_kernel_priority() {
 	struct sched_param param;
 	cpu_set_t cpuset;
 

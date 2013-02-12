@@ -46,7 +46,10 @@ int rtdal_process_launch(rtdal_process_t *obj) {
 
 	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
 	snprintf(tmp2,LSTR_LEN,"cp %s/%s %s",libs_path,obj->attributes.binary_path,tmp);
-	system(tmp2);
+	if (system(tmp2) == -1) {
+		aerror("Error removing file\n");
+		return -1;
+	}
 
 	obj->dl_handle = dlopen(tmp,RTLD_NOW);
 	if (!obj->dl_handle) {
@@ -88,7 +91,10 @@ int rtdal_process_remove(r_proc_t process) {
 
 	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
 	snprintf(tmp2,LSTR_LEN,"rm %s",tmp);
-	system(tmp2);
+	if (system(tmp2) == -1) {
+		aerror("Error removing file\n");
+		return -1;
+	}
 
 	obj->pid = 0;
 

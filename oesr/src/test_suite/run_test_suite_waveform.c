@@ -74,7 +74,7 @@ void *_run_main(void *arg) {
 		aerror("parsing waveform\n");
 		return NULL;
 	}
-
+	c=0;
 	waveform_status_t new_status;
 	do {
 		fflush(stdout);
@@ -97,7 +97,10 @@ void *_run_main(void *arg) {
 			getchar();
 			print_modes(&waveform);
 			printf("\nEnter waveform mode (index): ");
-			scanf("%d",&mode);
+			if (scanf("%d",&mode) == -1) {
+				aerror("reading input\n");
+				break;
+			}
 			printf("\nSwitching to '%s'...\n",waveform.modes[mode].desc);
 			if (waveform_mode_set(&waveform,waveform.modes[mode].name)) {
 				aerror("setting waveform mode\n");

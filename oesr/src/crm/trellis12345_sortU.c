@@ -102,7 +102,7 @@ float tw_mapping(int (*ptr_nodes)[Mmax], int w)
 	// ... indices of the forward-tracking (w > 1)
 	int indx1_aux, indx2_aux, indx3_aux, indx4_aux;			// auxiliary indices
 	int indx1[Nmax], indx2[Nmax], indx3[Nmax], indx4[Nmax];	// indx1[j] (w > 1), indx2[j] (w > 2), indx3[j] (w > 3), indx4[j] (w > 4) point from t-node (j,M-w+1) to t-nodes at step (M-w+1) + 1, (M-w+1) + 2, (M-w+1) + 3, and (M-w+1) + 4
-	int i1, i2, i3, i4;
+	int i1=0, i2=0, i3=0, i4=0;
 	float cost_t = infinite;		// final mapping cost (infeasibility supposed)
 
 	// intitialization of processing requirements

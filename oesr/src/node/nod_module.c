@@ -252,7 +252,7 @@ variable_t* nod_module_variable_create(nod_module_t *module, string name) {
 	}
 
 	module->parent.variables[i].id = i+1;
-	strncat(module->parent.variables[i].name,name,STR_LEN);
+	strncat(module->parent.variables[i].name,name,STR_LEN-1-strnlen(name,STR_LEN));
 
 	return &module->parent.variables[i];
 }

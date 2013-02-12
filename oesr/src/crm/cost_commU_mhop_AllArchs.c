@@ -43,7 +43,7 @@ void update(float bx, float B_rem[], int indx1, int indx2);
 float cost_commU(float bx1, float bx2, float B_rem[], int indx1, int indx2)
 {
 	// local variables
-	int x, p, n, sel_path;		// path indices
+	int x, p, n, sel_path=0;		// path indices
 	int path_num = 0;			// number of paths
 	int num_hops[Nmax];			// number of hops per path
 	int path[Nmax][Nmax];				// characterizes the N possible 2-paths, e.g. path[2] = (1 2 3), indicates that path 3 is [P1 P2 P3], a 2-hop path from P1 to P3.

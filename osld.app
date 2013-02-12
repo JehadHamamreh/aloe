@@ -50,6 +50,13 @@ modules:
 		variables=({name="modulation";value=1;});
 	};
 
+	scrambling:
+	{
+		binary="modrep_osld/liblte_scrambling.so";	
+		mopts=11;
+		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=167});
+	};
+
 	resmapp:
 	{
 		binary="modrep_osld/liblte_resource_mapper.so";	
@@ -162,6 +169,13 @@ modules:
 			{name="direction";value=1;},{name="fft_size";value=128;},{name="lteslots_x_timeslot";value=2;});
 	};
 	
+	descrambling:
+	{
+		binary="modrep_osld/liblte_descrambling.so";	
+		mopts=11;
+		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=167});
+	};
+	
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
@@ -207,7 +221,7 @@ modules:
 
 join_stages=
 (
-	("source","crc_tb","coder","ratematching","modulator","resmapp","demux_tx"),
+	("source","crc_tb","coder","ratematching","modulator","scrambling","resmapp","demux_tx"),
 	("ifft_0","cyclic_first_0"),
 	("ifft_1","cyclic_0"),
 	("ifft_2","cyclic_1"),
@@ -236,7 +250,7 @@ join_stages=
 	("remcyclic_9","fft_11"),
 	("remcyclic_10","fft_12"),
 	("remcyclic_11","fft_13"),
-	("mux_rx","resdemapp","demodulator","unratematching","decoder","uncrc_tb","sink")
+	("mux_rx","resdemapp","descrambling","demodulator","unratematching","decoder","uncrc_tb","sink")
 
 );
 
@@ -245,7 +259,8 @@ interfaces:
 	{src=("source",0);dest=("crc_tb",0)},
 	{src="crc_tb";dest="coder"},
 	{src="coder";dest="ratematching"},
-	{src="ratematching";dest="modulator"},	
+	{src="ratematching";dest="scrambling"},	
+	{src="scrambling";dest="modulator"},	
 	{src="modulator";dest="resmapp"},	
 	{src="resmapp";dest="demux_tx"},
 	
@@ -365,7 +380,8 @@ interfaces:
 	{src="fft_13";dest=("mux_rx",13)},
 	
 	{src="mux_rx";dest="resdemapp"},	
-	{src="resdemapp";dest="demodulator"},	
+	{src="resdemapp";dest="descrambling"},	
+	{src="descrambling";dest="demodulator"},	
 	{src="demodulator";dest="unratematching"},	
 	{src="unratematching";dest="decoder"},	
 	{src="decoder";dest="uncrc_tb"},	

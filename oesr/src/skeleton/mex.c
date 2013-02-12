@@ -140,6 +140,7 @@ void format_input_vector(void *buffer, const mxArray *in, int len) {
 			mexErrMsgTxt("Module input is complex. Matlab signal must be complex too.\n");
 		}
 		in_real = mxGetPr(in);
+		in_imag = in_real;
 		if (mxIsComplex(in))
 			in_imag = mxGetPi(in);
 		for (i=0;i<len;i++) {
