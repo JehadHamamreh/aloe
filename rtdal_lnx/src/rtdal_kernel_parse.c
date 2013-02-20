@@ -10,7 +10,7 @@
 #ifdef HAVE_UHD
 #include "dac_cfg.h"
 #include "uhd.h"
-struct dac_cfg dac_cfg;
+extern struct dac_cfg dac_cfg;
 #endif
 
 char libs_path[255];
@@ -128,8 +128,8 @@ int parse_config(char *config_file) {
 		exit(0);
 	}
 
-	if (!config_setting_lookup_bool(rtdal, "use_usrp", &using_uhd)) {
-		aerror("use_usrp field not defined\n");
+	if (!config_setting_lookup_bool(rtdal, "enable_usrp", &using_uhd)) {
+		aerror("enable_usrp field not defined\n");
 		goto destroy;
 	}
 

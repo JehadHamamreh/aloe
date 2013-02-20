@@ -29,6 +29,11 @@
 #include "params.h"
 #include "gnuplot_i.h"
 
+#ifdef _ENABLE_MAT
+#include "mat.h"
+MATFile *mat_input, *mat_output;
+#endif
+
 extern const int input_sample_sz;
 extern const int output_sample_sz;
 extern const int nof_input_itf;
@@ -150,6 +155,10 @@ int main(int argc, char **argv)
 		printf("Error initializing\n");
 		exit(1); /* the reason for exiting should be printed out beforehand */
 	}
+
+#ifdef _ENABLE_MAT
+	mat_input = matOpen(mat_input_file,"r");
+#endif
 
 	if (generate_input_signal(input_data, input_lengths)) {
 		printf("Error generating input signal\n");

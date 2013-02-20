@@ -157,6 +157,7 @@ int rtdal_itf_get_delay(r_itf_t obj);
  */
 int rtdal_uhd_set_freq(float freq);
 int rtdal_uhd_set_block_len(int len);
+int rtdal_uhd_get_block_len();
 void *rtdal_uhd_buffer(int int_ch);
 /**@} */
 

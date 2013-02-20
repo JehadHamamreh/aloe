@@ -1,7 +1,7 @@
 
 rtdal:
 {
-	use_usrp=false; 	/* Set to true to send samples to the USRP (reception is unsupported) */
+	enable_usrp=false; 
 							
 	timer_mode_single=false; /* If use_usrp=true and timer_mode_single=true, the clock source
 								is the GPP. If timer_mode_single=false, clock source is USRP.
@@ -29,7 +29,7 @@ rtdal:
 dac:
 {
 	samp_freq=1777777;
-	block_size=960;
+	block_size=1920;
 	rx_freq=1000000000;
 	rx_gain=0;
 	chain_is_tx=true;

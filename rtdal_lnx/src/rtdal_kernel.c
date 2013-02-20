@@ -443,8 +443,15 @@ int rtdal_uhd_set_block_len(int len) {
 	dac_cfg.NsamplesOut = len;
 	return 0;
 }
-void *rtdal_uhd_buffer(int int_ch) {
-	return dac_cfg.dacoutbuff[0];
+int rtdal_uhd_get_block_len() {
+	return dac_cfg.NsamplesIn;
+}
+void *rtdal_uhd_buffer(int ch) {
+	if (ch) {
+		return dac_cfg.dacoutbuff[0];
+	} else {
+		return dac_cfg.dacinbuff[0];
+	}
 }
 
 
