@@ -24,7 +24,7 @@
 #define rtdal_itfspscq_MAX 	500
 #define rtdal_itfphysic_MAX 5
 #define rtdal_periodic_MAX 	10
-#define pipeline_MAX		5
+#define pipeline_MAX		30
 #define rtdal_dac_MAX		2
 #define dac_channel_MAX		2
 

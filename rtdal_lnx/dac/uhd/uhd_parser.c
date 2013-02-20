@@ -12,7 +12,6 @@ char filepath[200];
 int uhd_readcfg(struct dac_cfg *dac_cfg) {
 
 	strcat(main_cfg.clock,"internal");
-	strcat(main_cfg.clock,"not_used");
 	main_cfg.chain_is_tx = dac_cfg->chain_is_tx;
 
 	uhd_setcfg(&main_cfg,dac_cfg);
