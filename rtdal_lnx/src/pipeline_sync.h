@@ -24,7 +24,7 @@
 #include "futex.h"
 #include "objects_max.h"
 
-#define MAX_PIPELINES 20
+#define MAX_PIPELINES 30
 
 #define SEM 		1
 #define FUTEX 		2
