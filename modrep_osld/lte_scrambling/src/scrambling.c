@@ -25,8 +25,8 @@
 #define INCLUDE_DEFS_ONLY
 #include "scrambling.h"
 
-unsigned x1[MAX_x];
-unsigned x2[MAX_x][10];
+unsigned int x1[MAX_x];
+unsigned int x2[MAX_x][10];
 
 /**
  * @ingroup Transforms chars to unsiged integers
@@ -37,7 +37,7 @@ unsigned x2[MAX_x][10];
  * \param output Pointer t output sequence (1D array of unsighed integers)
  * \param N Number of input samples (# chars)
   */
-inline void char2int(char *input, unsigned *output, int N)
+inline void char2int(char *input, unsigned int *output, int N)
 {
 	int i, j, s;
 	int bits_per_int = 32;
@@ -67,7 +67,7 @@ inline void char2int(char *input, unsigned *output, int N)
  * \param N Number of input samples (# chars)
  * \param rem_bits Number of remaining chars (bits) after integer division by 32
   */
-inline void int2char(unsigned *input, char *output, int N, int rem_bits)
+inline void int2char(unsigned int *input, char *output, int N, int rem_bits)
 {
 	int i, j;
 	int bits_per_int = 32;
@@ -91,7 +91,7 @@ inline void int2char(unsigned *input, char *output, int N, int rem_bits)
  * generating the scrambling sequence c for all 10 subframes.
  * x1 is independent of the subframe index.
  */
-inline void compute_x1(void)
+void compute_x1(void)
 {
 	int i, j, s, d;
 
@@ -130,7 +130,7 @@ inline void compute_x1(void)
  *
  * \param c_init Pointer to inialization values of x2 for each subframe
  */
-inline void compute_x2(unsigned *c_init)
+void compute_x2(unsigned int *c_init)
 {
 	int i, j, s, n;
 
@@ -149,6 +149,12 @@ inline void compute_x2(unsigned *c_init)
 		s = 0;
 		x2[j][n] = 0;
 		for (i=0; i<MAX_x*32; i++) {
+			if (j<1 || j > MAX_x-1) {
+				printf("j=%d\n",j);
+			}
+			if (n<0 || n>9) {
+				printf("n=%d\n",n);
+			}
 			if (i == j*32) {
 				j++;
 				s = 0;
@@ -194,11 +200,11 @@ inline void compute_x2(unsigned *c_init)
  * \param c Scrambling sequences for all 10 subframes and maximum input sample length
  * \param params Parameters that initialize the scrambling sequeznce generator
  */
-inline void sequence_generation(unsigned (*c)[10], struct scrambling_params params)
+void sequence_generation(unsigned (*c)[10], struct scrambling_params params)
 {
 	int i, n;
 	int N_cell;
-	unsigned c_init[10];
+	unsigned int c_init[10];
 
 	/* compute the two m-sequences {x1} and {x2} */
 	compute_x1();

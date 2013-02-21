@@ -109,7 +109,7 @@ int work(void **inp, void **out) {
 	}
 #endif
 
-	//snd_samples = g->work(out[0],block_length);
+	snd_samples = g->work(out[0],block_length);
 	snd_samples = block_length;
 
 	return snd_samples;

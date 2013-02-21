@@ -359,6 +359,11 @@ int main(int argc, char **argv) {
 
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 
+	print_license();
+	if (getuid()) {
+		printf("Run as root to run in real-time mode\n\n");
+	}
+
 	if (argc!=3) {
 		printf("Usage: %s path_to_waveform_model config_file\n",argv[0]);
 		return -1;
@@ -391,11 +396,6 @@ int main(int argc, char **argv) {
 		param.sched_priority = rtdal.machine.kernel_prio;
 		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
 #endif
-	}
-
-	print_license();
-	if (getuid()) {
-		printf("Run as root to run in real-time mode\n\n");
 	}
 
 	printf("Time slot:\t%d us\nPlatform:\t%d cores\nTimer:\t\t%s\n\n", (int) timeslot_us,

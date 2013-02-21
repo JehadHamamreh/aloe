@@ -81,9 +81,11 @@ int check_configuration(void *ctx) {
 int init_interfaces(void *ctx) {
 	int i;
 
+	modinfo_msg("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
 	for (i=0;i<nof_input_itf;i++) {
 		if (inputs[i] == NULL) {
 			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
+			modinfo_msg("i=%d, input=%d\n",i,inputs[i]);
 			if (inputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 					return 0;
@@ -100,6 +102,7 @@ int init_interfaces(void *ctx) {
 	for (i=0;i<nof_output_itf;i++) {
 		if (outputs[i] == NULL) {
 			outputs[i] = oesr_itf_create(ctx, i, ITF_WRITE, output_max_samples*output_sample_sz);
+			modinfo_msg("output 0x%x\n",outputs[i]);
 			if (outputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTFOUND) {
 					modinfo_msg("Caution output port %d not connected,\n",i);
@@ -322,11 +325,11 @@ int Run(void *_ctx) {
 
 	memset(snd_len,0,sizeof(int)*nof_output_itf);
 
-#ifdef MOD_DEBUG
+#if MOD_DEBUG==1
 	oesr_counter_start(counter);
 #endif
 	n = work(input_ptr,output_ptr);
-#ifdef MOD_DEBUG
+#if MOD_DEBUG==1
 	oesr_counter_stop(counter);
 	moddebug("work exec time: %d us\n",oesr_counter_usec(counter));
 #endif

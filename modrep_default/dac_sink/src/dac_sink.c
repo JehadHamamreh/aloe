@@ -25,7 +25,7 @@
 #include "dac_sink.h"
 
 static float _Complex *buffer;
-pmid_t freq_id;
+pmid_t freq_id, gain_id;
 static float last_freq=0;
 static int last_rcv_samples = 0;
 
@@ -35,12 +35,13 @@ static int last_rcv_samples = 0;
  * \param freq_samp Sets DA converter sampling frequency
  */
 int initialize() {
-	buffer = rtdal_uhd_buffer(0);
+	buffer = rtdal_uhd_buffer(1);
 	freq_id = param_id("freq_samp");
 	if (!freq_id) {
 		moderror("Parameter freq_samp not found\n");
 		return -1;
 	}
+	gain_id = param_id("gain");
 	return 0;
 }
 
@@ -55,10 +56,21 @@ int work(void **inp, void **out) {
 	input_t *input;
 	int i,j;
 	float freq;
+	float gain;
+	float x=0;
 
 	if (param_get_float(freq_id,&freq) != 1) {
 		moderror("Getting parameter freq_samp\n");
 		return -1;
+	}
+
+	if (gain_id) {
+		if (param_get_float(gain_id,&gain) != 1) {
+			moderror("Getting parameter gain\n");
+			return -1;
+		}
+	} else {
+		gain = 1.0;
 	}
 
 #ifdef _COMPILE_ALOE
@@ -81,9 +93,16 @@ int work(void **inp, void **out) {
 #endif
 
 		rtdal_uhd_set_block_len(rcv_samples);
+		x=0;
 		for (j=0;j<rcv_samples;j++) {
-			buffer[j] = input[j]/9;
+			buffer[j] = gain*input[j];
+			x+=__real__ buffer[j];
 		}
+#ifdef _COMPILE_ALOE
+		if (!x) {
+			printf("zeros a ts=%d - %d\n",oesr_tstamp(ctx),rcv_samples);
+		}
+#endif
 	}
 	return 0;
 }

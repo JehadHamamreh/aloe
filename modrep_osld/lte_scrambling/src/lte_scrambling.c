@@ -97,7 +97,7 @@ int initialize() {
 
 	/* Generate scrambling sequence based on above parameter, assuming
 	 * that they do not change during runtime. */
-	sequence_generation(c, params);
+	//sequence_generation(c, params);
 
 	return 0;
 }

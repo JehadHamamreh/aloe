@@ -22,6 +22,7 @@
 #include <boost/thread/thread.hpp>
 #include <iostream>
 #include <complex>
+#include <cstdio>
 
 #include <signal.h>
 #include <semaphore.h>
@@ -128,7 +129,6 @@ void time_interval(struct timeval * tdata)
         tdata[0].tv_usec += 1000000;
     }
 }
-
 /***********************************************************************
  * Benchmark TX Rate
  **********************************************************************/
@@ -139,6 +139,7 @@ void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
     struct timeval t[3];
     double tx_rate=0;
     int nsamples,n;
+    int a=0;
 
     def_cfg = cfg;
 
@@ -152,9 +153,8 @@ void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
     md.time_spec = usrp->get_time_now() + uhd::time_spec_t(0.05);
     md.has_time_spec = false;
 
-//    std::vector<std::complex<float> *> buffs(usrp->get_tx_num_channels(), cfg->dacoutbuff[0]);
-    std::vector<void *> buffs;
-    buffs.push_back(cfg->dacoutbuff[0]); //only 1 channel is used
+    std::vector<std::complex<float> > buff(100000);
+    std::vector<std::complex<float> *> buffs(usrp->get_tx_num_channels(), &buff.front());
 
     while (not boost::this_thread::interruption_requested()) {
     	/* Poll if sampling frequency has changed */
@@ -163,19 +163,20 @@ void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
 			std::cout << "Setting TX Frequency to " << cfg->outputFreq << std::endl;
 			usrp->set_tx_rate(cfg->outputFreq);
 			tx_rate = cfg->outputFreq;
+			a++;
 		}
 
 	    sync_ts();
-	    /*
+
 	    if (cfg->NsamplesOut<buff.size()) {
 		    for (size_t n = 0; n < cfg->NsamplesOut; n++){
 				buff[n] = cfg->dacoutbuff[0][n];
-			}
+		    }
 	    } else {
 	    	std::cout << "Error trying to send too many samples: " << cfg->NsamplesOut << ". Buffer size is " << buff.size() << std::endl;
 	    	break;
 	    }
-	    */
+
 	    n = tx_stream->send(buffs, cfg->NsamplesOut, md);
 		num_tx_samps += n;
         md.has_time_spec = false;
@@ -295,6 +296,7 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
 			if (bw>0.0) {
 				usrp->set_tx_bandwidth(bw, chan);
 			}
+			printf("\nTX Chain: Freq=%g MHz\tBW=%g MHz\tGain=%g dB\n",freq/1000000,bw/1000000,gain);
 		}
 
 		double x=(double) cfg->NsamplesOut/cfg->outputFreq;

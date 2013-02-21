@@ -111,7 +111,7 @@ int work(void **inp, void **out) {
 	}
 #endif
 
-	snd_samples = generators[i].work(out,block_length);
+	snd_samples = generators[i].work(out[0],block_length);
 
 	return snd_samples;
 }

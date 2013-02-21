@@ -19,7 +19,7 @@
 
 /* Maximum number of integers containing the scrambling sequence bits */
 #define MAX_c			896 /* INPUT_MAX_SAMPLES/32 */
-#define MAX_x			946 /* (INPUT_MAX_SAMPLES+Nc_default)/32 */
+#define MAX_x			947 /* (INPUT_MAX_SAMPLES+Nc_default)/32 */
 
 /* Scrambling sequence generation parameters */
 #define Nc_default 		1600	/* fixed */

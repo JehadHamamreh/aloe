@@ -185,6 +185,13 @@ int parse_config(char *config_file) {
 		dac_cfg.tx_gain = tmp;
 		dac_cfg.rx_gain = tmp;
 
+		if (!config_setting_lookup_float(dac, "if_bw", &tmp)) {
+			aerror("rf_gain field not defined\n");
+			goto destroy;
+		}
+		dac_cfg.tx_bw = tmp;
+		dac_cfg.rx_bw = tmp;
+
 		if (!config_setting_lookup_int(dac, "block_size", &dac_cfg.NsamplesIn)) {
 			aerror("block_size field not defined\n");
 			goto destroy;

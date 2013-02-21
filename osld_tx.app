@@ -111,11 +111,11 @@ modules:
 	{
 		binary="modrep_default/libdac_sink.so";	
 		mopts=5;
-		variables=({name="freq_samp";value=1777777.7;});
+		variables=({name="gain";value=0.001},{name="mode";value=2},{name="is_complex";value=1},{name="freq_samp";value=1777777.7;});
 	};
 		
 };
-
+/*
 join_stages=
 (
 	("source","crc_tb","coder","ratematching","modulator","scrambling","resmapp","demux_tx"),
@@ -134,7 +134,7 @@ join_stages=
 	("ifft_12","cyclic_10"),
 	("ifft_13","cyclic_11")
 );
-
+*/
 interfaces:
 (
 	{src=("source",0);dest=("crc_tb",0)},

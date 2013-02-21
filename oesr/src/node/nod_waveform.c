@@ -321,6 +321,7 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 		if (nod_waveform_run(waveform,1)) {
 			return -1;
 		}
+/*
 		printf("Precaching data\n");
 		rtdal_timeslot_set(10);
 		waveform->status.next_timeslot = rtdal_time_slot();
@@ -343,6 +344,7 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 		for (i=0;i<waveform->nof_modules;i++) {
 			memset(&waveform->modules[i].parent.execinfo,0,sizeof(execinfo_t));
 		}
+		*/
 		break;
 	case STOP:
 		if (nod_waveform_run(waveform,0)) {

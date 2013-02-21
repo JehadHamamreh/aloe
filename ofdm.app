@@ -141,7 +141,7 @@ modules:
 		mopts=84;
 		stage=9;
 		variables=(
-			{name="direction";value=1;},
+			{name="direction";value=0;},
 			{name="mirror";value=1;},
 			{name="normalize";value=1;},
 			{name="dft_size";value=(
@@ -173,6 +173,7 @@ modules:
 		binary="modrep_default/libdac_sink.so";
 		mopts=5;
 		variables=(
+			{name="gain";value=0.006},
 			{name="mode";value=3},
 			{name="is_complex";value=1},
 			{name="freq_samp";value=(
