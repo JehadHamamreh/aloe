@@ -25,14 +25,14 @@
 #include <time.h>
 #include <assert.h>
 
+#include "rtdal_datafile.h"
+
 #include "skeleton.h"
 #include "params.h"
 #include "gnuplot_i.h"
 
-#ifdef _ENABLE_MAT
-#include "mat.h"
-MATFile *mat_input, *mat_output;
-#endif
+FILE *dat_input=NULL, *dat_output=NULL;
+char *dat_input_name=NULL, *dat_output_name=NULL;
 
 extern const int input_sample_sz;
 extern const int output_sample_sz;
@@ -76,17 +76,17 @@ inline int set_output_samples(int idx, int len) {
 }
 
 void allocate_memory() {
-	input_data = malloc(input_sample_sz*input_max_samples*nof_input_itf);
+	input_data = calloc(input_sample_sz,input_max_samples*nof_input_itf);
 	assert(input_data);
-	output_data = malloc(output_sample_sz*output_max_samples*nof_output_itf);
+	output_data = calloc(output_sample_sz,output_max_samples*nof_output_itf);
 	assert(output_data);
-	input_lengths = malloc(sizeof(int)*nof_input_itf);
+	input_lengths = calloc(sizeof(int),nof_input_itf);
 	assert(input_lengths);
-	output_lengths = malloc(sizeof(int)*nof_output_itf);
+	output_lengths = calloc(sizeof(int),nof_output_itf);
 	assert(output_lengths);
-	input_ptr = malloc(sizeof(void*)*nof_input_itf);
+	input_ptr = calloc(sizeof(void*),nof_input_itf);
 	assert(input_ptr);
-	output_ptr = malloc(sizeof(void*)*nof_output_itf);
+	output_ptr = calloc(sizeof(void*),nof_output_itf);
 	assert(output_ptr);
 }
 
@@ -156,18 +156,45 @@ int main(int argc, char **argv)
 		exit(1); /* the reason for exiting should be printed out beforehand */
 	}
 
-#ifdef _ENABLE_MAT
-	mat_input = matOpen(mat_input_file,"r");
-#endif
+	if (dat_input_name) {
+		dat_input = rtdal_datafile_open(dat_input_name, "r");
+		if (!dat_input) {
+			printf("Error opening mat file %s\n",dat_input_name);
+			exit(1);
+		}
+	}
+	if (dat_output_name) {
+		dat_output = rtdal_datafile_open(dat_output_name, "w");
+		if (!dat_output) {
+			printf("Error opening mat file %s\n",dat_output_name);
+			exit(1);
+		}
+	}
 
-	if (generate_input_signal(input_data, input_lengths)) {
-		printf("Error generating input signal\n");
-		exit(1);
+	if (dat_input) {
+		if (input_sample_sz == sizeof(float)) {
+			input_lengths[0] = rtdal_datafile_read_real(dat_input,
+					(float*) input_data,input_max_samples);
+		} else if (input_sample_sz == sizeof(_Complex float)) {
+			input_lengths[0] = rtdal_datafile_read_complex(dat_input,
+					(_Complex float*) input_data,input_max_samples);
+		} else {
+			printf("Only real and complex signals are supported\n");
+		}
+		if (input_lengths[0] == -1) {
+			printf("Error reading file %s\n",dat_input_name);
+			exit(1);
+		}
+	} else {
+		if (generate_input_signal(input_data, input_lengths)) {
+			printf("Error generating input signal\n");
+			exit(1);
+		}
 	}
 
 	for (i=0;i<nof_input_itf;i++) {
 		if (!input_lengths[i]) {
-			printf("Warning, input interface %d has zero length\n",i);
+			printf("Warning input interface %d has zero length\n",i);
 		}
 	}
 
@@ -200,9 +227,26 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (dat_output) {
+		if (output_sample_sz == sizeof(float)) {
+			rtdal_datafile_write_real(dat_output,
+					(float*) output_data,output_lengths[0]);
+		} else if (input_sample_sz == sizeof(_Complex float)){
+			rtdal_datafile_write_complex(dat_output,
+					(_Complex float*) output_data,output_lengths[0]);
+		} else {
+			printf("Only real and complex signals are supported\n");
+		}
+	}
 
 	printf("\nExecution time: %d ns.\n", (int) tdata[0].tv_nsec);
 	printf("FINISHED\n");
+
+	if (dat_output)
+		rtdal_datafile_close(dat_output);
+	if (dat_input)
+		rtdal_datafile_close(dat_input);
+
 
 	if (use_gnuplot) {
 		for (i=0;i<nof_input_itf;i++) {
@@ -280,7 +324,6 @@ int main(int argc, char **argv)
 		/* make sure we exit here */
 		exit(1);
 	}
-
 	free_memory();
 
 	return 0;
@@ -371,13 +414,22 @@ int parse_paramters(int argc, char**argv)
 
 	use_gnuplot = 0;
 
+	nof_params = argc-1;
 	for (i=1;i<argc;i++) {
 		if (!strcmp(argv[i],"-p")) {
 			use_gnuplot = 1;
+			nof_params--;
+		} else if (!strcmp(argv[i],"-i")) {
+			dat_input_name = argv[i+1];
+			i++;
+			nof_params-=2;
+		} else if (!strcmp(argv[i],"-o")) {
+			dat_output_name = argv[i+1];
+			i++;
+			nof_params-=2;
 		}
 	}
 
-	nof_params = argc-1-use_gnuplot;
 	if (!nof_params) {
 		return 0;
 	}
@@ -388,14 +440,13 @@ int parse_paramters(int argc, char**argv)
 		if (strcmp(argv[i],"-p")) {
 			key = argv[i];
 			value = index(argv[i],'=');
-			if (!value) {
-				printf("Invalid argument %s. Accepted format is key=value\n",argv[i]);
+			if (value) {
+				*value = '\0';
+				value++;
+				parameters[k].name = strdup(key);
+				parameters[k].value = strdup(value);
+				k++;
 			}
-			*value = '\0';
-			value++;
-			parameters[k].name = strdup(key);
-			parameters[k].value = strdup(value);
-			k++;
 		}
 	}
 	return 0;

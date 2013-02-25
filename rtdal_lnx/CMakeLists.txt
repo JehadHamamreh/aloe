@@ -46,14 +46,17 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dac/include")
 
 file(GLOB_RECURSE rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+list(APPEND rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/extern/rtdal_datafile.c")
 
 # runcf executable
 add_executable(runcf ${rtdal_SOURCES} ${DAC_SOURCES})
-set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI}")
+set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI} ${MATFILE_CFLAGS}")
 
 target_link_libraries (runcf "-Wl,--whole-archive" oesr)
 target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread rt ${LINK_DAC})
 target_link_libraries (runcf ${UHD_LIBRARIES})
+
+
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # install runcf

@@ -16,33 +16,45 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef rtdal_TYPES_H_
-#define rtdal_TYPES_H_
-
-#include <pthread.h>
-#include <sys/time.h>
-#define time_t struct timeval
-
-#include "str.h"
-
-struct h_proc_ {
-	int id;
-};
-typedef struct h_proc_* r_proc_t;
 
 
-struct h_itf_ {
-	int id;
-	int is_external;
-};
-typedef struct h_itf_* r_itf_t;
+/**
+ * @defgroup template gen_quantiz
+ *
+ * @{
+ */
+#ifndef DEFINE_H
+#define DEFINE_H
+
+typedef _Complex float input_t;
+typedef _Complex short output_t;
+
+#define OUTPUT_MAX_SAMPLES 	14*2048
+#define INPUT_MAX_SAMPLES 	14*2048
+
+#define NOF_INPUT_ITF		1
+#define NOF_OUTPUT_ITF		1
+
+#endif
+
+/**@} */
 
 
-struct h_dac_ {
-	int id;
-};
-typedef struct h_dac_* r_dac_t;
+/********* do not need to modify beyond here */
 
-typedef pthread_t r_task_t;
+
+#ifndef INCLUDE_DEFS_ONLY
+
+/* Input and output buffer sizes (in number of samples) */
+const int input_max_samples = INPUT_MAX_SAMPLES;
+const int output_max_samples = OUTPUT_MAX_SAMPLES;
+
+/* leave these two lines unmodified */
+const int input_sample_sz = sizeof(input_t);
+const int output_sample_sz = sizeof(output_t);
+
+/* Number of I/O interfaces. All have the same maximum size */
+const int nof_input_itf = NOF_INPUT_ITF;
+const int nof_output_itf = NOF_OUTPUT_ITF;
 
 #endif

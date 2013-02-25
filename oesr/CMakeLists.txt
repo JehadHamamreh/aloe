@@ -57,6 +57,7 @@ set(mex_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/mex.c)
 
 # standalone sources
 file(GLOB_RECURSE standalone_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/standalone/*.c")
+list(APPEND standalone_SOURCES ${ALOE++_SOURCE_DIR}/rtdal_lnx/extern/rtdal_datafile.c)
 
 #crm library
 add_library(crm ${crm_SOURCES})
@@ -77,12 +78,6 @@ set_target_properties(skeleton PROPERTIES COMPILE_FLAGS "-D_COMPILE_ALOE")
 # standalone library
 add_library(standalone ${standalone_SOURCES} ${params_SOURCES})
 set_target_properties(standalone PROPERTIES COMPILE_FLAGS "-D_COMPILE_STANDALONE")
-if(NOT $ENV{MATLAB_ROOT} STREQUAL "") 
-	set_target_properties(standalone PROPERTIES COMPILE_FLAGS "-D_ENABLE_MAT -I$ENV{MATLAB_ROOT}")
-endif()
-if(NOT $ENV{OCTAVE_INCLUDE} STREQUAL "") 
-	set_target_properties(standalone PROPERTIES COMPILE_FLAGS "-D_ENABLE_MAT -I$ENV{OCTAVE_INCLUDE}")
-endif()
 
 set(install_mex "")
 if(NOT $ENV{OCTAVE_INCLUDE} STREQUAL "") 

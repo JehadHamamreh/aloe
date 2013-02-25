@@ -13,7 +13,7 @@ rtdal:
 							   	for best real-time control. 
 							 */
 	
-	time_slot_us=4000; 		/* time slot length, in microseconds
+	time_slot_us=100000; 		/* time slot length, in microseconds
 								IGNORED if use_usrp=true 
 							*/
 	cores="3,5,7";				/* Options: 
@@ -34,4 +34,5 @@ dac:
 	rf_gain=0.0;
 	if_bw=8000000.0
 	chain_is_tx=true;
+	sample_is_short=true; // default is false and samples are complex float 
 };

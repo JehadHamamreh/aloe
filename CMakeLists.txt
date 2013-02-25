@@ -18,10 +18,12 @@ else()
 	set(CFDEB "-O2")
 endif()
 
-set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC")
+set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-format -std=c99 -D_GNU_SOURCE -fPIC")
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)
+set(RTDAL_INCLUDE "")
+list(APPEND RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)
+list(APPEND RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/extern)
 set(OESR_INCLUDE ${CMAKE_SOURCE_DIR}/oesr/include)
 
 add_subdirectory(oesr)

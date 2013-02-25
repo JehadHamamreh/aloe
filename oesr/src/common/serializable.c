@@ -233,7 +233,6 @@ int module_unserializeTo(packet_t *pkt, module_t *dest, enum variable_serialize_
 		return -1;
 	}
 	for (i=0;i<dest->nof_variables;i++) {
-		if (variable_alloc(&dest->variables[i],dest->nof_modes)) return -1;
 		if (variable_unserializeTo(pkt,&dest->variables[i],copy_data,dest->nof_modes)) return -1;
 	}
 	for (i=0;i<dest->nof_inputs;i++) {
@@ -300,8 +299,13 @@ int variable_unserializeTo(packet_t *pkt, variable_t *dest,
 	get_i(&dest->size);
 	get_i(&dest->type);
 
+	dest->nof_modes = nof_modes;
+
 	switch(copy_data) {
 	case CP_INIT:
+		if (variable_alloc(dest,dest->nof_modes))
+			return -1;
+
 		if (packet_get_data(pkt,dest->name,STR_LEN)) return -1;
 		serdebug("var_id=%d, size=%d, type=%d, name=%s\n",dest->id,dest->size,dest->type,dest->name);
 		for (i=0;i<nof_modes;i++) {
@@ -309,6 +313,10 @@ int variable_unserializeTo(packet_t *pkt, variable_t *dest,
 		}
 		break;
 	case CP_VALUE:
+		if (!dest->cur_value) {
+			aerror("fatal error. Variable not initialized\n");
+			return -1;
+		}
 		if (packet_get_data(pkt,dest->cur_value,dest->size)) return -1;
 		break;
 	case NONE:

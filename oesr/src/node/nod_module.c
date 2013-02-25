@@ -24,7 +24,7 @@
 #include "oesr_context.h"
 
 
-/** \brief Allocates memory for the oesr context structure of a nod_module_t
+/**  Allocates memory for the oesr context structure of a nod_module_t
  *
  */
 int nod_module_alloc(nod_module_t *module) {
@@ -43,16 +43,15 @@ int nod_module_alloc(nod_module_t *module) {
 	return 0;
 }
 
-/** \brief Deallocates the oesr structure memory allocated using nod_module_alloc()
+/**  Deallocates the oesr structure memory allocated using nod_module_alloc()
  *
  */
 int nod_module_free(nod_module_t *module) {
 	ndebug("module_id=%d, addr=0x%x, context=0x%x\n",module->parent.id,module,module->context);
 	aassert(module);
 
-	module->context = pool_alloc(1,oesr_sizeof());
-	if (!module->context) {
-		return -1;
+	if (module->context) {
+		pool_free(module->context);
 	}
 	module->context = NULL;
 	return 0;
@@ -60,7 +59,7 @@ int nod_module_free(nod_module_t *module) {
 
 
 /**
- * \brief This function is called by the rtdal when a module finishes the execution. It is always
+ *  This function is called by the rtdal when a module finishes the execution. It is always
  * called from a non-priority task, therefore there are no time constraints.
  *
  * If process.finishCode!=ProcessErrorCode.OK, an excepcional error occurred.
@@ -101,7 +100,7 @@ void *nod_module_finish_callback(void *context) {
 	return NULL;
 }
 
-/** \brief nod_module_load() initializes the module's oesr context and then uses the rtdal
+/**  nod_module_load() initializes the module's oesr context and then uses the rtdal
  * to create a new process that will run the module functions. The oesr context pointer is passed
  * as a parameter to the rtdal_process_new(). This pointer will be passed to the module entry point
  * functions.
@@ -128,13 +127,14 @@ int nod_module_load(nod_module_t *module) {
 
 	module->process = rtdal_process_new(&attr, module->context);
 	if (module->process == NULL) {
+		aerror_msg("Error loading module %s\n",module->parent.name);
 		rtdal_perror("rtdal_process_new");
 		return -1;
 	}
 	return 0;
 }
 
-/** \brief Sets the module's process as runnable
+/**  Sets the module's process as runnable
  *
  */
 int nod_module_run(nod_module_t *module, int runnable) {
@@ -155,7 +155,7 @@ int nod_module_run(nod_module_t *module, int runnable) {
 }
 
 
-/** \brief Removes the module's from the rtdal pipeline. Calls module_free() to dealloc
+/**  Removes the module's from the rtdal pipeline. Calls module_free() to dealloc
  * the interfaces/variables memory and then nod_module_free() to dealloc the oesr context memory.
  * Sets the id to zero before finishing.
  */
@@ -228,7 +228,7 @@ variable_t* nod_module_variable_get(nod_module_t *module, string name) {
 	return &module->parent.variables[i];
 }
 
-/** \brief Returns a pointer to the first empty variable in the module structure. Fills
+/** Returns a pointer to the first empty variable in the module structure. Fills
  * the variable name with the second parameter string and sets the variable id to a non-zero integer.
  */
 variable_t* nod_module_variable_create(nod_module_t *module, string name) {

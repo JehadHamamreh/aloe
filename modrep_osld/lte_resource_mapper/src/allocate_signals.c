@@ -32,11 +32,11 @@ int allocateDataOneUser (char *OFDMgrid, int fftSize,\
 				gridSlot[i*fftSize+j]=  *(in+s);
 				s++;
 			} else if (OFDMgrid[i*fftSize+j] == 'B') {
-				gridSlot[i*fftSize+j] = rand()/RAND_MAX;//1.0+_Complex_I*1.0;
+				gridSlot[i*fftSize+j] = rand()/RAND_MAX;
 			}else if (OFDMgrid[i*fftSize+j] == 'C') {
-				gridSlot[i*fftSize+j] = rand()/RAND_MAX;//1.0+_Complex_I*1.0;
+				gridSlot[i*fftSize+j] = rand()/RAND_MAX;
 			}else if (OFDMgrid[i*fftSize+j] == 'F') {
-				gridSlot[i*fftSize+j] = rand()/RAND_MAX;//1.0+_Complex_I*1.0;
+				gridSlot[i*fftSize+j] = rand()/RAND_MAX;
 			}
 
 		}

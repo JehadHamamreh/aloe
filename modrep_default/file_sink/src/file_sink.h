@@ -19,7 +19,7 @@
 
 
 /**
- * @defgroup dac_sink dac_sink
+ * @defgroup file_sink file_sink
  * This module sends through each DA converter channel the samples received from each input interface
  *
  * Supported converter types:
@@ -33,7 +33,7 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef _Complex float input_t;
+typedef char input_t;
 
 #define OUTPUT_MAX_SAMPLES 	0
 #define INPUT_MAX_SAMPLES 	14*2048

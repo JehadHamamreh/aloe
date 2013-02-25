@@ -20,11 +20,10 @@
 #include <string.h>
 #include "params.h"
 
-/**\brief Stores in the address of the second parameter the scalar integer value of the
+/** Stores in the address of the second parameter the scalar integer value of the
  * parameter name.
  * Tries to parse the parameter as an integer. Read param_addr() for supported formats.
- * \returns 1 on success. If if the parameter format is not integer returns 0. If the
- * parameter is not found or there is any other error returns -1.
+ * \returns 0 on success or -1 on error.
  */
 int param_get_int_name(char *name, int *value) {
 	pmid_t id = param_id(name);
@@ -34,11 +33,10 @@ int param_get_int_name(char *name, int *value) {
 	return (param_get_int(id,value)==-1)?-1:0;
 }
 
-/**\brief Stores in the address of the second parameter the scalar float value of the
+/** Stores in the address of the second parameter the scalar float value of the
  * parameter name.
  * Tries to parse the parameter as an float. Read param_addr() for supported formats.
- * \returns 1 on success. If if the parameter format is not float returns -1. If the
- * parameter is not found returns 0.
+ * \returns 0 on success or -1 on error.
  */
 int param_get_float_name(char *name, float *value) {
 	pmid_t id = param_id(name);
@@ -48,7 +46,7 @@ int param_get_float_name(char *name, float *value) {
 	return (param_get_float(id,value)==-1)?-1:0;
 }
 
-/**\brief see param_id() */
+/** see param_id() */
 int param_get_int(pmid_t id, int *value) {
 	param_type_t type;
 	int size;
@@ -70,7 +68,7 @@ int param_get_int(pmid_t id, int *value) {
 	return 1;
 }
 
-/**\brief see param_id() */
+/** see param_id() */
 int param_get_float(pmid_t id, float *value) {
 	param_type_t type;
 	int size;

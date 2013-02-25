@@ -2,15 +2,9 @@
 #define DAC_BUFFER_SZ		(16*1024)
 #define DAC_FILENAME_LEN		128
 
-/* Real signals */
 #define DAC_SAMPLE_INT16			1
 #define DAC_SAMPLE_INT32			2
-#define DAC_SAMPLE_FLOAT			3
-
-/** Complex signals, in C99, use _Complex type */
-#define DAC_SAMPLE_COMPLEXINT16		4
-#define DAC_SAMPLE_COMPLEXINT32		5
-#define DAC_SAMPLE_COMPLEXFLOAT		6
+#define DAC_SAMPLE_FLOAT			0
 
 
 #ifdef __cplusplus
@@ -30,8 +24,8 @@ extern "C" struct dac_cfg {
 	int chain_is_tx;
 	int NsamplesIn;
 	int NsamplesOut;
-	_Complex float dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
-	_Complex float dacoutbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
+	char dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
+	char dacoutbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
 };
 
 #else
@@ -53,8 +47,8 @@ struct dac_cfg {
 	int chain_is_tx;
 	int NsamplesIn;
 	int NsamplesOut;
-	_Complex float dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
-	_Complex float dacoutbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
+	char dacinbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
+	char dacoutbuff[DAC_NOF_CHANNELS][DAC_BUFFER_SZ];
 };
 
 #endif

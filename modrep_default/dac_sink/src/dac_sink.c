@@ -21,13 +21,18 @@
 #include <rtdal.h>
 #include <params.h>
 #include <skeleton.h>
-
+#include <complex.h>
 #include "dac_sink.h"
 
-static float _Complex *buffer;
+extern int input_sample_sz;
+
+static int sample_is_short;
+static void *buffer;
 pmid_t freq_id, gain_id;
 static float last_freq=0;
 static int last_rcv_samples = 0;
+float max=-9999;
+float min=9999;
 
 /**
  * @ingroup dac_sink
@@ -42,6 +47,15 @@ int initialize() {
 		return -1;
 	}
 	gain_id = param_id("gain");
+
+	sample_is_short=0;
+	param_get_int_name("sample_is_short",&sample_is_short);
+
+	if (sample_is_short) {
+		input_sample_sz = sizeof(_Complex short);
+	} else {
+		input_sample_sz = sizeof(_Complex float);
+	}
 	return 0;
 }
 
@@ -53,11 +67,14 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int rcv_samples;
-	input_t *input;
+	_Complex float *input_f;
+	_Complex short *input_s;
 	int i,j;
 	float freq;
 	float gain;
 	float x=0;
+	_Complex float *buffer_f = buffer;
+	_Complex short *buffer_s = buffer;
 
 	if (param_get_float(freq_id,&freq) != 1) {
 		moderror("Getting parameter freq_samp\n");
@@ -83,8 +100,11 @@ int work(void **inp, void **out) {
 	rtdal_uhd_set_freq(freq);
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
-		input = inp[i];
+		input_s = inp[i];
+		input_f = inp[i];
+
 		rcv_samples = get_input_samples(i);
+
 #ifdef _COMPILE_ALOE
 		if (rcv_samples != last_rcv_samples) {
 			last_rcv_samples = rcv_samples;
@@ -95,15 +115,20 @@ int work(void **inp, void **out) {
 		rtdal_uhd_set_block_len(rcv_samples);
 		x=0;
 		for (j=0;j<rcv_samples;j++) {
-			buffer[j] = gain*input[j];
-			x+=__real__ buffer[j];
+			if (sample_is_short) {
+				buffer_s[j] = gain*input_s[j];
+			} else {
+				buffer_f[j] = gain*input_f[j];
+			}
 		}
+
 #ifdef _COMPILE_ALOE
 		if (!x) {
 			printf("zeros a ts=%d - %d\n",oesr_tstamp(ctx),rcv_samples);
 		}
 #endif
 	}
+
 	return 0;
 }
 

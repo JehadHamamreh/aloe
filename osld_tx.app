@@ -107,11 +107,23 @@ modules:
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
 
+	quant:
+	{
+		binary="modrep_default/libgen_quantiz.so";	
+		mopts=11;
+		variables=({name="scale";value=2.5;},{name="amplitude";value=1000;});
+	};
+
 	dac_tx:
 	{
 		binary="modrep_default/libdac_sink.so";	
 		mopts=5;
-		variables=({name="gain";value=0.001},{name="mode";value=2},{name="is_complex";value=1},{name="freq_samp";value=1777777.7;});
+		variables=(
+		{name="data_type";value=2},
+		{name="sample_is_short";value=1},
+		{name="file_name";value="/home/ismael/test.txt"},
+		{name="gain";value=1.0},{name="mode";value=2},
+		{name="is_complex";value=1},{name="freq_samp";value=1777777.7;});
 	};
 		
 };
@@ -201,6 +213,7 @@ interfaces:
 	{src="ifft_13";dest="cyclic_11"},
 	{src="cyclic_11";dest=("mux_tx",13)},
 	
-	{src="mux_tx";dest="dac_tx"}
+	{src="mux_tx";dest="quant"},
+	{src="quant";dest="dac_tx"}
 );
 

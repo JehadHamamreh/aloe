@@ -77,7 +77,7 @@ int module_alloc(module_t *module, int nof_inputs, int nof_outputs, int nof_vari
 	return 0;
 }
 
-/** \brief De-allocates the interface/variables memory allocated using module_alloc
+/**  De-allocates the interface/variables memory allocated using module_alloc
  *
  */
 int module_free(module_t *module) {
@@ -107,7 +107,7 @@ int module_free(module_t *module) {
 	return 0;
 }
 
-/** \brief Allocates memory for modules in a waveform. Does NOT call module_alloc() individually.
+/**  Allocates memory for modules in a waveform. Does NOT call module_alloc() individually.
  * \param nof_modules Number of modules that will be allocated
  */
 int waveform_alloc(waveform_t *waveform, int nof_modules) {
@@ -120,7 +120,7 @@ int waveform_alloc(waveform_t *waveform, int nof_modules) {
 	return 0;
 }
 
-/** \brief De-allocates the memory allocated using waveform_alloc(). Does NOT call module_free()
+/**  De-allocates the memory allocated using waveform_alloc(). Does NOT call module_free()
  * individually for each module
  */
 int waveform_free(waveform_t *waveform){
@@ -134,7 +134,7 @@ int waveform_free(waveform_t *waveform){
 	return 0;
 }
 
-/** \brief Allocates memory for nof_modes initialization values in a variable. For each mode,
+/**  Allocates memory for nof_modes initialization values in a variable. For each mode,
  * allocates variable->size bytes
  *
  */
@@ -153,7 +153,7 @@ int variable_alloc(variable_t *variable, int nof_modes) {
 	return 0;
 }
 
-/** \brief Deallocates the memory of a variable allocated using variable_alloc()
+/**  Deallocates the memory of a variable allocated using variable_alloc()
  *
  */
 int variable_free(variable_t *variable) {

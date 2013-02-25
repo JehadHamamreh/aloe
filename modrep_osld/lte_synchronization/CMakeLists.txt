@@ -3,11 +3,11 @@
 
 #include fftw3 directories
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDE_DIRS})
+find_package(FFTWS REQUIRED)
+include_directories(${FFTWS_INCLUDE_DIRS})
 
 # set-up the program libraries here
-set(LIBRARIES m rt ${FFTW_LIBRARIES})
+set(LIBRARIES m rt ${FFTWS_LIBRARIES})
 
 # set-up program includes here
 include_directories(/usr/local/include/)

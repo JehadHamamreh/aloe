@@ -122,6 +122,7 @@ int rtdal_file_open(string name);
 int rtdal_file_close(int fd);
 int rtdal_file_write(int fd, void* buf, int size);
 int rtdal_file_read(int fd, void* buf, int size);
+
 /**@} */
 
 /**@defgroup itf Interfaces functions

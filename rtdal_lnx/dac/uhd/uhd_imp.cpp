@@ -153,8 +153,8 @@ void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
     md.time_spec = usrp->get_time_now() + uhd::time_spec_t(0.05);
     md.has_time_spec = false;
 
-    std::vector<std::complex<float> > buff(100000);
-    std::vector<std::complex<float> *> buffs(usrp->get_tx_num_channels(), &buff.front());
+    std::vector<void *> buffs;
+    buffs.push_back(cfg->dacoutbuff[0]); //only 1 channel is used
 
     while (not boost::this_thread::interruption_requested()) {
     	/* Poll if sampling frequency has changed */
@@ -167,18 +167,16 @@ void tx_thread(uhd::usrp::multi_usrp::sptr usrp,
 		}
 
 	    sync_ts();
-
-	    if (cfg->NsamplesOut<buff.size()) {
-		    for (size_t n = 0; n < cfg->NsamplesOut; n++){
-				buff[n] = cfg->dacoutbuff[0][n];
-		    }
-	    } else {
-	    	std::cout << "Error trying to send too many samples: " << cfg->NsamplesOut << ". Buffer size is " << buff.size() << std::endl;
-	    	break;
-	    }
-
-	    n = tx_stream->send(buffs, cfg->NsamplesOut, md);
-		num_tx_samps += n;
+/*
+		for (size_t n = 0; n < cfg->NsamplesOut; n++) {
+			if (cfg->sampleType) {
+				buff_s[n] = dacbuff_s[n];
+			} else {
+				buff_f[n] = dacbuff_f[n];
+			}
+		}
+*/
+		tx_stream->send(buffs, cfg->NsamplesOut, md);
         md.has_time_spec = false;
     }
 
@@ -244,9 +242,14 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
     std::string rx_cpu, tx_cpu;
     rx_otw="sc16";
 	tx_otw="sc16";
-	rx_cpu="fc32";
-	tx_cpu="fc32";
 
+	if (cfg->sampleType) {
+		rx_cpu="sc16";
+		tx_cpu="sc16";
+	} else {
+		rx_cpu="fc32";
+		tx_cpu="fc32";
+	}
 
     //spawn the receive test thread
     if (main_cfg.chain_is_tx==0) {

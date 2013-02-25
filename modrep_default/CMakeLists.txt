@@ -10,6 +10,7 @@ if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 	
 else()
 	include_directories(${OESR_INCLUDE})
+	include_directories(${RTDAL_INCLUDE})
 endif()
 
 # The version number.
@@ -19,17 +20,18 @@ set (MODREP_DEFAULT_VERSION_MINOR 0)
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${MODULE_REPOS_NAME})
 
-set(CMAKE_C_FLAGS "-Wno-format -std=gnu99 -D_GNU_SOURCE -fPIC -rdynamic")
+set(CMAKE_C_FLAGS "-Wno-format -std=c99 -D_GNU_SOURCE -fPIC -rdynamic")
 set(CMAKE_SHARED_LINKER_FLAGS "-u _run_cycle")
 
 file(GLOB modules *) 
 set(GENLIBS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen_libs)
 
 add_subdirectory(gen_libs)
+
 foreach (_module ${modules})
 	if (IS_DIRECTORY ${_module})
 		if (NOT ${_module} STREQUAL ${CMAKE_BINARY_DIR})
-			if (NOT ${_module} STREQUAL ${GENLIBS_INCLUDE_DIR})	
+			if (NOT ${_module} STREQUAL ${GENLIBS_INCLUDE_DIR})
 				add_subdirectory(${_module})
 			endif()
 		endif()
