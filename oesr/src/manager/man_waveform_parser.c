@@ -486,7 +486,7 @@ int realloc_interfaces(module_t *module) {
 }
 
 int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
-	char *tmp;
+	const char *tmp;
 	int i;
 	module_t *ctrl;
 

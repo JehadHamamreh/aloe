@@ -318,6 +318,7 @@ int nod_waveform_precach_pipeline(nod_waveform_t *waveform) {
 	for (i=0;i<waveform->nof_modules;i++) {
 		memset(&waveform->modules[i].parent.execinfo,0,sizeof(execinfo_t));
 	}
+	return 0;
 }
 
 /**  Changes the status of the waveform to new_status. If the third argument is non-null,

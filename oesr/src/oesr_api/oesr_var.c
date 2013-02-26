@@ -162,7 +162,6 @@ var_t oesr_var_param_get(void *context, char *name) {
  */
 int oesr_var_param_list(void *context, var_t *variables, int buff_sz) {
 	cast(ctx,context);
-	OESR_ASSERT_PARAM(name);
 	int i;
 
 	nod_module_t *module = (nod_module_t*) ctx->module;
@@ -170,7 +169,7 @@ int oesr_var_param_list(void *context, var_t *variables, int buff_sz) {
 		buff_sz = module->parent.nof_variables;
 	}
 	for (i=0;i<buff_sz;i++) {
-		variables[i] = module->parent.variables[i];
+		variables[i] = (var_t) &module->parent.variables[i];
 	}
 	return buff_sz;
 }

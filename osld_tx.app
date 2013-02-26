@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=true;
+	precach_pipeline=false;
 	
 	auto_ctrl_module="ctrl_tx";
 };
