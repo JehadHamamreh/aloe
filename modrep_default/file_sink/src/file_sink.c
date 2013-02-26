@@ -85,7 +85,7 @@ int initialize() {
 		return -1;
 	}
 
-	if (oesr_var_param_value(ctx, pm, name, 64) == -1) {
+	if (oesr_var_param_get_value(ctx, pm, name, 64) == -1) {
 		moderror("Error getting file_name value\n");
 		return -1;
 	}

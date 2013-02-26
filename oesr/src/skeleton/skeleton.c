@@ -321,10 +321,10 @@ int process_ctrl_packet(void) {
 	int i;
 
 	for (i=0;i<nof_params;i++) {
-		if (parameters[i].id == ctrl_in_buffer.pm_id) {
+		if ((int) parameters[i] == ctrl_in_buffer.pm_id) {
 			if (oesr_var_param_set_value(ctx,parameters[i],ctrl_in_buffer.value,
 					ctrl_in_buffer.size)) {
-				moderror_msg("Error setting parameter id %d\n",parameters[i].id);
+				moderror_msg("Error setting parameter id %d\n",parameters[i]);
 				return -1;
 			}
 		}
