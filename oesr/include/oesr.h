@@ -128,8 +128,10 @@ typedef enum {
 var_t oesr_var_create(void *context, char* name, void *ptr, int size);
 int oesr_var_close(void *context, var_t var);
 var_t oesr_var_param_get(void *context, char *name);
-int oesr_var_param_value(void *context, var_t parameter, void* value, int size);
+int oesr_var_param_get_value(void *context, var_t parameter, void* value, int size);
+int oesr_var_param_set_value(void *context, var_t parameter, void* value, int size);
 oesr_var_type_t oesr_var_param_type(void *context, var_t parameter);
+int oesr_var_param_list(void *context, var_t *variables, int buff_sz);
 /**@} */
 
 /**@defgroup counter Counters

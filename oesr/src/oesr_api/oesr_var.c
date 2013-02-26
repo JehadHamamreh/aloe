@@ -69,7 +69,7 @@ var_t oesr_var_create(void *context, char *name, void *ptr, int size) {
  * \return On success, returns a non-negative integer indicating the number of bytes written to value.
  * On error returns -1
  */
-int oesr_var_param_value(void *context, var_t parameter, void* value, int size) {
+int oesr_var_param_get_value(void *context, var_t parameter, void* value, int size) {
 	int cpy_sz;
 
 	cast(ctx,context);
@@ -95,6 +95,39 @@ int oesr_var_param_value(void *context, var_t parameter, void* value, int size) 
 }
 
 
+/** Sets up to size bytes of the value of the parameter to the value of the
+ * buffer pointed by ptr to the
+ *
+ * \param context OESR context pointer
+ * \param parameter Handler returned by the oesr_var_param_get() function.
+ * \param value Pointer to the user memory where the parameter value will be stored
+ * \param size Size of user memory buffer
+ *
+ * \return On success, returns a non-negative integer indicating the number of bytes written to value.
+ * On error returns -1
+ */
+int oesr_var_param_set_value(void *context, var_t parameter, void* value, int size) {
+	int cpy_sz;
+
+	cast(ctx,context);
+
+	OESR_ASSERT_PARAM(parameter);
+	OESR_ASSERT_PARAM(value);
+	OESR_ASSERT_PARAM(size>0);
+
+	nod_module_t *module = (nod_module_t*) ctx->module;
+	variable_t *variable = (variable_t*) parameter;
+
+	sdebug("id=0x%x, size=%d, value=0x%x, cur_mode=%d\n",parameter,size,value,module->parent.mode.cur_mode);
+
+	cpy_sz = (size > variable->size)?variable->size:size;
+
+	memcpy(variable->init_value[module->parent.mode.cur_mode], value, (size_t) cpy_sz);
+	sdebug("id=0x%x, copied=%d\n", parameter, cpy_sz);
+	return cpy_sz;
+}
+
+
 /**
  * Returns a handler for the parameter with name "name".
  * This handler is then used by the functions oesr_var_param_value() and oesr_var_param_type()
@@ -115,6 +148,31 @@ var_t oesr_var_param_get(void *context, char *name) {
 		return NULL;
 	}
 	return (var_t) variable;
+}
+
+
+/**
+ * Fills the buffer variables with up to buff_sz variable handlers owned by the caller module
+ *
+ * \param context OESR context pointer
+ * \param variables buffer of handlers
+ * \param buff_sz size of the variables buffer
+ *
+ * \return On success, returns a non-null handler. On error returns null.
+ */
+int oesr_var_param_list(void *context, var_t *variables, int buff_sz) {
+	cast(ctx,context);
+	OESR_ASSERT_PARAM(name);
+	int i;
+
+	nod_module_t *module = (nod_module_t*) ctx->module;
+	if (buff_sz > module->parent.nof_variables) {
+		buff_sz = module->parent.nof_variables;
+	}
+	for (i=0;i<buff_sz;i++) {
+		variables[i] = module->parent.variables[i];
+	}
+	return buff_sz;
 }
 
 /**

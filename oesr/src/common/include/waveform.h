@@ -145,6 +145,8 @@ typedef struct {
 	strdef(name);
 	int nof_modes;
 	int granularity_us;
+	int precach_pipeline;
+	module_t *auto_ctrl_module;
 } waveform_t;
 
 module_t* waveform_find_module_id(waveform_t *w, int obj_id);

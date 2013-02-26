@@ -27,7 +27,7 @@
 
 config_t config;
 
-#define ITF_PREALLOC 30
+#define ITF_PREALLOC 100
 
 static int mod_id=1, waveform_id=1;
 
@@ -280,6 +280,10 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		return 0;
 	}
 
+	if (w->auto_ctrl_module) {
+		src_port++;
+	}
+
 	if (src_port > ITF_PREALLOC) {
 		aerror_msg("src port too high. Maximum is %d\n",ITF_PREALLOC);
 		return 0;
@@ -290,6 +294,11 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		aerror("reading src\n");
 		return 0;
 	}
+
+	if (dest_module == w->auto_ctrl_module) {
+		dest_port+=dest_module->nof_outputs;
+	}
+
 	if (dest_port > ITF_PREALLOC) {
 		aerror_msg("src port too high. Maximum is %d\n",ITF_PREALLOC);
 		return 0;
@@ -399,7 +408,7 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		return 0;
 	}
 
-	mod->inputs = (interface_t*) pool_alloc(ITF_PREALLOC,sizeof(interface_t));
+	mod->inputs = (interface_t*) pool_alloc(ITF_PREALLOC+1,sizeof(interface_t));
 	if (!mod->inputs) {
 		aerror("allocating memory\n");
 		return 0;
@@ -477,6 +486,9 @@ int realloc_interfaces(module_t *module) {
 }
 
 int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
+	char *tmp;
+	int i;
+	module_t *ctrl;
 
 	if (!maincfg) {
 		w->granularity_us = 0;
@@ -486,6 +498,37 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 	if (!config_setting_lookup_int(maincfg, "waveform_granularity_us",
 			&w->granularity_us)) {
 		w->granularity_us = 0;
+	}
+
+	if (!config_setting_lookup_bool(maincfg, "precach_pipeline",
+			&w->precach_pipeline)) {
+		w->precach_pipeline = 0;
+	}
+
+	if (!config_setting_lookup_string(maincfg, "precach_pipeline",
+			&tmp)) {
+		w->auto_ctrl_module = NULL;
+	} else {
+		w->auto_ctrl_module = waveform_find_module_name(w,tmp);
+		if (!w->auto_ctrl_module) {
+			aerror_msg("Warning: auto control module %s not found in waveform\n"
+					"Automatic control interfaces are disabled\n.",tmp);
+		}
+		ctrl = w->auto_ctrl_module;
+		ctrl->outputs = (interface_t*) pool_realloc(ctrl->outputs,
+				w->nof_modules+ctrl->nof_outputs,sizeof(interface_t));
+		if (!ctrl->outputs) {
+			aerror("allocating memory\n");
+			return 0;
+		}
+		for (i=0;i<w->nof_modules;i++) {
+			ctrl->outputs[ctrl->nof_outputs].remote_module_id = w->modules[i].id;
+			ctrl->outputs[ctrl->nof_outputs].remote_port_idx = w->modules[i].nof_inputs;
+			w->modules[i].inputs[w->modules[i].nof_inputs].remote_module_id = ctrl->id;
+			w->modules[i].inputs[w->modules[i].nof_inputs].remote_port_idx = ctrl->nof_outputs;
+			w->modules[i].nof_inputs++;
+			ctrl->nof_outputs++;
+		}
 	}
 
 	return 0;
@@ -562,12 +605,6 @@ int waveform_parse(waveform_t* w) {
 				config_error_text(&config));
 		goto destroy;
 	}
-	maincfg = config_lookup(&config, "main");
-	if (waveform_main_config(w,maincfg)) {
-		aerror("Parsing section main\n");
-		goto destroy;
-	}
-
 	modes = config_lookup(&config, "modes");
 	if (!modes) {
 		pardebug("found %d mode\n",1);
@@ -644,6 +681,12 @@ int waveform_parse(waveform_t* w) {
 			mod->index = k;
 			k++;
 		}
+	}
+
+	maincfg = config_lookup(&config, "main");
+	if (waveform_main_config(w,maincfg)) {
+		aerror("Parsing section main\n");
+		goto destroy;
 	}
 
 	/* join pipeline stages */

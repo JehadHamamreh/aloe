@@ -5,10 +5,18 @@ main:
 	waveform_granularity_us=0;
 	
 	precach_pipeline=true;
+	
+	auto_ctrl_module="ctrl_tx";
 };
 
 modules:
 {
+	ctrl_tx:
+	{
+		binary="modrep_osld/liblte_ctrl_tx.so";
+		mops=1;
+	};
+	
 	source:
 	{
 		binary="modrep_osld/liblte_tb_source.so";	

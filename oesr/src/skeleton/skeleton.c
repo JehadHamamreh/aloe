@@ -10,6 +10,7 @@
 #define MAX_INPUTS 		30
 #define MAX_OUTPUTS 	30
 #define MAX_VARIABLES 	50
+#define MAX_PARAMS		50
 
 extern int input_sample_sz;
 extern int output_sample_sz;
@@ -21,10 +22,23 @@ extern const int output_max_samples;
 static int mem_ok=0, log_ok=0, check_ok=0;
 
 itf_t inputs[MAX_INPUTS], outputs[MAX_OUTPUTS];
+itf_t ctrl_in;
+
+struct ctrl_in_pkt {
+	int pm_id;
+	int size;
+	char value[1024];
+};
+
+struct ctrl_in_pkt ctrl_in_buffer;
+
+#define CTRL_IN_BUFFER	sizeof(struct ctrl_in_pkt)
 
 user_var_t *user_vars;
 var_t vars[MAX_VARIABLES];
 int nof_vars;
+var_t parameters[MAX_PARAMS];
+int nof_params;
 
 log_t mlog;
 counter_t counter;
@@ -42,8 +56,11 @@ void init_memory() {
 	memset(snd_len,0,sizeof(int)*MAX_OUTPUTS);
 
 	memset(vars,0,sizeof(var_t)*MAX_VARIABLES);
+	memset(parameters,0,sizeof(var_t)*MAX_PARAMS);
 
+	ctrl_in = NULL;
 	nof_vars=0;
+	nof_params=0;
 	mlog=NULL;
 	counter=NULL;
 
@@ -65,13 +82,6 @@ int check_configuration(void *ctx) {
 		return -1;
 	}
 
-	/*user_vars = variables_list(&nof_vars);
-	if (nof_vars > MAX_VARIABLES) {
-		moderror_msg("Maximum number of parameters is %d. The module uses %d. "
-				"Increase MAX_VARIABLES in oesr_static/skeleton/skeleton.c and recompile ALOE\n",
-				MAX_VARIABLES,nof_vars);
-		return -1;
-	}*/
 	user_vars = NULL;
 	nof_vars = 0;
 
@@ -81,11 +91,23 @@ int check_configuration(void *ctx) {
 int init_interfaces(void *ctx) {
 	int i;
 
+	/* try to create control interface */
+	ctrl_in = oesr_itf_create(ctx, 0, ITF_READ, CTRL_IN_BUFFER);
+	if (ctrl_in == NULL) {
+		if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
+			return 0;
+		} else {
+			oesr_perror("creating input interface\n");
+			return -1;
+		}
+	} else {
+		modinfo("Created input port\n");
+	}
+
 	modinfo_msg("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
 	for (i=0;i<nof_input_itf;i++) {
 		if (inputs[i] == NULL) {
-			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
-			modinfo_msg("i=%d, input=%d\n",i,inputs[i]);
+			inputs[i] = oesr_itf_create(ctx, 1+i, ITF_READ, input_max_samples*input_sample_sz);
 			if (inputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 					return 0;
@@ -102,7 +124,6 @@ int init_interfaces(void *ctx) {
 	for (i=0;i<nof_output_itf;i++) {
 		if (outputs[i] == NULL) {
 			outputs[i] = oesr_itf_create(ctx, i, ITF_WRITE, output_max_samples*output_sample_sz);
-			modinfo_msg("output 0x%x\n",outputs[i]);
 			if (outputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTFOUND) {
 					modinfo_msg("Caution output port %d not connected,\n",i);
@@ -123,6 +144,12 @@ int init_interfaces(void *ctx) {
 void close_interfaces(void *ctx) {
 	int i;
 	moddebug("nof_input=%d, nof_output=%d\n",nof_input_itf,nof_output_itf);
+
+	if (ctrl_in) {
+		if (oesr_itf_close(ctrl_in)) {
+			oesr_perror("oesr_itf_close");
+		}
+	}
 
 	for (i=0;i<nof_input_itf;i++) {
 		moddebug("input_%d=0x%x\n",i,inputs[i]);
@@ -157,6 +184,13 @@ int init_variables(void *ctx) {
 			return -1;
 		}
 	}
+
+	nof_params = oesr_var_param_list(ctx, parameters, MAX_PARAMS);
+	if (nof_params == -1) {
+		moderror("Error getting module parameters\n");
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -283,6 +317,19 @@ int Stop(void *_ctx) {
 	return 0;
 }
 
+int process_ctrl_packet(void) {
+	int i;
+
+	for (i=0;i<nof_params;i++) {
+		if (parameters[i].id == ctrl_in_buffer.pm_id) {
+			if (oesr_var_param_set_value(ctx,parameters[i],ctrl_in_buffer.value,
+					ctrl_in_buffer.size)) {
+				moderror_msg("Error setting parameter id %d\n",parameters[i].id);
+				return -1;
+			}
+		}
+	}
+}
 
 int Run(void *_ctx) {
 	ctx = _ctx;
@@ -291,6 +338,18 @@ int Run(void *_ctx) {
 	int i;
 	int n;
 
+	do {
+		n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER);
+		if (n == -1) {
+			oesr_perror("oesr_itf_read");
+			return -1;
+		} else if (n>0) {
+			if (process_ctrl_packet()) {
+				moderror("Error processing control packet\n");
+				return -1;
+			}
+		}
+	} while(n>0);
 
 	for (i=0;i<nof_input_itf;i++) {
 		if (!inputs[i]) {
@@ -390,7 +449,7 @@ int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type) {
 	if (type) {
 		*type = (param_type_t) oesr_var_param_type(ctx,(var_t) id);
 	}
-	int n = oesr_var_param_value(ctx, (var_t) id, ptr, max_size);
+	int n = oesr_var_param_get_value(ctx, (var_t) id, ptr, max_size);
 	if (n == -1) {
 		/* keep quiet in this case */
 		if (oesr_error_code(ctx) != OESR_ERROR_INVAL) {

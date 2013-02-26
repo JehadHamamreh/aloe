@@ -46,6 +46,7 @@ typedef struct {
 	int id;
 	int finishing;
 	int tslot_multiplicity;
+	int precach_pipeline;
 	strdef(name);
 } nod_waveform_t;
 
@@ -57,6 +58,7 @@ int nod_waveform_remove(nod_waveform_t *waveform);
 int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_status);
 int nod_waveform_status_stop(nod_waveform_t *waveform);
 nod_module_t* nod_waveform_find_module_id(nod_waveform_t *w, int module_id);
+nod_module_t* nod_waveform_find_module_name(nod_waveform_t *w, char *name);
 
 int nod_module_alloc(nod_module_t *module);
 int nod_module_load(nod_module_t *module);

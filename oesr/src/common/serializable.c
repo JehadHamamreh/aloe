@@ -49,6 +49,7 @@ int waveform_serialize(waveform_t *src, packet_t *pkt, int loading_node_id,
 		add_i(&tmp);
 		add_i(&src->id);
 		add_i(&src->granularity_us);
+		add_i(&src->precach_pipeline);
 
 		if (packet_add_data(pkt,src->name,STR_LEN)) return -1;
 

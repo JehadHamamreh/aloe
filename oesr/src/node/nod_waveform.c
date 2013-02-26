@@ -27,7 +27,7 @@
 #define DEFAULT_SLEEP_US	50000
 #define DEFAULT_TIMEOUT		200
 
-/** \brief Allocates resources for nof_modules in a nod_waveform_t waveform.
+/**  Allocates resources for nof_modules in a nod_waveform_t waveform.
  * Does NOT call allocate interfaces/variables for each module.
  */
 int nod_waveform_alloc(nod_waveform_t *w, int nof_modules) {
@@ -39,7 +39,7 @@ int nod_waveform_alloc(nod_waveform_t *w, int nof_modules) {
 	return 0;
 }
 
-/** \brief Deallocates nod_waveform_t resources allocated using nod_waveform_alloc().
+/**  Deallocates nod_waveform_t resources allocated using nod_waveform_alloc().
  * Does NOT call deallocate interfaces/variables for each module.
  */
 int nod_waveform_free(nod_waveform_t *w) {
@@ -51,7 +51,7 @@ int nod_waveform_free(nod_waveform_t *w) {
 	return 0;
 }
 
-/* \brief nod_waveform_load() calls nod_module_load() for each module in the waveform
+/*  nod_waveform_load() calls nod_module_load() for each module in the waveform
  */
 int nod_waveform_load(nod_waveform_t *w) {
 	time_t t;
@@ -92,7 +92,7 @@ int nod_waveform_load(nod_waveform_t *w) {
 	return 0;
 }
 
-/* \brief nod_waveform_run() calls nod_module_run() for each module in the waveform
+/*  nod_waveform_run() calls nod_module_run() for each module in the waveform
  */
 int nod_waveform_run(nod_waveform_t *w, int runnable) {
 	ndebug("waveform_id=%d, nof_modules=%d\n",w->id, w->nof_modules);
@@ -107,7 +107,7 @@ int nod_waveform_run(nod_waveform_t *w, int runnable) {
 	return 0;
 }
 
-/* \brief nod_waveform_remove() calls nod_module_remove() for each module in the waveform and
+/*  nod_waveform_remove() calls nod_module_remove() for each module in the waveform and
  * sets status = STOP, id = 0 and CALLS nod_waveform_free().
  */
 int nod_waveform_remove(nod_waveform_t *w) {
@@ -158,7 +158,7 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 	return (void*) 1;
 }
 
-/** \brief goes through all the modules and calls nod_module_stop();
+/**  goes through all the modules and calls nod_module_stop();
  */
 int nod_waveform_status_stop(nod_waveform_t *waveform) {
 	aassert(waveform);
@@ -245,7 +245,7 @@ void* nod_waveform_status_init_thread(void *arg) {
 	return (void*) 1;
 }
 
-/** \brief goes through all the modules and calls nod_module_init().
+/**  goes through all the modules and calls nod_module_init().
  * Since nod_module_init() may return 0 if the module goes to sleep for one timeslot,
  * we have to pass through all modules several times.
  */
@@ -292,7 +292,35 @@ int nod_waveform_status_init(nod_waveform_t *waveform) {
 	return 0;
 }
 
-/** \brief Changes the status of the waveform to new_status. If the third argument is non-null,
+int nod_waveform_precach_pipeline(nod_waveform_t *waveform) {
+	int i;
+	time_t ts;
+
+	printf("Precaching data\n");
+	rtdal_timeslot_set(10);
+	waveform->status.next_timeslot = rtdal_time_slot();
+	waveform->status.cur_status = RUN;
+	ts.tv_sec = 2;
+	ts.tv_usec = 0;
+	rtdal_sleep(&ts);
+	variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");
+	if (source) {
+		printf("Done. Flushing pipeline\n");
+		ts.tv_sec = 1;
+		ts.tv_usec = 0;
+		*((int*) source->init_value[0]) = 0;
+		rtdal_sleep(&ts);
+		*((int*) source->init_value[0]) = 1;
+		printf("Done\n");
+	}
+	waveform->status.next_timeslot = rtdal_time_slot();
+	waveform->status.cur_status = PAUSE;
+	for (i=0;i<waveform->nof_modules;i++) {
+		memset(&waveform->modules[i].parent.execinfo,0,sizeof(execinfo_t));
+	}
+}
+
+/**  Changes the status of the waveform to new_status. If the third argument is non-null,
  * it sets the module's process as runnable after setting the waveform status. This is useful for
  * the case when the module has unexpectecly terminated.
  *
@@ -300,7 +328,6 @@ int nod_waveform_status_init(nod_waveform_t *waveform) {
 int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_status) {
 	aassert(waveform);
 	aassert(new_status);
-	time_t ts;
 	int i;
 	
 	ndebug("waveform_id=%d, new_status=%d, next_ts=%d\n",waveform->id,
@@ -321,30 +348,11 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 		if (nod_waveform_run(waveform,1)) {
 			return -1;
 		}
-/*
-		printf("Precaching data\n");
-		rtdal_timeslot_set(10);
-		waveform->status.next_timeslot = rtdal_time_slot();
-		waveform->status.cur_status = RUN;
-		ts.tv_sec = 2;
-		ts.tv_usec = 0;
-		rtdal_sleep(&ts);
-		variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");
-		if (source) {
-			printf("Done. Flushing pipeline\n");
-			ts.tv_sec = 1;
-			ts.tv_usec = 0;
-			*((int*) source->init_value[0]) = 0;
-			rtdal_sleep(&ts);
-			*((int*) source->init_value[0]) = 1;
-			printf("Done\n");
+
+		if (waveform->precach_pipeline) {
+			nod_waveform_precach_pipeline(waveform);
 		}
-		waveform->status.next_timeslot = rtdal_time_slot();
-		waveform->status.cur_status = PAUSE;
-		for (i=0;i<waveform->nof_modules;i++) {
-			memset(&waveform->modules[i].parent.execinfo,0,sizeof(execinfo_t));
-		}
-		*/
+
 		break;
 	case STOP:
 		if (nod_waveform_run(waveform,0)) {
@@ -381,7 +389,7 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 }
 
 
-/** \brief Returns a pointer to the first module with id the second parameter
+/**  Returns a pointer to the first module with id the second parameter
  * \returns a non-null pointer if found or null otherwise
  */
 nod_module_t* nod_waveform_find_module_id(nod_waveform_t *w, int module_id) {
@@ -396,8 +404,23 @@ nod_module_t* nod_waveform_find_module_id(nod_waveform_t *w, int module_id) {
 }
 
 
+/**  Returns a pointer to the first module with id the second parameter
+ * \returns a non-null pointer if found or null otherwise
+ */
+nod_module_t* nod_waveform_find_module_name(nod_waveform_t *w, char *name) {
+	mdebug("waveform=%s, name=%s\n",w->name, name);
+	int i=0;
+	while(i<w->nof_modules && strcmp(w->modules[i].parent.name,name))
+		i++;
+	if (i==w->nof_modules) {
+		return NULL;
+	}
+	return &w->modules[i];
+}
 
-/** \brief Serializes a nod_waveform_t object to a packet.
+
+
+/**  Serializes a nod_waveform_t object to a packet.
  * \param all_module If non-zero, serializes the entire module structure. If is zero serializes
  * only the execinfo structure
  * \param copy_data Indicates what kind of data will be send for each variable. See enum variable_serialize_data
@@ -426,7 +449,7 @@ int nod_waveform_serialize(nod_waveform_t *src, packet_t *pkt, int all_module,
 	return 0;
 }
 
-/** \brief Unserializes a nod_waveform_t object from the packet to the structure pointed by dest.
+/**  Unserializes a nod_waveform_t object from the packet to the structure pointed by dest.
  * If the waveform is in status STOP unserializes all the waveform contents. It unserializes
  * the waveform status only otherwise.
  * The copy_data parameter is obtained from the packet.
@@ -464,6 +487,7 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 		} else {
 			dest->tslot_multiplicity = 1;
 		}
+		get_i(&dest->precach_pipeline);
 
 		if (packet_get_data(pkt,dest->name,STR_LEN)) return -1;
 
