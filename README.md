@@ -1,112 +1,101 @@
-ALOE++ 
-===========
-
 ALOE stands for Abstraction Layer and Open Operating Environment. It is an Open Source framework for distributed real-time signal processing for SDR (Software-Defined Radio) applications. ALOE is released under the LGPL license (see license.txt) 
 
-The project is partially founded by the NLnet foundation (http://www.nlnet.nl), as part of the OSLD project. OSLD aims at building an Open Source LTE system based on ALOE. More information and documentation can be found in the OSLD project website (https://sites.google.com/site/osldproject/)
+ALOE++ is partially supported by the NLnet foundation (http://www.nlnet.nl), as part of the OSLD project. OSLD aims at building an Open Source LTE system based on ALOE. More information and documentation can be found in the OSLD project website (https://sites.google.com/site/osldproject/)
 
-This is the first release of ALOE++ version 0.2. The old ALOE versions are still active in http://flexnets.upc.edu.
+[Click here to know more about ALOE++.](https://github.com/flexnets/aloe/wiki/ALOE-Project)
 
-Requirements
-=============
+### Contact
+For any question, bug report or suggestion, please contact us at
+https://groups.google.com/group/flexnets
 
+
+### News
+ * ALOE++ 0.4 has been officially released. New Features: 
+    * Xenomai RTOS support to achieve lowest latencies.
+    * Pipeline stage merge.
+    * LTE PDSCH full TX and RX, 3 ms latency.  
+    * LTE PDSCH Matlab model based on mex-files for verification.
+
+### Requirements
 To install ALOE++, the only requirement is the libconfig parsing library and cmake:
- * libconfig 1.4.8
+ * libconfig 1.4.8.5
  * cmake
 
 The current ALOE++ release comes with an OFDM demo waveform and a small set of useful modues. These modules have more requirements: 
  * libfftw3 is used by the gen_dft module 
- * plplot + output driver is used by the plp_sink module to display signals.
+ * plplot 5.9.9 + output driver is used by the plp_sink module to display signals.
+
+If you want to use the USRP, you should have the UHD driver and the Boost_thread library. 
 
 To install all requirements in ubuntu, just type:
 
-sudo apt-get install libconfig-dev libfftw3-dev libplplot-dev plplot11-driver-xwin plplot11-driver-cairo
+`sudo apt-get install libconfig-dev libfftw3-dev libplplot-dev plplot11-driver-xwin plplot11-driver-cairo`
+
+You need libconfig-dev version 1.4.8 or higher. Older Ubuntu versions install older libconfig-dev versions. In this case (e.g., if 'libconfig8-dev' is installed), uninstall it (sudo apt-get remove libconfig8-dev) before downloading libconfig-dev from http://www.hyperrealm.com/libconfig/ and installing it manually: extract files, cd folder/, ./configure, make, sudo make install.
 
 The last two packages are optional. PLplot can work with many different output drivers. The xwin driver works just fine and is fast. The driver used by plp_sink can be selected from the file modrep_ofdm/plp_sink/src/plp_sink.h (see the Documentation Section)
+
+To be able to use Matlab for verification, type `export MATLAB_ROOT=/root/to/Matlab/folder` in a terminal.
   
-Install
-=========
+### Download and Compile
 
- * git clone git://github.com/flexnets/aloe.git
- * cd aloe
- * mkdir build
- * cd build
- * cmake ../
- * make
- * sudo make install
+Download aloe-0.4 from https://github.com/flexnets/aloe/archive/0.4.tar.gz and extract the contents:
 
-Running the OFDM demo waveform
-===============================
+```
 
-The waveform modules is described in the file ofdm.app, in the root aloe source folder. You may take a look at it to see how simply waveforms are created and parametrized in ALOE. 
+wget https://github.com/flexnets/aloe/archive/0.4.tar.gz
+tar xzvf 0.4.tar.gz
+cd aloe-0.4
+mkdir build
+cd build
+cmake ../
 
-To run the demo, type:
+```
 
-runcf ts_len nof_cores path_to_ofdm.app
+If you have Xenomai installed and want to use it, run the cmake command with `cmake ../ -DXENOMAI_ENABLE=1`
 
-for instance:
+`make`
 
-runcf 50000 1 ./ofdm.app
+ALOE++ does not need to be installed to run. Installing is more convenient in order to create new components, since libraries and headers are installed in default locations. To do so, just type:
 
-if you are running "runcf" from the root aloe source folder and want to run the waveform with a periodicity of 50000 microseconds. If you look at ofdm.app, you will see that the source generates 308 bits each invocation period. Therefore, with this command you will be generating a signal that encodes 6.16 kbps. Such a low throughput is required to plot the signal using the plp_sink module. 
+`sudo make install`
 
-You may increase the throughput by editing the ofdm.app file, module plp_sink and setting parameter "mode" to 0. For instance, type: 
 
-runcf 500 1 ./ofdm.app
+### Running the OFDM demo waveform
+The OFDM test waveform is defined in file ofdm.app. It defines the DSP modules that build the waveform and their interconnections, among others. 
 
-to run the waveform with a granularity of 0.5 ms, that is a throughput of 616 kbps and an end-to-end latency of 4 ms.
+If you did not installed ALOE++, from the `build` directory, run:
 
-If you have a multi-core system you may experience with the nof_cores parameter. This parameter allows to formats:
-  * Number of cores, e.g. 2 or 4 will use all cores 0..n for allocating tasks
-  * Comma-separated values, e.g. 1,3,5, for instance will use only cores 1, 3 and 5 for allocating tasks. 
+`rtdal_lnx/runcf ../osld.app ../config`
 
-Documentation 
-===============
+The file `../osld.app` defines the waveform graph. The file `../config` stores the configuration of ALOE++. It allows to change the time slot length, the support for USRP devices and the location of the component libraries. 
 
-Doxygen-generated documentation is available in the following links:
+To LOAD, INIT and RUN the waveform, just type:
+ *  **l** and Enter, 
+ *  **i** and Enter and then 
+ *  **r** and Enter. 
+
+You can also run in a step-by-step basis: pause the waveform typing "p" and then run a single time slot using "t". You can exit ALOE++ entering Ctrl+C in the shell window. 
+
+### MATLAB/Octave Verification
+ALOE++ now automatically creates a MEX-file for each module ([read here how](https://github.com/flexnets/aloe/wiki/Creating-a-DSP-Module)).
+
+In the cloned directory you will find the file `ofdm_demo.m` which you can run from MATLAB or OCTAVE. You may need to edit the first line to adjust the path to where the MEX files where installed. This file calls the OFDM DSP modules one after another and plots the output signal. 
+
+### Documentation 
+For ALOE++ Developers:
  * RTDAL API: http://flexnets.github.com/aloe/rtdal/html/index.html
  * OESR API: http://flexnets.github.com/aloe/oesr/html/index.html
  * OESR Manager API: http://flexnets.github.com/aloe/oesr_man/html/index.html
- * Default Modules: http://flexnets.github.com/aloe/modrep_default/html/index.html
- * OFDM Modules: http://flexnets.github.com/aloe/modrep_ofdm/html/index.html
 
+To learn how to create new DSP Modules using the OESR SKELETON template:
+ * [Creating a DSP Module](https://github.com/flexnets/aloe/wiki/Creating-a-DSP-Module)
 
-Brief Project Description 
-==================
+Current waveforms documentation:
+ * OSLD LTE TX/RX: http://flexnets.github.com/aloe/modrep_osld/html/index.html
 
-The ALOE framework entails two sub-projects:
- * Real-Time Distributed Abstraction Layer (RTDAL)
- * Operating Environment for Software-defined Radio (OESR)
-
-RTDAL facilitates real-time synchronous execution of tasks in a distributed environment. Tasks are executed periodically on each processor in a pipeline fashion. Each processor creates one thread per core, which runs each task (dynamically loaded as a shared library) one after another. The threads period on each core of each processor are continuously synchronized, offering the user an abstracted virtual platform. It is also possible to synchronize the task execution with a digital converter (AD/DA) for coherent transmission and processing of samples. 
-
-Besides, the RTDAL API also provides other functions to abstract the specific platform-dependant characteristics:
- * Low-priority tasks: Synchronous or asynchronous low-priority tasks can be created and managed.
- * Interfaces: Two tasks sharing a common interface can communicate between each other. Interfaces can be external or internal, to communicate tasks in remote or local processors, respectively. Internal interfaces support zero-copy mode where only a pointer is transfered between the writer and reader, minimizing memory bandwidth consumption. The current implementation employs a wait-free SPSC bounded queue for best real-time performance.   
- * AD/DA abstraction, time functions, shared memory, file I/O, etc.
-
-The OESR, on the other hand, is built on top of the RTDAL. This allows future portability to other platforms (currently, RTDAL employs the POSIX interface and gcc atomic functions). OESR provides functionalities specifically tailored for SDR applications:
- * Automatic mapping of waveforms to a set of processing cores (distributed or in a multi-core, or both). 
- * Location-transparent inter-module communications.
- * Global variables and parameters configuration/visualization
- * Logs, counters and others.
-
-
-
-Related Projects
-=================
+### Related Projects
  * OSLD (https://sites.google.com/site/osldproject/)
  * FlexNets (http://flexnets.upc.edu)
  * GNU Radio (http://gnuradio.org)
  * OSSIE from Wireless@VT (http://ossie.wireless.vt.edu/)
-
-
-Contact
-========
-ismael.gomez@tsc.upc.edu
-
-
-
-
-
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/fbe47a2652453cdc1eb50219b38ab2f0 "githalytics.com")](http://githalytics.com/flexnets/aloe)
