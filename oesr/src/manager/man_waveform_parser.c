@@ -19,6 +19,11 @@
 #include <stdlib.h>
 #include <libconfig.h>
 
+#if (((LIBCONFIG_VER_MAJOR < 1) || (LIBCONFIG_VER_MINOR < 4) \
+	   || (LIBCONFIG_VER_REVISION < 8)))
+	#error "Required libconfig version 1.4.8 or newer"
+  #endif
+
 #include "str.h"
 #include "defs.h"
 #include "waveform.h"
