@@ -53,7 +53,7 @@ add_executable(runcf ${rtdal_SOURCES} ${DAC_SOURCES})
 set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI} ${MATFILE_CFLAGS}")
 
 target_link_libraries (runcf "-Wl,--whole-archive" oesr)
-target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread rt ${LINK_DAC})
+target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread rt dl ${LINK_DAC})
 target_link_libraries (runcf ${UHD_LIBRARIES})
 
 
