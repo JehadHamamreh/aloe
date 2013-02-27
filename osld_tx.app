@@ -6,17 +6,16 @@ main:
 	
 	precach_pipeline=false;
 	
-	auto_ctrl_module="ctrl_tx";
 };
 
 modules:
 {
-	ctrl_tx:
+/*	ctrl_tx:
 	{
 		binary="modrep_osld/liblte_ctrl_tx.so";
 		mops=1;
 	};
-	
+	*/
 	source:
 	{
 		binary="modrep_osld/liblte_tb_source.so";	

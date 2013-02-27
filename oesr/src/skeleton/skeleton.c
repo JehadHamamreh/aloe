@@ -90,24 +90,23 @@ int check_configuration(void *ctx) {
 
 int init_interfaces(void *ctx) {
 	int i;
+	int has_ctrl=0;
 
 	/* try to create control interface */
 	ctrl_in = oesr_itf_create(ctx, 0, ITF_READ, CTRL_IN_BUFFER);
 	if (ctrl_in == NULL) {
 		if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 			return 0;
-		} else {
-			oesr_perror("creating input interface\n");
-			return -1;
 		}
 	} else {
 		modinfo("Created input port\n");
+		has_ctrl=1;
 	}
 
 	modinfo_msg("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
 	for (i=0;i<nof_input_itf;i++) {
 		if (inputs[i] == NULL) {
-			inputs[i] = oesr_itf_create(ctx, 1+i, ITF_READ, input_max_samples*input_sample_sz);
+			inputs[i] = oesr_itf_create(ctx, has_ctrl+i, ITF_READ, input_max_samples*input_sample_sz);
 			if (inputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 					return 0;
@@ -329,6 +328,7 @@ int process_ctrl_packet(void) {
 			}
 		}
 	}
+	return 0;
 }
 
 int Run(void *_ctx) {

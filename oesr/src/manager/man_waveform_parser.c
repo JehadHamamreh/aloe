@@ -377,29 +377,35 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 	strcpy(mod->binary, tmp);
 
 	mopts = config_setting_get_member(cfg, "mopts");
-	if (config_setting_type(mopts) == CONFIG_TYPE_INT) {
-		for (i=0;i<w->nof_modes;i++) {
-			mod->c_mopts[i] = (float) config_setting_get_int(mopts);
-			pardebug("[int] mopts[%d]=%.2f\n",i,mod->c_mopts[i]);
-		}
-	} else if (config_setting_type(mopts) == CONFIG_TYPE_FLOAT) {
-		for (i=0;i<w->nof_modes;i++) {
-			mod->c_mopts[i] = (float) config_setting_get_float(mopts);
-			pardebug("[float] mopts[%d]=%.2f\n",i,mod->c_mopts[i]);
-		}
-	} else {
-		imopts = config_setting_length(mopts);
-		if (imopts != w->nof_modes) {
-			aerror_msg("%d modes defined in mopts but expected %d\n",imopts,w->nof_modes);
-			return 0;
-		}
-		for (i=0;i<imopts;i++) {
-			mopts_mode = config_setting_get_elem(mopts, (unsigned int) i);
-			assert(mopts_mode);
-			if (!read_mopts_mode(mopts_mode,mod,w)) {
-				aerror_msg("reading mopts mode %d\n",i);
+	if (mopts) {
+		if (config_setting_type(mopts) == CONFIG_TYPE_INT) {
+			for (i=0;i<w->nof_modes;i++) {
+				mod->c_mopts[i] = (float) config_setting_get_int(mopts);
+				pardebug("[int] mopts[%d]=%.2f\n",i,mod->c_mopts[i]);
+			}
+		} else if (config_setting_type(mopts) == CONFIG_TYPE_FLOAT) {
+			for (i=0;i<w->nof_modes;i++) {
+				mod->c_mopts[i] = (float) config_setting_get_float(mopts);
+				pardebug("[float] mopts[%d]=%.2f\n",i,mod->c_mopts[i]);
+			}
+		} else {
+			imopts = config_setting_length(mopts);
+			if (imopts != w->nof_modes) {
+				aerror_msg("%d modes defined in mopts but expected %d\n",imopts,w->nof_modes);
 				return 0;
 			}
+			for (i=0;i<imopts;i++) {
+				mopts_mode = config_setting_get_elem(mopts, (unsigned int) i);
+				assert(mopts_mode);
+				if (!read_mopts_mode(mopts_mode,mod,w)) {
+					aerror_msg("reading mopts mode %d\n",i);
+					return 0;
+				}
+			}
+		}
+	} else {
+		for (i=0;i<w->nof_modes;i++) {
+			mod->c_mopts[i] = 0.1;
 		}
 	}
 	n_vars = read_variables(cfg, mod, mod->name, w);
@@ -509,7 +515,7 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 			&tmp)) {
 		w->auto_ctrl_module = NULL;
 	} else {
-		w->auto_ctrl_module = waveform_find_module_name(w,tmp);
+		w->auto_ctrl_module = waveform_find_module_name(w,(char*) tmp);
 		if (!w->auto_ctrl_module) {
 			aerror_msg("Warning: auto control module %s not found in waveform\n"
 					"Automatic control interfaces are disabled\n.",tmp);
