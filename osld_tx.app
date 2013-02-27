@@ -123,14 +123,14 @@ modules:
 
 	dac_tx:
 	{
-		binary="modrep_default/libdac_sink.so";	
+		binary="modrep_default/libplp_sink.so";	
 		mopts=5;
 		variables=(
 		{name="data_type";value=2},
-		{name="sample_is_short";value=1},
 		{name="file_name";value="/home/ismael/test.txt"},
-		{name="gain";value=1.0},{name="mode";value=2},
-		{name="is_complex";value=1},{name="freq_samp";value=1777777.7;});
+		{name="gain";value=1.0},
+		{name="mode";value=2},
+		{name="freq_samp";value=1777777.7;});
 	};
 		
 };

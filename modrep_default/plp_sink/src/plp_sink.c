@@ -43,7 +43,6 @@ static int fft_initiated=0;
 static int interval_ts, last_tstamp;
 static int print_not_received;
 static int last_rcv_samples;
-
 static int is_complex;
 int fft_size;
 
@@ -106,6 +105,7 @@ int initialize() {
 	int i;
 	int mode;
 	int tslen;
+	int data_type;
 
 	last_rcv_samples=0;
 
@@ -113,8 +113,19 @@ int initialize() {
 	memset(extra_plans,0,sizeof(dft_plan_t)*MAX_EXTRA_PLANS);
 
 	setup_legends();
-	if (param_get_int(param_id("is_complex"),&is_complex) != 1) {
-		moderror("Error getting parameter is_complex\n");
+
+	if (param_get_int_name("data_type", &data_type)) {
+		data_type = 0;
+	}
+	switch(data_type) {
+	case 0:
+		is_complex = 0;
+		break;
+	case 1:
+		is_complex = 1;
+		break;
+	case 2:
+		moderror("Only data_type 0 or 1 is supported\n");
 		return -1;
 	}
 

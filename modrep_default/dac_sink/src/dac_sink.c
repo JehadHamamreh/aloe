@@ -26,7 +26,7 @@
 
 extern int input_sample_sz;
 
-static int sample_is_short;
+static int data_type;
 static void *buffer;
 pmid_t freq_id, gain_id;
 static float last_freq=0;
@@ -48,14 +48,21 @@ int initialize() {
 	}
 	gain_id = param_id("gain");
 
-	sample_is_short=0;
-	param_get_int_name("sample_is_short",&sample_is_short);
-
-	if (sample_is_short) {
-		input_sample_sz = sizeof(_Complex short);
-	} else {
-		input_sample_sz = sizeof(_Complex float);
+	if (param_get_int_name("data_type", &data_type)) {
+		data_type = 1;
 	}
+	switch(data_type) {
+	case 0:
+		input_sample_sz = sizeof(float);
+		break;
+	case 1:
+		input_sample_sz = sizeof(_Complex float);
+		break;
+	case 2:
+		input_sample_sz = sizeof(_Complex short);
+		break;
+	}
+
 	return 0;
 }
 
@@ -67,12 +74,14 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int rcv_samples;
+	float *input_rf;
 	_Complex float *input_f;
 	_Complex short *input_s;
 	int i,j;
 	float freq;
 	float gain;
 	float x=0;
+	float *buffer_rf = buffer;
 	_Complex float *buffer_f = buffer;
 	_Complex short *buffer_s = buffer;
 
@@ -102,6 +111,7 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input_s = inp[i];
 		input_f = inp[i];
+		input_rf = inp[i];
 
 		rcv_samples = get_input_samples(i);
 
@@ -115,18 +125,18 @@ int work(void **inp, void **out) {
 		rtdal_uhd_set_block_len(rcv_samples);
 		x=0;
 		for (j=0;j<rcv_samples;j++) {
-			if (sample_is_short) {
-				buffer_s[j] = gain*input_s[j];
-			} else {
+			switch(data_type) {
+			case 0:
+				buffer_rf[j] = gain*input_rf[j];
+				break;
+			case 1:
 				buffer_f[j] = gain*input_f[j];
+				break;
+			case 2:
+				buffer_s[j] = gain*input_s[j];
+				break;
 			}
 		}
-
-#ifdef _COMPILE_ALOE
-		if (!x) {
-			printf("zeros a ts=%d - %d\n",oesr_tstamp(ctx),rcv_samples);
-		}
-#endif
 	}
 
 	return 0;

@@ -116,6 +116,24 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode,
 	return (itf_t) nod_itf;
 }
 
+int oesr_itf_nofinputs(void *context) {
+	oesr_context_t *ctx = context;
+	nod_module_t *module = ctx->module;
+
+	OESR_ASSERT_PARAM(module);
+
+	return module->parent.nof_inputs;
+}
+
+int oesr_itf_nofoutputs(void *context) {
+	oesr_context_t *ctx = context;
+	nod_module_t *module = ctx->module;
+
+	OESR_ASSERT_PARAM(module);
+
+	return module->parent.nof_outputs;
+}
+
 /**  The oesr_itf_close() function closes an interface previously created by oesr_itf_create().
  * The interface shall not be used again after calling this function.
  *

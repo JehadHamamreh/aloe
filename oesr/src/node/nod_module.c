@@ -247,6 +247,8 @@ variable_t* nod_module_variable_create(nod_module_t *module, string name) {
 		module->parent.variables=pool_realloc(module->parent.variables,
 				module->parent.nof_variables+5, sizeof(variable_t));
 		if (!module->parent.variables) return NULL;
+		memset(&module->parent.variables[module->parent.nof_variables],0,
+				5*sizeof(variable_t));
 		module->parent.nof_variables+=5;
 		ndebug("nof_variables=%d\n",module->parent.nof_variables);
 	}

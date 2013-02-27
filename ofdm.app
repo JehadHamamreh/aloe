@@ -168,6 +168,7 @@ modules:
 		);
 	};
 
+/*
 	sink:
 	{
 		binary="modrep_default/libdac_sink.so";
@@ -198,6 +199,18 @@ modules:
 				("fft2048qam64",30720000.0)
 			);}
 		);		
+	};
+	*/
+	sink:
+	{
+		binary="modrep_default/libplp_sink.so";	
+		mopts=5;
+		variables=(
+		{name="data_type";value=2},
+		{name="file_name";value="/home/ismael/test.txt"},
+		{name="gain";value=1.0},
+		{name="mode";value=2},
+		{name="freq_samp";value=1777777.7;});
 	};
 };
 

@@ -162,8 +162,10 @@ int variable_free(variable_t *variable) {
 	int i;
 	if (!variable) return -1;
 	for (i=0;i<variable->nof_modes;i++) {
-		if (!variable->init_value[i]) return -1;
-		if (pool_free(variable->init_value[i])) return -1;
+		if (variable->init_value[i]) {
+			if (pool_free(variable->init_value[i]))
+				return -1;
+		}
 	}
 	return 0;
 }

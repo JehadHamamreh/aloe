@@ -56,7 +56,7 @@ void *_run_main(void *arg) {
 	rtdal_machine(&machine);
 	tslen = machine.ts_len_us;
 
-	rtdal_task_print_sched();
+	//rtdal_task_print_sched();
 
 	/* this will be done by the module */
 	if (nod_anode_initialize(2)) {

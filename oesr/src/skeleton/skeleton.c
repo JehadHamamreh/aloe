@@ -92,15 +92,17 @@ int init_interfaces(void *ctx) {
 	int i;
 	int has_ctrl=0;
 
-	/* try to create control interface */
-	ctrl_in = oesr_itf_create(ctx, 0, ITF_READ, CTRL_IN_BUFFER);
-	if (ctrl_in == NULL) {
-		if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
-			return 0;
+	if (oesr_itf_nofinputs(ctx) > nof_input_itf) {
+		/* try to create control interface */
+		ctrl_in = oesr_itf_create(ctx, 0, ITF_READ, CTRL_IN_BUFFER);
+		if (ctrl_in == NULL) {
+			if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
+				return 0;
+			}
+		} else {
+			modinfo("Created control port\n");
+			has_ctrl=1;
 		}
-	} else {
-		modinfo("Created input port\n");
-		has_ctrl=1;
 	}
 
 	modinfo_msg("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
@@ -338,18 +340,20 @@ int Run(void *_ctx) {
 	int i;
 	int n;
 
-	do {
-		n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER);
-		if (n == -1) {
-			oesr_perror("oesr_itf_read");
-			return -1;
-		} else if (n>0) {
-			if (process_ctrl_packet()) {
-				moderror("Error processing control packet\n");
+	if (ctrl_in) {
+		do {
+			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER);
+			if (n == -1) {
+				oesr_perror("oesr_itf_read");
 				return -1;
+			} else if (n>0) {
+				if (process_ctrl_packet()) {
+					moderror("Error processing control packet\n");
+					return -1;
+				}
 			}
-		}
-	} while(n>0);
+		} while(n>0);
+	}
 
 	for (i=0;i<nof_input_itf;i++) {
 		if (!inputs[i]) {
