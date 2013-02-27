@@ -43,9 +43,9 @@ Download aloe-0.4 from https://github.com/flexnets/aloe/archive/0.4.tar.gz and e
 
 ```
 
-wget https://github.com/flexnets/aloe/archive/0.4.tar.gz
-tar xzvf 0.4.tar.gz
-cd aloe-0.4
+wget https://github.com/flexnets/aloe/archive/0.4.1.tar.gz
+tar xzvf 0.4.1.tar.gz
+cd aloe-0.4.1
 mkdir build
 cd build
 cmake ../
