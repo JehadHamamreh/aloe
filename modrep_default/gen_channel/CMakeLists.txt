@@ -4,7 +4,7 @@
 set(LIBRARIES m rt gen_libs_base)
 
 # set-up program includes here
-include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../)
+include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../gen_libs)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 
