@@ -18,7 +18,7 @@
 
 
 /**
- * @defgroup template template
+ * @defgroup gen_soft_demod gen_soft_demod
  * Document here your module
  * @{
  */

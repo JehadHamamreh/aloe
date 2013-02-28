@@ -66,7 +66,7 @@ synchctrl_t subfrmCtrl;
 int slot_size, subframe_size;
 
 
-/**@ingroup lte_synch
+/**@ingroup lte_synchronization
  * This module captures the PSS synchronism, identifies the PSS sequence and the CP size.
  * From that aligns the received samples flow with the LTE subframe limits.
  * Identifies the subframe and slot number.

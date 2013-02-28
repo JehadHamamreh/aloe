@@ -26,6 +26,14 @@
 #define MOD_DEBUG 0
 #define ITF_DEBUG 0
 
+#define CTRL_PKT_VALUE_SZ	128
+
+struct ctrl_in_pkt {
+	int pm_idx;
+	int size;
+	char value[CTRL_PKT_VALUE_SZ];
+};
+
 /*#define PRINT_MEX
 */
 

@@ -98,6 +98,9 @@ int oesr_tslot_length(void *context);
 int oesr_exit(void *context);
 char *oesr_module_name(void *context);
 int oesr_module_id(void *context);
+int oesr_get_module_idx(void *context, char *name);
+int oesr_get_variable_idx(void *context, char *module_name, char *variable_name);
+int oesr_get_nofmodules(void *context);
 /**@} */
 
 /**@defgroup itf Interface functions
@@ -130,10 +133,10 @@ typedef enum {
 var_t oesr_var_create(void *context, char* name, void *ptr, int size);
 int oesr_var_close(void *context, var_t var);
 var_t oesr_var_param_get(void *context, char *name);
+int oesr_var_param_list(void *context, var_t *parameters, int max_elems);
 int oesr_var_param_get_value(void *context, var_t parameter, void* value, int size);
 int oesr_var_param_set_value(void *context, var_t parameter, void* value, int size);
 oesr_var_type_t oesr_var_param_type(void *context, var_t parameter);
-int oesr_var_param_list(void *context, var_t *variables, int buff_sz);
 /**@} */
 
 /**@defgroup counter Counters

@@ -10,7 +10,7 @@
 #define MAX_INPUTS 		30
 #define MAX_OUTPUTS 	30
 #define MAX_VARIABLES 	50
-#define MAX_PARAMS		50
+#define MAX_PARAMETERS 	50
 
 extern int input_sample_sz;
 extern int output_sample_sz;
@@ -24,11 +24,8 @@ static int mem_ok=0, log_ok=0, check_ok=0;
 itf_t inputs[MAX_INPUTS], outputs[MAX_OUTPUTS];
 itf_t ctrl_in;
 
-struct ctrl_in_pkt {
-	int pm_id;
-	int size;
-	char value[1024];
-};
+var_t parameters[MAX_PARAMETERS];
+int nof_parameters;
 
 struct ctrl_in_pkt ctrl_in_buffer;
 
@@ -37,8 +34,6 @@ struct ctrl_in_pkt ctrl_in_buffer;
 user_var_t *user_vars;
 var_t vars[MAX_VARIABLES];
 int nof_vars;
-var_t parameters[MAX_PARAMS];
-int nof_params;
 
 log_t mlog;
 counter_t counter;
@@ -56,11 +51,9 @@ void init_memory() {
 	memset(snd_len,0,sizeof(int)*MAX_OUTPUTS);
 
 	memset(vars,0,sizeof(var_t)*MAX_VARIABLES);
-	memset(parameters,0,sizeof(var_t)*MAX_PARAMS);
 
 	ctrl_in = NULL;
 	nof_vars=0;
-	nof_params=0;
 	mlog=NULL;
 	counter=NULL;
 
@@ -105,7 +98,7 @@ int init_interfaces(void *ctx) {
 		}
 	}
 
-	modinfo_msg("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
+	moddebug("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
 	for (i=0;i<nof_input_itf;i++) {
 		if (inputs[i] == NULL) {
 			inputs[i] = oesr_itf_create(ctx, has_ctrl+i, ITF_READ, input_max_samples*input_sample_sz);
@@ -186,9 +179,9 @@ int init_variables(void *ctx) {
 		}
 	}
 
-	nof_params = oesr_var_param_list(ctx, parameters, MAX_PARAMS);
-	if (nof_params == -1) {
-		moderror("Error getting module parameters\n");
+	nof_parameters = oesr_var_param_list(ctx,parameters,MAX_PARAMETERS);
+	if (nof_parameters == -1) {
+		oesr_perror("oesr_var_param_list");
 		return -1;
 	}
 
@@ -294,8 +287,6 @@ int Init(void *_ctx) {
 		return 0;
 	}
 
-	modinfo("Init OK\n");
-
 	moddebug("exit ts=%d\n",oesr_tstamp(ctx));
 	return 1;
 }
@@ -319,17 +310,13 @@ int Stop(void *_ctx) {
 }
 
 int process_ctrl_packet(void) {
-	int i;
 
-	for (i=0;i<nof_params;i++) {
-		if ((int) parameters[i] == ctrl_in_buffer.pm_id) {
-			if (oesr_var_param_set_value(ctx,parameters[i],ctrl_in_buffer.value,
-					ctrl_in_buffer.size)) {
-				moderror_msg("Error setting parameter id %d\n",parameters[i]);
-				return -1;
-			}
-		}
+	if (oesr_var_param_set_value(ctx,parameters[ctrl_in_buffer.pm_idx],ctrl_in_buffer.value,
+			ctrl_in_buffer.size)) {
+		oesr_perror("Error setting control parameter\n");
+		return -1;
 	}
+
 	return 0;
 }
 
@@ -466,5 +453,23 @@ int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type) {
 pmid_t param_id(char *name) {
 	return (pmid_t) oesr_var_param_get(ctx,name);
 }
+
+int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value, int value_sz) {
+	struct ctrl_in_pkt *pkt;
+
+	if (module_idx<0 || module_idx > nof_output_itf) {
+		return -1;
+	}
+	pkt = out_ptr[module_idx];
+	if (value_sz > CTRL_PKT_VALUE_SZ) {
+		return -1;
+	}
+	pkt->pm_idx = param_idx;
+	pkt->size = value_sz;
+	memcpy(pkt->value,value,value_sz);
+	set_output_samples(module_idx,1);
+	return 0;
+}
+
 
 

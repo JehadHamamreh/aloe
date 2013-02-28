@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=true;
+	precach_pipeline=false;
 };
 
 modules:
@@ -54,7 +54,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=11;
-		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=167});
+		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
 	};
 
 	resmapp:
@@ -118,13 +118,13 @@ modules:
 			{name="noise_scale";value=1.778}
 		);		
 	};
-
+/*
 	synchro:
 	{
 		binary="modrep_osld/liblte_synchronization.so";
 		mopts=1000;
 	};
-	
+*/
 	demux_rx:
 	{
 		binary="modrep_osld/libgen_demux.so";	
@@ -179,7 +179,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_descrambling.so";	
 		mopts=11;
-		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=167});
+		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
 	};
 	
 	demodulator:
@@ -225,49 +225,16 @@ modules:
 	
 };
 
-join_stages=
-(
-	("source","crc_tb","coder","ratematching","modulator","scrambling","resmapp","demux_tx"),
-	("ifft_0","cyclic_first_0"),
-	("ifft_1","cyclic_0"),
-	("ifft_2","cyclic_1"),
-	("ifft_3","cyclic_2"),
-	("ifft_4","cyclic_3"),
-	("ifft_5","cyclic_4"),
-	("ifft_6","cyclic_5"),
-	("ifft_7","cyclic_first_1"),
-	("ifft_8","cyclic_6"),
-	("ifft_9","cyclic_7"),
-	("ifft_10","cyclic_8"),
-	("ifft_11","cyclic_9"),
-	("ifft_12","cyclic_10"),
-	("ifft_13","cyclic_11"),
-	("synchro","demux_rx"),
-	("remcyclic_first_0","fft_0"),
-	("remcyclic_0","fft_1"),
-	("remcyclic_1","fft_2"),
-	("remcyclic_2","fft_3"),
-	("remcyclic_3","fft_4"),
-	("remcyclic_4","fft_5"),
-	("remcyclic_5","fft_6"),
-	("remcyclic_first_1","fft_7"),
-	("remcyclic_6","fft_8"),
-	("remcyclic_7","fft_9"),
-	("remcyclic_8","fft_10"),
-	("remcyclic_9","fft_11"),
-	("remcyclic_10","fft_12"),
-	("remcyclic_11","fft_13"),
-	("mux_rx","resdemapp","descrambling","demodulator","unratematching","decoder","uncrc_tb","sink")
-
-);
 
 interfaces:
 (
 	{src=("source",0);dest=("crc_tb",0)},
 	{src="crc_tb";dest="coder"},
 	{src="coder";dest="ratematching"},
+	
 	{src="ratematching";dest="scrambling"},	
 	{src="scrambling";dest="modulator"},	
+	
 	{src="modulator";dest="resmapp"},	
 	{src="resmapp";dest="demux_tx"},
 	
@@ -328,9 +295,12 @@ interfaces:
 	{src="cyclic_11";dest=("mux_tx",13)},
 	
 	{src="mux_tx";dest="channel"},	
-	{src="channel";dest="synchro"},
-	{src="synchro";dest="demux_rx"},
+
+	{src="channel";dest="demux_rx"},
 	
+/*	{src="channel";dest="synchro"},
+	{src="synchro";dest="demux_rx"},
+*/
 	{src=("demux_rx",0);dest="remcyclic_first_0"},	
 	{src="remcyclic_first_0";dest="fft_0"},
 	{src="fft_0";dest=("mux_rx",0)},
@@ -388,8 +358,10 @@ interfaces:
 	{src="fft_13";dest=("mux_rx",13)},
 	
 	{src="mux_rx";dest="resdemapp"},	
+	
 	{src="resdemapp";dest="descrambling"},	
 	{src="descrambling";dest="demodulator"},	
+
 	{src="demodulator";dest="unratematching"},	
 	{src="unratematching";dest="decoder"},	
 	{src="decoder";dest="uncrc_tb"},	

@@ -32,7 +32,7 @@ struct Sx Sx;
 
 
 /**
- * @ingroup template
+ * @ingroup gen_soft_demod
  * Initializes the soft demodulation parameters: constellation tables and soft
  * demodulation auxiliary matrices.
  *
@@ -80,7 +80,7 @@ int initialize() {
 
 
 /**
- * @ingroup template
+ * @ingroup gen_soft_demod
  *
  * Main DSP function
  *

@@ -128,6 +128,38 @@ int oesr_var_param_set_value(void *context, var_t parameter, void* value, int si
 }
 
 
+
+/**
+ * Fills the buffer parameters with up to max_elems module parameters defined in the app
+ *
+ * \param context OESR context pointer
+ * \param parameter Pointer to a parameters buffer
+ * \param max_elems Size of the parameters buffer
+ *
+ * \return On success, returns a non-negative number indicating the number of parameters
+ * successfully copied to the buffer, on error returns -1
+ */
+int oesr_var_param_list(void *context, var_t *parameters, int max_elems) {
+	cast(ctx,context);
+	int i;
+
+	OESR_ASSERT_PARAM(parameters);
+	OESR_ASSERT_PARAM(max_elems>=0);
+
+	nod_module_t *module = (nod_module_t*) ctx->module;
+
+	if (max_elems > module->parent.nof_variables) {
+		max_elems = module->parent.nof_variables;
+	}
+	for (i=0;i<max_elems;i++) {
+		parameters[i] = (var_t) &module->parent.variables[i];
+	}
+	return max_elems;
+}
+
+
+
+
 /**
  * Returns a handler for the parameter with name "name".
  * This handler is then used by the functions oesr_var_param_value() and oesr_var_param_type()
@@ -148,30 +180,6 @@ var_t oesr_var_param_get(void *context, char *name) {
 		return NULL;
 	}
 	return (var_t) variable;
-}
-
-
-/**
- * Fills the buffer variables with up to buff_sz variable handlers owned by the caller module
- *
- * \param context OESR context pointer
- * \param variables buffer of handlers
- * \param buff_sz size of the variables buffer
- *
- * \return On success, returns a non-null handler. On error returns null.
- */
-int oesr_var_param_list(void *context, var_t *variables, int buff_sz) {
-	cast(ctx,context);
-	int i;
-
-	nod_module_t *module = (nod_module_t*) ctx->module;
-	if (buff_sz > module->parent.nof_variables) {
-		buff_sz = module->parent.nof_variables;
-	}
-	for (i=0;i<buff_sz;i++) {
-		variables[i] = (var_t) &module->parent.variables[i];
-	}
-	return buff_sz;
 }
 
 /**

@@ -62,6 +62,12 @@ int generate_input_signal(void *in, int *lengths)
 	for (i=0;i<block_length;i++) {
 		input[i] = 0x1;
 	}
+	/* UL: test*/
+	input[10] = 'x';
+	input[11] = 'x';
+	input[12] = 'x';
+	input[13] = 'x';
+	input[14] = 'y';
 
 	return 0;
 }

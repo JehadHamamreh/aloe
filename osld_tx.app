@@ -61,7 +61,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=11;
-		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=167});
+		variables=({name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
 	};
 
 	resmapp:
@@ -113,47 +113,30 @@ modules:
 		mopts=11;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
-
+	
+/* set dac_tx:data_type=2 if enabled
 	quant:
 	{
 		binary="modrep_default/libgen_quantiz.so";	
 		mopts=11;
 		variables=({name="scale";value=2.5;},{name="amplitude";value=1000;});
 	};
-
+*/
 	dac_tx:
 	{
-		binary="modrep_default/libplp_sink.so";	
+		binary="modrep_default/libfile_sink.so";	
 		mopts=5;
 		variables=(
-		{name="data_type";value=2},
-		{name="file_name";value="/home/ismael/test.txt"},
+		{name="data_type";value=1}, /* set to 2 if quant is enabled */
+		{name="file_name";value="./output_osld.txt"},
 		{name="gain";value=1.0},
-		{name="mode";value=2},
+		{name="mode";value=0},
 		{name="freq_samp";value=1777777.7;});
 	};
 		
 };
-/*
-join_stages=
-(
-	("source","crc_tb","coder","ratematching","modulator","scrambling","resmapp","demux_tx"),
-	("ifft_0","cyclic_first_0"),
-	("ifft_1","cyclic_0"),
-	("ifft_2","cyclic_1"),
-	("ifft_3","cyclic_2"),
-	("ifft_4","cyclic_3"),
-	("ifft_5","cyclic_4"),
-	("ifft_6","cyclic_5"),
-	("ifft_7","cyclic_first_1"),
-	("ifft_8","cyclic_6"),
-	("ifft_9","cyclic_7"),
-	("ifft_10","cyclic_8"),
-	("ifft_11","cyclic_9"),
-	("ifft_12","cyclic_10"),
-	("ifft_13","cyclic_11")
-);
-*/
+
+
 interfaces:
 (
 	{src=("source",0);dest=("crc_tb",0)},
@@ -220,7 +203,12 @@ interfaces:
 	{src="ifft_13";dest="cyclic_11"},
 	{src="cyclic_11";dest=("mux_tx",13)},
 	
+	/* with quantizier
 	{src="mux_tx";dest="quant"},
 	{src="quant";dest="dac_tx"}
+	*/
+	
+	{src="mux_tx";dest="dac_tx"}
+	
 );
 

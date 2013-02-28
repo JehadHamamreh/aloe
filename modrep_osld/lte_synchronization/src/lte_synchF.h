@@ -17,20 +17,7 @@
  */
 
 
-/** @defgroup gen_dft gen_dft
- *
- * Computes the Discrete Fourier Transform (DFT).
- *
- * The number of received samples must be an integer multiple of the dft_size parameter. gen_dft then
- * sequentially computes received_samples/dft_size DFTs, each of dft_size points, and concatenates the outputs.
- *
- * The module uses the fftw3 library for computing the dft efficiently. In order to improve the 
- * performance and enable real-time reconfiguration, it precomputes dft plans
- * during the initialization phase for the dft_sizes configured in file dft.h.
- * If the dft_size parameter does not match any of the preconfigured sizes, a new plan is
- * created at runtime. The runtime overhead of computing a new dft plan may cause real-time failures.
- *
- *
+/** @defgroup lte_synchronization
  *
  * @{
  */

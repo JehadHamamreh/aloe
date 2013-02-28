@@ -139,6 +139,7 @@ int main(int argc, char **argv)
 	double *plot_buff_r;
 	double *plot_buff_c;
 	int run_times;
+	int file_read_sz;
 
 	allocate_memory();
 
@@ -172,12 +173,15 @@ int main(int argc, char **argv)
 	}
 
 	if (dat_input) {
+		if (param_get_int_name("block_length",&file_read_sz)) {
+			file_read_sz=input_max_samples;
+		}
 		if (input_sample_sz == sizeof(float)) {
 			input_lengths[0] = rtdal_datafile_read_real(dat_input,
-					(float*) input_data,input_max_samples);
+					(float*) input_data,file_read_sz);
 		} else if (input_sample_sz == sizeof(_Complex float)) {
 			input_lengths[0] = rtdal_datafile_read_complex(dat_input,
-					(_Complex float*) input_data,input_max_samples);
+					(_Complex float*) input_data,file_read_sz);
 		} else {
 			printf("Only real and complex signals are supported\n");
 		}
@@ -185,6 +189,7 @@ int main(int argc, char **argv)
 			printf("Error reading file %s\n",dat_input_name);
 			exit(1);
 		}
+		printf("Read %d/%d samples from file %s %d\n",input_lengths[0],file_read_sz,dat_input_name);
 	} else {
 		if (generate_input_signal(input_data, input_lengths)) {
 			printf("Error generating input signal\n");

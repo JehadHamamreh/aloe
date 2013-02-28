@@ -18,7 +18,7 @@
 
 
 /**
- * @defgroup template template
+ * @defgroup lte_descrambling lte_descrambling
  * Document here your module
  * @{
  */

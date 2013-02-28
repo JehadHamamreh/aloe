@@ -84,6 +84,83 @@ int oesr_module_id(void *context) {
 	return module->parent.id;
 }
 
+/**
+ * Returns the index of a module in the waveform.
+ *
+ * This function is used by the control interface skeleton.
+ *
+ * TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform
+ * contains the local modules only.
+ */
+int oesr_get_module_idx(void *context, char *name) {
+	cast(ctx,context);
+	aassert(name);
+
+	nod_module_t *my_module = (nod_module_t*) ctx->module;
+	nod_waveform_t *waveform = (nod_waveform_t*) my_module->parent.waveform;
+
+	int i=0;
+	while(i<waveform->nof_modules && strcmp(waveform->modules[i].parent.name,name))
+		i++;
+	if (i==waveform->nof_modules) {
+		return -1;
+	}
+
+	return i;
+}
+
+
+/**
+ * Returns the number of modules in the waveform.
+ *
+ * This function is used by the control interface skeleton.
+ *
+ * TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform
+ * contains the local modules only.
+ */
+int oesr_get_nofmodules(void *context) {
+	cast(ctx,context);
+
+	nod_module_t *my_module = (nod_module_t*) ctx->module;
+	nod_waveform_t *waveform = (nod_waveform_t*) my_module->parent.waveform;
+
+	return waveform->nof_modules;
+}
+
+/**
+ * Returns the index of a variable in a module.
+ *
+ * This function is used by the control interface skeleton.
+ *
+ * TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform
+ * contains the local modules only.
+ */
+int oesr_get_variable_idx(void *context, char *module_name, char *variable_name) {
+	cast(ctx,context);
+	aassert(module_name);
+	aassert(variable_name);
+
+	nod_module_t *my_module = (nod_module_t*) ctx->module;
+	nod_waveform_t *waveform = (nod_waveform_t*) my_module->parent.waveform;
+
+	int i=0;
+	while(i<waveform->nof_modules && strcmp(waveform->modules[i].parent.name,module_name))
+		i++;
+	if (i==waveform->nof_modules) {
+		return -1;
+	}
+	int j=0;
+	while(j<waveform->modules[i].parent.nof_variables
+			&& strcmp(waveform->modules[i].parent.variables[i].name,variable_name)) {
+		j++;
+	}
+	if (j==waveform->modules[i].parent.nof_variables) {
+		return -1;
+	}
+
+	return j;
+}
+
 
 /**
  *  Returns the module's timestamp. This is the number of timeslots that the object has executed
