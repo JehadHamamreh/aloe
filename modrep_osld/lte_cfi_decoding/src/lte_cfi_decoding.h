@@ -32,7 +32,7 @@ typedef int output_t;
 #define INPUT_MAX_SAMPLES 	14*2048
 
 #define NOF_INPUT_ITF		1
-#define NOF_OUTPUT_ITF		1
+#define NOF_OUTPUT_ITF		0
 
 #endif
 

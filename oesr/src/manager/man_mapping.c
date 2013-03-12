@@ -175,6 +175,10 @@ void generate_model_c_vector(waveform_t *waveform, int multiplicity) {
 			j++;
 		}
 	}
+	mapdebug("joined:",0);
+	for (i=0;i<M;i++) {
+		mapdebug("%d,",joined_function[i]);
+	}
 	for (k=0;k<j;k++) {
 		for (i=0;i<M;i++) {
 			if (joined_function[k] == join_function[i]) {
@@ -221,6 +225,7 @@ void generate_model_b_matrix(waveform_t *waveform, int multiplicity) {
 			wave.b[i][j] = tmp_b[joined_function[i]][joined_function[j]];
 		}
 	}
+	/*
 	for (i=0;i<wave.nof_tasks;i++) {
 		mapdebug("b_%d=",i);
 		for (j=0;j<wave.nof_tasks;j++) {
@@ -228,6 +233,7 @@ void generate_model_b_matrix(waveform_t *waveform, int multiplicity) {
 		}
 		mapdebug("\n",0);
 	}
+	*/
 }
 
 void generate_model_stages(waveform_t *waveform) {
@@ -264,11 +270,9 @@ void generate_model_stages(waveform_t *waveform) {
 			for (k = 0; k < waveform->nof_modules; k++) {
 				if (waveform->modules[i].outputs[j].remote_module_id ==
 						waveform->modules[k].id) {
-					if (waveform->modules[i].stage == waveform->modules[k].stage) {
-						waveform->modules[i].outputs[j].delay = 0;
-					} else {
-						waveform->modules[i].outputs[j].delay = 1;
-					}
+					waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
+					mapdebug("delay %s->%s is %d slots\n",waveform->modules[i].name,
+							waveform->modules[k].name,waveform->modules[i].outputs[j].delay);
 				}
 			}
         }

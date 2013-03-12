@@ -9,10 +9,10 @@
 /**@ingroup gen_modulator
  * @{
  */
-#define BPSK    0
-#define QPSK    1
-#define QAM16   2
-#define QAM64   3
+#define BPSK    1
+#define QPSK    2
+#define QAM16   3
+#define QAM64   4
 
 /**@} */
 

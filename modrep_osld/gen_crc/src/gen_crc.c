@@ -91,7 +91,7 @@ int initialize() {
  * Adds a CRC to every received packet from each interface
  */
 int work(void **inp, void **out) {
-	int i;
+	int i,j;
 	unsigned int n;
 	input_t *input;
 
@@ -108,6 +108,7 @@ int work(void **inp, void **out) {
 			if (mode==MODE_CHECK) {
 				if (n) {
 					total_errors++;
+					printf("error at packet %d\n",total_pkts);
 				}
 				total_pkts++;
 				set_output_samples(i,get_input_samples(i)-long_crc);

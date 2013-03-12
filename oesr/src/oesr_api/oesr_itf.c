@@ -46,8 +46,7 @@
  * \return Non-null handler on success or null on error.
  *
  */
-itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode,
-		int size) {
+itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int size) {
 	oesr_context_t *ctx = context;
 	nod_module_t *module = ctx->module;
 	sdebug("context=0x%x, module_id=%d, port_idx=%d, mode=%d, size=%d inputs=%d outputs=%d\n",context,module->parent.id,
@@ -81,7 +80,7 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode,
 	} else {
 		/* is internal */
 		if (mode == ITF_WRITE) {
-			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(OESR_ITF_DEFAULT_MSG,
+			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(nod_itf->delay+OESR_ITF_DEFAULT_MSG,
 					size, nod_itf->delay);
 			if (!rtdal_itf) {
 				OESR_HWERROR("rtdal_itfspscq_new");

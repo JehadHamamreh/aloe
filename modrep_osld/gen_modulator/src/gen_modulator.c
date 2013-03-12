@@ -56,6 +56,10 @@ int work(void **inp, void **out) {
 	input_t *input;
 	output_t *output;
 
+	if (!get_input_samples(0)) {
+		return 0;
+	}
+
 	param_get_int(modulation_id,&modulation);
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {

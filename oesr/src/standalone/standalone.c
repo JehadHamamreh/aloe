@@ -141,8 +141,6 @@ int main(int argc, char **argv)
 	int run_times;
 	int file_read_sz;
 
-	allocate_memory();
-
 	parameters = NULL;
 
 	parse_paramters(argc, argv);
@@ -156,6 +154,9 @@ int main(int argc, char **argv)
 		printf("Error initializing\n");
 		exit(1); /* the reason for exiting should be printed out beforehand */
 	}
+
+	allocate_memory();
+
 
 	if (dat_input_name) {
 		dat_input = rtdal_datafile_open(dat_input_name, "r");
@@ -229,6 +230,8 @@ int main(int argc, char **argv)
 		}
 		if (!output_lengths[i]) {
 			printf("Warning output interface %d has zero length\n",i);
+		} else {
+			printf("output %d has %d samples\n",i,output_lengths[i]);
 		}
 	}
 
@@ -258,7 +261,7 @@ int main(int argc, char **argv)
 			plot_buff_r = malloc(sizeof(double)*input_lengths[i]);
 			plot_buff_c = malloc(sizeof(double)*input_lengths[i]);
 			if (input_sample_sz == sizeof(float)) {
-				tmp_f = (float*) &input_data[i*input_max_samples];
+				tmp_f = (float*) &input_data[i*input_max_samples*input_sample_sz];
 				for (j=0;j<input_lengths[i];j++) {
 					plot_buff_r[j] = (double) tmp_f[j];
 				}
@@ -269,7 +272,7 @@ int main(int argc, char **argv)
 		        		get_input_samples(i), tmp);
 		        free(plot_buff_r);
 			} else if (input_sample_sz == sizeof(_Complex float)) {
-				tmp_c = (_Complex float*) &input_data[i*input_max_samples];
+				tmp_c = (_Complex float*) &input_data[i*input_max_samples*input_sample_sz];
 				for (j=0;j<input_lengths[i];j++) {
 					plot_buff_r[j] = (double) __real__ tmp_c[j];
 					plot_buff_c[j] = (double) __imag__ tmp_c[j];
@@ -292,7 +295,7 @@ int main(int argc, char **argv)
 			plot_buff_r = malloc(sizeof(double)*output_lengths[i]);
 			plot_buff_c = malloc(sizeof(double)*output_lengths[i]);
 			if (output_sample_sz == sizeof(float)) {
-				tmp_f = (float*) &output_data[i*output_max_samples];
+				tmp_f = (float*) &output_data[i*output_max_samples*output_sample_sz];
 				for (j=0;j<output_lengths[i];j++) {
 					plot_buff_r[j] = (double) __real__ tmp_f[j];
 				}
@@ -303,7 +306,7 @@ int main(int argc, char **argv)
 						output_lengths[i], tmp);
 				free(plot_buff_r);
 			} else if (output_sample_sz == sizeof(_Complex float)) {
-				tmp_c = (_Complex float*) &output_data[i*output_max_samples];
+				tmp_c = (_Complex float*) &output_data[i*output_max_samples*output_sample_sz];
 				for (j=0;j<output_lengths[i];j++) {
 					plot_buff_r[j] = (double) __real__ tmp_c[j];
 					plot_buff_c[j] = (double) __imag__ tmp_c[j];

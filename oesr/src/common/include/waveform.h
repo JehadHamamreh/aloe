@@ -135,6 +135,7 @@ typedef struct {
 	waveform_status_t status;
 	waveform_mode_t modes[MAX(modes)];
 	stage_config_t stages;
+	int nof_parsed_modules;
 	int last_update_ts;
 	int status_timestamp_delay;
 	int modules_x_node[MAX(nodes)];
@@ -143,6 +144,7 @@ typedef struct {
 	int nof_modules;
 	strdef(model_file);
 	strdef(name);
+	strdef(name_prefix);
 	int nof_modes;
 	int granularity_us;
 	int precach_pipeline;

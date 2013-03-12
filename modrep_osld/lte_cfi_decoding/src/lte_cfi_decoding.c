@@ -62,18 +62,19 @@ int work(void **inp, void **out) {
 	rcv_samples = get_input_samples(0);
 	snd_samples = 1;
 
+	if (!rcv_samples) {
+		return 0;
+	}
+
 	if (rcv_samples != NOF_BITS) {
 		moderror_msg("Wrong input sequence length (%d). Should be of 32 "
 			"bits.\n", rcv_samples);
 		return -1;
 	}
 	index = cfi_decoding(input, table);
-	output[0] = index+1;
-/*	printf("\n");
-	for (i=0; i<snd_samples; i++) {
-		printf("%d",output[i]);
+	if (output) {
+		output[0] = index+1;
 	}
-*/
 	return snd_samples;
 }
 

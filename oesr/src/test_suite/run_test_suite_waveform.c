@@ -70,7 +70,7 @@ void *_run_main(void *arg) {
 		return NULL;
 	}
 
-	if (waveform_parse(&waveform)) {
+	if (waveform_parse(&waveform,1)) {
 		aerror("parsing waveform\n");
 		return NULL;
 	}

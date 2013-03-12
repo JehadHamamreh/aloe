@@ -35,24 +35,12 @@
 % out           
 %
 
-addpath('/home/vuk/DATOS/work/OSLD/layer mapper');
-
-addpath('/home/vuk/DATOS/workspace/lte_cfi_coding');
-addpath('/home/vuk/DATOS/workspace/lte_cfi_decoding');
-addpath('/home/vuk/DATOS/workspace/lte_modem');
-addpath('/home/vuk/DATOS/workspace/gen_hard_demod');
-addpath('/home/vuk/DATOS/workspace/lte_scrambling');
-addpath('/home/vuk/DATOS/workspace/lte_hard_descrambling');
+addpath('../layer mapper');
+addpath('../scrambling');
+addpath('/usr/local/mex');
 
 x = rand(1); % Control Format Indicator (CFI): 1, 2, or 3
-if (rand(1) < 0.3333)
     cfi = 1;
-elseif (rand(1) < 0.6667)
-    cfi = 2;
-else
-    cfi = 3;
-end
-cfi
 
 channel = 1;        % 1 indicates PCFICH
 q = 0;              % don't care
@@ -82,10 +70,10 @@ coded_cfi = cfi_coding(cfi)
 %coded_cfix = am_lte_cfi_coding(int32(cfi)); % cannot deal with integer inputs or outputs
 
 scrambled_cfi = cfi_scrambling(coded_cfi, cell_gr, cell_sec, ns)
-scrambled_cfix = am_lte_scrambling(coded_cfi, {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)}});
+scrambled_cfix = am_lte_scrambling(coded_cfi', {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)}});
 
 modulated_cfi = qpsk_modulation(scrambled_cfi)
-modulated_cfix = am_lte_modem(scrambled_cfix, {{'modulation',int32(1)}});
+modulated_cfix = am_gen_modulator(scrambled_cfix', {{'modulation',int32(2)}});
 
 layered_cfi = lte_PDSCH_layer_mapper(modulated_cfi, 0, v, nof_q, style)
 precoded_cfi = lte_PDSCH_precoding(layered_cfi, p, style)
@@ -98,10 +86,10 @@ unprecoded_cfi = lte_PDSCH_unprecoding(channel_out, v, style)
 unlayered_cfi = lte_PDSCH_layer_demapper(unprecoded_cfi, v, nof_q, style)
 
 demodulated_cfi = qpsk_demodulation(unlayered_cfi)
-demodulated_cfix = am_gen_hard_demod(unlayered_cfi, {{'modulation',int32(1)}});
+demodulated_cfix = am_gen_hard_demod(unlayered_cfi', {{'modulation',int32(2)}});
 
 descrambled_cfi = cfi_scrambling(demodulated_cfi, cell_gr, cell_sec, ns)
-descrambled_cfix = am_lte_hard_descrambling(demodulated_cfix, {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(1)}});
+descrambled_cfix = am_lte_hard_descrambling(demodulated_cfix', {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(1)}});
 
 uncoded_cfi = cfi_decoding(descrambled_cfi)
 %uncoded_cfix = am_lte_cfi_decoding(descrambled_cfix); % cannot deal with integer inputs or outputs

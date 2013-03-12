@@ -113,10 +113,15 @@ int module_free(module_t *module) {
 int waveform_alloc(waveform_t *waveform, int nof_modules) {
 	mdebug("waveform_id=%d, nof_modules=%d\n",waveform->id, nof_modules);
 	if (!waveform) return -1;
-	if (waveform->modules) return -1;
-	waveform->modules = (module_t*) pool_alloc(nof_modules, sizeof(module_t));
+	waveform->nof_modules += nof_modules;
+	if (waveform->modules) {
+		waveform->modules = (module_t*) pool_realloc(waveform->modules,
+				waveform->nof_modules, sizeof(module_t));
+		memset(&waveform->modules[waveform->nof_modules-nof_modules],0,nof_modules*sizeof(module_t));
+	} else {
+		waveform->modules = (module_t*) pool_alloc(waveform->nof_modules, sizeof(module_t));
+	}
 	if (!waveform->modules) return -1;
-	waveform->nof_modules = nof_modules;
 	return 0;
 }
 

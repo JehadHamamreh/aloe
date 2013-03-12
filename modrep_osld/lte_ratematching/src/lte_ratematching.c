@@ -25,12 +25,8 @@
 #include "ratematching.h"
 #include "lte_lib/grid.h"
 
-pmid_t out_len_id,rvidx_id,tslot_idx_id,fft_size_id;
-pmid_t mcs_id,cp_long_id,nrb_id;
+pmid_t out_len_id,rvidx_id;
 
-static int tslot_idx;
-
-int lteslots_x_timeslot;
 int direction;
 extern int input_sample_sz;
 extern int output_sample_sz;
@@ -39,20 +35,6 @@ extern int output_sample_sz;
  * @ingroup lte_ratematching
  *  Rate adapter for LTE DL/UL. Code rate is out_len/in_len
  *
- *  There are two ways to configure this module:
- *    - Automatic: Choose tslot_idx, modulation and fft_size to let the module
- *    automatically determine the required output length at each slot, according to the
- *    LTE slotting
- *    - Manual: Set out_len variable to the desired output length.
- *
- *  Automatic mode is selected when parameter out_len is not defined.
- *
- * \param tslot_idx In automatic mode, indicates the tslot index
- * \param mcs In automatic mode, indicates the Modulation and Coding Scheme (MCS)
- * \param nrb In automatic mode, indicates the Number of allocated Resource Blocs
- * \param fft_size In automatic mode, indicates the length of the fft
- * \param cp_is_long In automatic mode, non-null selects long cyclic prefix
- * \param lteslots_x_timeslot In automatic mode, number of lte slots per execution time slot
  * \param out_len Output length
  * \param rv_idx Document this parameter
  * \param direction 0 for the transmitter, 1 for the receiver
@@ -63,28 +45,6 @@ int initialize() {
 	int size;
 
 	out_len_id = param_id("out_len");
-	if (!out_len_id) {
-		tslot_idx_id = param_id("tslot_idx");
-		tslot_idx = 0;
-
-		if (!(fft_size_id = param_id("fft_size"))) {
-			moderror("In automatic mode, parameter fft_size must be specified\n");
-		}
-
-		if (!(mcs_id = param_id("mcs"))) {
-			moderror("In automatic mode, parameter mcs must be specified\n");
-		}
-		if (!(nrb_id = param_id("nrb"))) {
-			moderror("In automatic mode, parameter nrb must be specified\n");
-		}
-		if (!(cp_long_id = param_id("cp_is_long"))) {
-			moderror("In automatic mode, parameter cp_is_long must be specified\n");
-		}
-		if (param_get_int_name("lteslots_x_timeslot",&lteslots_x_timeslot)) {
-			moderror("In automatic mode, parameter lteslots_x_timeslot must be specified\n");
-		}
-	}
-
 	rvidx_id = param_id("rvidx");
 
 	if (param_get_int_name("direction",&direction)) {
@@ -100,8 +60,6 @@ int initialize() {
 		output_sample_sz=sizeof(char);
 	}
 
-	tslot_idx=0;
-
 	return 0;
 }
 
@@ -114,7 +72,6 @@ int initialize() {
 int work(void **inp, void **out) {
 	int in_len,nof_active_itf,out_len,out_len_block,rvidx;
 	int i,j;
-	int fft_size, mcs,cp_is_long,nrb;
 	char *input_b;
 	char *output_b;
 	float *input_f;
@@ -124,46 +81,10 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 
-	if (out_len_id) {
-		if (param_get_int(out_len_id, &out_len) != 1) {
-			moderror("Error getting parameter out_len\n");
-			return -1;
-		}
-	} else {
-		if (tslot_idx_id) {
-			if (param_get_int(tslot_idx_id, &tslot_idx) != 1) {
-				moderror("Error getting parameter tslot_idx\n");
-				return -1;
-			}
-		}
-		if (param_get_int(fft_size_id, &fft_size) != 1) {
-			moderror("Error getting parameter fft_size\n");
-			return -1;
-		}
-		if (param_get_int(mcs_id, &mcs) != 1) {
-			moderror("Error getting parameter mcs\n");
-			return -1;
-		}
-		if (param_get_int(nrb_id, &nrb) != 1) {
-			moderror("Error getting parameter nrb\n");
-			return -1;
-		}
-		if (param_get_int(cp_long_id, &cp_is_long) != 1) {
-			moderror("Error getting parameter cp_is_long\n");
-			return -1;
-		}
-		if (!direction) {
-			out_len = lte_get_psdch_bits_x_slot(lteslots_x_timeslot*tslot_idx, fft_size, cp_is_long, lteslots_x_timeslot)*
-					lte_get_modulation_format(mcs);
-		} else {
-			out_len = lte_get_cbits(mcs,nrb);
-		}
-		if (out_len == -1) {
-			moderror("Error computing bits per slot\n");
-			return -1;
-		}
+	if (param_get_int(out_len_id, &out_len) != 1) {
+		moderror("Error getting parameter out_len\n");
+		return -1;
 	}
-
 
 	if (rvidx_id) {
 		if (param_get_int(rvidx_id, &rvidx) != 1) {
@@ -207,10 +128,6 @@ int work(void **inp, void **out) {
 			}
 
 		}
-	}
-	tslot_idx++;
-	if (tslot_idx == LTE_NOF_SLOTS_X_FRAME/lteslots_x_timeslot) {
-		tslot_idx = 0;
 	}
 	return out_len_block*nof_active_itf;
 }

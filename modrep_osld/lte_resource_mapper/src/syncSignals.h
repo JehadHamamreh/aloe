@@ -31,8 +31,6 @@
 
 #define SSSLEN 124
 #define NUMSSS 168
-int m0s[NUMSSS];
-int m1s[NUMSSS];
 
 int setPSS(int phylayerID, _Complex float *PSSsymb, int TxRxMode);
 void loadmtable (int *m0s, int *m1s);

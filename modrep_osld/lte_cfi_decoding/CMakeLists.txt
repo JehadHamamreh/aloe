@@ -1,10 +1,10 @@
 # This configuration is for the aloe++ skeleton
 
 # set-up the program libraries here
-set(LIBRARIES m rt)
+set(LIBRARIES m lte_lib)
 
 # set-up program includes here
-include_directories(/usr/local/include/)
+include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 

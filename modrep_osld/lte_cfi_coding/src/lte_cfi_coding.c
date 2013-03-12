@@ -23,7 +23,7 @@
 #include <skeleton.h>
 
 #include "lte_cfi_coding.h"
-#include "cfi_coding.h"
+#include "lte_lib/cfi_coding_table.h"
 
 //pmid_t coding_id;
 char table[4][32];
@@ -58,26 +58,30 @@ int work(void **inp, void **out) {
 	int rcv_samples, snd_samples;
 	input_t *input;
 	output_t *output;
+	int cfi;
 
 	input = inp[0];
 	output = out[0];
 	rcv_samples = get_input_samples(0);
+
+	if (!rcv_samples) {
+		if (param_get_int_name("cfi",&cfi)) {
+			moderror("No input nor parameter CFI received\n");
+			return -1;
+		}
+	} else {
+		cfi = input[0];
+	}
+
 	snd_samples = NOF_BITS;
 
-	if ((input[0] > 0) && (input[0] < 5)) {
-		memcpy(output, &table[input[0]-1], NOF_BITS);
+	if ((cfi > 0) && (cfi < 5)) {
+		memcpy(output, &table[cfi-1], NOF_BITS);
 	} else {
 		moderror_msg("Wrong cfi %d. Specify 1, 2, 3, or 4 (4 reserved)."
 		  "\n", input[0]);
 		return -1;
 	}
-
-/*	printf("\n\n");
-	for (i=0; i<snd_samples; i++) {
-		printf("%d",output[i]);
-	}
-	printf("\n\n %d  %d  %d", table, &table[input[0]-1], &table[input[0]-1][0]);
-*/
 	return snd_samples;
 }
 

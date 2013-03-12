@@ -90,7 +90,7 @@ int oesr_var_param_get_value(void *context, var_t parameter, void* value, int si
 		module->parent.mode.next_tslot = 0;
 	}
 	memcpy(value, variable->init_value[module->parent.mode.cur_mode], (size_t) cpy_sz);
-	sdebug("id=0x%x, copied=%d\n", parameter, cpy_sz);
+	sdebug("id=0x%x, copied=%d\n", variable, cpy_sz);
 	return cpy_sz;
 }
 
@@ -111,6 +111,8 @@ int oesr_var_param_set_value(void *context, var_t parameter, void* value, int si
 
 	cast(ctx,context);
 
+	sdebug("set_value id=0x%x, size=%d\n",parameter,size);
+
 	OESR_ASSERT_PARAM(parameter);
 	OESR_ASSERT_PARAM(value);
 	OESR_ASSERT_PARAM(size>0);
@@ -118,12 +120,44 @@ int oesr_var_param_set_value(void *context, var_t parameter, void* value, int si
 	nod_module_t *module = (nod_module_t*) ctx->module;
 	variable_t *variable = (variable_t*) parameter;
 
-	sdebug("id=0x%x, size=%d, value=0x%x, cur_mode=%d\n",parameter,size,value,module->parent.mode.cur_mode);
-
 	cpy_sz = (size > variable->size)?variable->size:size;
 
 	memcpy(variable->init_value[module->parent.mode.cur_mode], value, (size_t) cpy_sz);
 	sdebug("id=0x%x, copied=%d\n", parameter, cpy_sz);
+	return cpy_sz;
+}
+
+/** Sets up to size bytes of the value of the parameter to the value of the
+ * buffer pointed by ptr to the
+ *
+ * \param context OESR context pointer
+ * \param idx Index of the parameter in the local database
+ * \param value Pointer to the user memory where the parameter value will be stored
+ * \param size Size of user memory buffer
+ *
+ * \return On success, returns a non-negative integer indicating the number of bytes written to value.
+ * On error returns -1
+ */
+int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size) {
+	int cpy_sz;
+
+	cast(ctx,context);
+
+	sdebug("set_value_idx idx=%d, value 0x%x size=%d\n",idx,value,size);
+	OESR_ASSERT_PARAM(idx>=0);
+	OESR_ASSERT_PARAM(value);
+	OESR_ASSERT_PARAM(size>0);
+
+	nod_module_t *module = (nod_module_t*) ctx->module;
+	variable_t *variable = (variable_t*) &module->parent.variables[idx];
+
+	sdebug("%d:%s: set variable %s value %d\n",oesr_tstamp(context),
+			module->parent.name,variable->name,*((int*) value));
+
+	cpy_sz = (size > variable->size)?variable->size:size;
+
+	memcpy(variable->init_value[module->parent.mode.cur_mode], value, (size_t) cpy_sz);
+	sdebug("id=0x%x, copied=%d\n", variable, cpy_sz);
 	return cpy_sz;
 }
 
@@ -153,6 +187,8 @@ int oesr_var_param_list(void *context, var_t *parameters, int max_elems) {
 	}
 	for (i=0;i<max_elems;i++) {
 		parameters[i] = (var_t) &module->parent.variables[i];
+		sdebug("list %d %s id=0x%x size %d\n",i,module->parent.variables[i].name,
+				parameters[i],module->parent.variables[i].size);
 	}
 	return max_elems;
 }

@@ -136,6 +136,7 @@ var_t oesr_var_param_get(void *context, char *name);
 int oesr_var_param_list(void *context, var_t *parameters, int max_elems);
 int oesr_var_param_get_value(void *context, var_t parameter, void* value, int size);
 int oesr_var_param_set_value(void *context, var_t parameter, void* value, int size);
+int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size);
 oesr_var_type_t oesr_var_param_type(void *context, var_t parameter);
 /**@} */
 

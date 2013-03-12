@@ -26,49 +26,8 @@
 #include <complex.h>
 #include "syncSignals.h"
 
-/** Global variables*/
-_Complex float PSSsymb[PSSLEN];
-float SSSseq[SSSLEN];
-
-/**
- *
- * This function calculates the Zadoff-Chu sequence.
- * @params
- * @params int phylayerID:(0, 1, 2) Physical Layer Identity within the
- * Physical Layer cell-Identity Group.
- * @params  _Complex float *PSSsymb: Output array.
- * @params int TxRxMode: -1 (Tx Mode), 1 (Rx Mode) .
- *
- * @return On success returns 1.
- * On error returns -1.
- */
-
-int setPSS(int CellID, _Complex float *PSSsymb, int TxRxMode)
-{
-	int i;
-	float arg, rootidx;
-	int phylayerID;
-
-	phylayerID=CellID%3;
-	if(phylayerID == 0)rootidx = PSSCELLID0;
-	if(phylayerID == 1)rootidx = PSSCELLID0;
-	if(phylayerID == 2)rootidx = PSSCELLID0;
-
-
-	for(i=0; i<PSSLEN/2; i++){
-		arg=(float)TxRxMode*PI*rootidx*((float)i*((float)i+1.0))/63.0;
-		__real__ PSSsymb[i]=cos(arg);
-		__imag__ PSSsymb[i]=sin(arg);
-	}
-	for(i=PSSLEN/2; i<PSSLEN; i++){
-		arg=(float)TxRxMode*PI*rootidx*(((float)i+2.0)*((float)i+1.0))/63.0;
-		__real__ PSSsymb[i]=cos(arg);
-		__imag__ PSSsymb[i]=sin(arg);
-	}
-	return 1;
-}
-
-
+int m0s[NUMSSS];
+int m1s[NUMSSS];
 
 /** SECONDARY SYNCH SIGNALS*/
 #define N 31

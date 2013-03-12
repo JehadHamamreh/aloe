@@ -151,7 +151,7 @@ int oesr_get_variable_idx(void *context, char *module_name, char *variable_name)
 	}
 	int j=0;
 	while(j<waveform->modules[i].parent.nof_variables
-			&& strcmp(waveform->modules[i].parent.variables[i].name,variable_name)) {
+			&& strcmp(waveform->modules[i].parent.variables[j].name,variable_name)) {
 		j++;
 	}
 	if (j==waveform->modules[i].parent.nof_variables) {

@@ -152,7 +152,7 @@ int float_unratematching (float * input, float * subblock0, float * subblock1, f
 		if (dummyMatrix[(k0+i)%buffersize]!=DUMMYBIT)
 			circularBuffer[(k0+i)%buffersize] = input[k++];
 		else
-			circularBuffer[(k0+i)%buffersize] = 8.8;
+			circularBuffer[(k0+i)%buffersize] = 0.0;
 		i++;
 	}
 

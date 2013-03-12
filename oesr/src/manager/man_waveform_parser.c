@@ -19,17 +19,18 @@
 #include <stdlib.h>
 #include <libconfig.h>
 
+#include "oesr_man.h"
 #include "str.h"
 #include "defs.h"
 #include "waveform.h"
 #include "objects_max.h"
 #include "mempool.h"
 
-config_t config;
 
 #define ITF_PREALLOC 100
 
-static int mod_id=1, waveform_id=1;
+static int waveform_id=1;
+strdef(tmp_string);
 
 /**@TODO: Generate waveform model
  *
@@ -51,6 +52,46 @@ static int find_mode(waveform_t *w, const char *name) {
 	else
 		return i;
 }
+
+
+module_t* waveform_find_module_name_inputport(waveform_t *w, char *name, int *port) {
+	mdebug("waveform=%s, obj_name=%s\n",w->name, name);
+	int i,j;
+	int l=strlen(name);
+	for (i=0;i<w->nof_modules;i++) {
+		if (!strncmp(w->modules[i].name,name,l)) {
+			for (j=0;j<w->modules[i].nof_inputs;j++) {
+				if (w->modules[i].inputs[j].remote_module_id == -(*port+1)) {
+					*port = j;
+					goto found;
+				}
+			}
+		}
+	}
+	return NULL;
+found:
+	return &w->modules[i];
+}
+
+module_t* waveform_find_module_name_outputport(waveform_t *w, char *name, int *port) {
+	mdebug("waveform=%s, obj_name=%s\n",w->name, name);
+	int i,j;
+	int l=strlen(name);
+	for (i=0;i<w->nof_modules;i++) {
+		if (!strncmp(w->modules[i].name,name,l)) {
+			for (j=0;j<w->modules[i].nof_inputs;j++) {
+				if (w->modules[i].outputs[j].remote_module_id == -(*port+1)) {
+					*port = j;
+					goto found;
+				}
+			}
+		}
+	}
+	return NULL;
+found:
+	return &w->modules[i];
+}
+
 
 #define check_and_set_size(a) if (v->size) { if (v->size != a) {\
 	aerror_msg("previous variable size was %d but mode %d is %d\n",v->size,idx,a); return 0;}\
@@ -201,7 +242,7 @@ static int read_variables(config_setting_t *cfg, module_t *mod, char *module_nam
 	nof_variables = config_setting_length(varscfg);
 	mod->variables = (variable_t*) pool_alloc(nof_variables,sizeof(variable_t));
 	if (!mod->variables) return -1;
-	pardebug("found %d variables module_id=%d\n",nof_variables,mod->id);
+	pardebug("found %d variables\n",nof_variables);
 	for (i=0;i<nof_variables;i++) {
 		pardebug("reading variable %d\n",i);
 		var = config_setting_get_elem(varscfg, (unsigned int) i);
@@ -241,27 +282,46 @@ static int read_interface_pair(config_setting_t *cfg, const char **name, int *id
 }
 
 static int read_interface_mod_itf(config_setting_t *cfg, waveform_t *w,
-		module_t **mod, int *port) {
+		module_t **mod, int *port, int isinput) {
 	const char *ctmp;
+
 	if (!read_interface_pair(cfg,&ctmp,port)) {
 		return 0;
 	}
-	*mod = waveform_find_module_name(w,(char*) ctmp);
-	if (!*mod) {
-		aerror_msg("destination module %s not found\n", ctmp);
-		return 0;
-	}
+
 	if (*port<0) {
 		aerror_msg("invalid port %d\n",*port);
 		return 0;
+	}
+
+	if (strcmp(ctmp,"_input") && strcmp(ctmp,"_output")) {
+		if (w->name_prefix[0] != '\0') {
+			snprintf(tmp_string,STR_LEN,"%s_%s",w->name_prefix,ctmp);
+			*mod = waveform_find_module_name(w,tmp_string);
+		} else {
+			*mod = waveform_find_module_name(w,(char*) ctmp);
+		}
+		if (!*mod) {
+			if (!isinput) {
+				*mod = waveform_find_module_name_inputport(w,(char*) ctmp,port);
+			} else {
+				*mod = waveform_find_module_name_outputport(w,(char*) ctmp,port);
+			}
+			if (!*mod) {
+				aerror_msg("destination module %s not found\n", ctmp);
+				return 0;
+			}
+		}
+	} else {
+		*mod = NULL;
 	}
 	return 1;
 }
 
 static int read_interface(config_setting_t *cfg, waveform_t *w) {
-	config_setting_t *src, *dest;
-	module_t *src_module, *dest_module;
-	interface_t *src_itf, *dest_itf;
+	config_setting_t *src=NULL, *dest=NULL;
+	module_t *src_module=NULL, *dest_module=NULL;
+	interface_t *src_itf=NULL, *dest_itf=NULL;
 	int src_port, dest_port;
 	double tmp;
 
@@ -275,7 +335,7 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		aerror("missing dest\n");
 		return 0;
 	}
-	if (!read_interface_mod_itf(src,w,&src_module,&src_port)) {
+	if (!read_interface_mod_itf(src,w,&src_module,&src_port,1)) {
 		aerror("reading src\n");
 		return 0;
 	}
@@ -289,13 +349,16 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		return 0;
 	}
 
-	src_itf = &src_module->outputs[src_port];
-	if (!read_interface_mod_itf(dest,w,&dest_module,&dest_port)) {
+	if (src_module) {
+		src_itf = &src_module->outputs[src_port];
+	}
+
+	if (!read_interface_mod_itf(dest,w,&dest_module,&dest_port,0)) {
 		aerror("reading src\n");
 		return 0;
 	}
 
-	if (dest_module == w->auto_ctrl_module) {
+	if (dest_module && dest_module == w->auto_ctrl_module) {
 		dest_port+=dest_module->nof_outputs;
 	}
 
@@ -303,36 +366,67 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		aerror_msg("src port too high. Maximum is %d\n",ITF_PREALLOC);
 		return 0;
 	}
-	dest_itf = &dest_module->inputs[dest_port];
+	if (dest_module) {
+		dest_itf = &dest_module->inputs[dest_port];
+	}
 
-	src_itf->remote_module_id = dest_module->id;
-	src_itf->remote_port_idx = dest_port;
+	if (dest_module && !strcmp(dest_module->name,"fft_tx_ifft_2")) {
+		tmp=0;
+	}
 
-	if (dest_itf->remote_module_id) {
-		aerror_msg("port %d in module %s already connected (source %s:%d)\n",
-				dest_port,dest_module->name,
-				src->name,src_port);
+	if (dest_module && dest_itf && dest_itf->remote_module_id >= 0) {
+		dest_module->nof_inputs++;
+	}
+
+	if (src_module && src_itf && src_itf->remote_module_id >= 0) {
+		src_module->nof_outputs++;
+	}
+
+	if (src_itf) {
+		if (dest_module) {
+			src_itf->remote_module_id = dest_module->id;
+		} else {
+			src_itf->remote_module_id = -(dest_port+1);
+		}
+		src_itf->remote_port_idx = dest_port;
+	}
+
+	if (dest_module && dest_itf && dest_itf->remote_module_id>0) {
+		aerror_msg("input port %d in module %s already connected\n",
+				dest_port,dest_module->name);
 		return 0;
 	}
 
-	dest_itf->remote_module_id = src_module->id;
-	dest_itf->remote_port_idx = src_port;
-
-	if (config_setting_lookup_float(cfg, "mbpts", &tmp)) {
-		src_itf->total_mbpts = (float) tmp;
-	} else {
-		src_itf->total_mbpts = 1;
+	if (dest_itf) {
+		if (src_module) {
+			dest_itf->remote_module_id = src_module->id;
+		} else {
+			dest_itf->remote_module_id = -(src_port+1);
+		}
+		dest_itf->remote_port_idx = src_port;
 	}
-	dest_itf->total_mbpts = src_itf->total_mbpts;
 
-	if (!config_setting_lookup_int(cfg, "delay", &src_itf->delay)) {
-		src_itf->delay = 0;
+	if (src_itf) {
+		if (config_setting_lookup_float(cfg, "mbpts", &tmp)) {
+			src_itf->total_mbpts = (float) tmp;
+		} else {
+			src_itf->total_mbpts = 1;
+		}
+		if (dest_itf) {
+			dest_itf->total_mbpts = src_itf->total_mbpts;
+		}
 	}
-	dest_module->nof_inputs++;
-	src_module->nof_outputs++;
-	pardebug("%d:%d/%d->%d:%d/%d bw=%.2f delay=%d\n",src_module->id,src_port,src_module->nof_outputs,
-			dest_module->id,dest_port,dest_module->nof_outputs, src_itf->total_mbpts,
-			src_itf->delay);
+
+	if (src_itf) {
+		if (!config_setting_lookup_int(cfg, "delay", &src_itf->delay)) {
+			src_itf->delay = 0;
+		}
+	}
+	if (dest_module && src_module) {
+		pardebug("%d:%d/%d->%d:%d/%d bw=%.2f delay=%d\n",src_module->id,src_port,src_module->nof_outputs,
+				dest_module->id,dest_port,dest_module->nof_outputs, src_itf->total_mbpts,
+				src_itf->delay);
+	}
 	return 1;
 }
 
@@ -357,6 +451,8 @@ static int read_mopts_mode(config_setting_t *cfg, module_t *mod, waveform_t *w) 
 
 static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int instance_id) {
 	const char *tmp;
+	char tmp2[64];
+	char *tmp3;
 	int n_vars,i;
 	int imopts;
 	config_setting_t *mopts, *mopts_mode;
@@ -365,12 +461,34 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		aerror("Missing module name\n");
 		return 0;
 	}
-	if (instance_id != -1) {
-		sprintf(mod->name,"%s_%d",tmp,instance_id);
+	if (!mod) {
+		tmp3 = tmp2;
 	} else {
-		strcpy(mod->name, tmp);
+		tmp3 = mod->name;
 	}
-	if (!config_setting_lookup_string(cfg, "binary", &tmp)) {
+	if (instance_id != -1) {
+		if (w->name_prefix[0] == '\0') {
+			snprintf(tmp3,STR_LEN,"%s_%d",tmp,instance_id);
+		} else {
+			snprintf(tmp3,STR_LEN,"%s_%s_%d",w->name_prefix,tmp,instance_id);
+		}
+	} else {
+		if (w->name_prefix[0] == '\0') {
+			strcpy(tmp3, tmp);
+		} else {
+			snprintf(tmp3,STR_LEN,"%s_%s",w->name_prefix,tmp);
+		}
+	}
+	if (config_setting_lookup_string(cfg, "include", &tmp)) {
+		strcpy(w->model_file,tmp);
+		strcpy(w->name_prefix,tmp3);
+		if (waveform_parse(w,0)) {
+			printf("Error parsing sub-model file %s\n",tmp);
+			return 0;
+		}
+		w->name_prefix[0] = '\0';
+		return 1;
+	} else if (!config_setting_lookup_string(cfg, "binary", &tmp)) {
 		aerror_msg("binary field not found in module %s\n",mod->name);
 		return 0;
 	}
@@ -425,7 +543,11 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		return 0;
 	}
 	mod->nof_variables = n_vars;
-	mod->id = mod_id++;
+	mod->id = w->nof_parsed_modules+1;
+	mod->waveform = w;
+	mod->nof_modes = w->nof_modes;
+	mod->index = w->nof_parsed_modules;
+	w->nof_parsed_modules++;
 	pardebug("parsed id=%d has %d variables\n",mod->id, mod->nof_variables);
 	return 1;
 }
@@ -511,10 +633,11 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 		w->precach_pipeline = 0;
 	}
 
-	if (!config_setting_lookup_string(maincfg, "precach_pipeline",
+	if (!config_setting_lookup_string(maincfg, "auto_ctrl_module",
 			&tmp)) {
 		w->auto_ctrl_module = NULL;
 	} else {
+		pardebug("auto_ctrl_module is %s\n",tmp);
 		w->auto_ctrl_module = waveform_find_module_name(w,(char*) tmp);
 		if (!w->auto_ctrl_module) {
 			aerror_msg("Warning: auto control module %s not found in waveform\n"
@@ -528,6 +651,7 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 			return 0;
 		}
 		for (i=0;i<w->nof_modules;i++) {
+			pardebug("ctrl module port %d dest %d:%d\n",ctrl->nof_outputs,w->modules[i].id,w->modules[i].nof_inputs);
 			ctrl->outputs[ctrl->nof_outputs].remote_module_id = w->modules[i].id;
 			ctrl->outputs[ctrl->nof_outputs].remote_port_idx = w->modules[i].nof_inputs;
 			w->modules[i].inputs[w->modules[i].nof_inputs].remote_module_id = ctrl->id;
@@ -593,15 +717,17 @@ int join_stages(waveform_t *w, config_setting_t *cfg) {
  * This function uses LGPL libconfig library (http://www.hyperrealm.com/libconfig/).
  * \returns 0 on success or -1 on error, using the oesr_man_error class for error description.
  */
-int waveform_parse(waveform_t* w) {
+int waveform_parse(waveform_t* w, int is_mainwaveform) {
 	/** @TODO: Use oesr_man error interface */
 	aassert(w);
 	int ret;
 	config_setting_t *modules, *modcfg, *interfaces, *itfcfg, *modes, *modecfg,*maincfg;
 	int nof_modules, nof_root_modules,nof_itfs,nof_modes;
-	int i,j,k;
+	int i,j;
 	int instances;
 	module_t *mod;
+	const char *tmp;
+	config_t config;
 	ret = -1;
 
 	config_init(&config);
@@ -611,31 +737,33 @@ int waveform_parse(waveform_t* w) {
 				config_error_text(&config));
 		goto destroy;
 	}
-	modes = config_lookup(&config, "modes");
-	if (!modes) {
-		pardebug("found %d mode\n",1);
-		w->nof_modes = 1;
-		strcpy(w->modes[0].name, "default");
-		strcpy(w->modes[0].desc, "default");
-	} else {
-		nof_modes = config_setting_length(modes);
-		if (!nof_modes) {
-			aerror("Any mode was found\n");
-			goto destroy;
-		}
-		pardebug("found %d modes\n",nof_modes);
-		if (nof_modes > MAX(modes)) {
-			aerror_msg("Error maximum number of modes is %d\n",MAX(modes));
-			goto destroy;
-		}
-		w->nof_modes = nof_modes;
-		for (i=0;i<nof_modes;i++) {
-			pardebug("configuring mode %d\n",i);
-			modecfg = config_setting_get_elem(modes, (unsigned int) i);
-			assert(modecfg);
-			if (!read_mode(modecfg,&w->modes[i])) {
-				aerror_msg("reading mode %d\n", i);
+	if (is_mainwaveform) {
+		modes = config_lookup(&config, "modes");
+		if (!modes) {
+			pardebug("found %d mode\n",1);
+			w->nof_modes = 1;
+			strcpy(w->modes[0].name, "default");
+			strcpy(w->modes[0].desc, "default");
+		} else {
+			nof_modes = config_setting_length(modes);
+			if (!nof_modes) {
+				aerror("Any mode was found\n");
 				goto destroy;
+			}
+			pardebug("found %d modes\n",nof_modes);
+			if (nof_modes > MAX(modes)) {
+				aerror_msg("Error maximum number of modes is %d\n",MAX(modes));
+				goto destroy;
+			}
+			w->nof_modes = nof_modes;
+			for (i=0;i<nof_modes;i++) {
+				pardebug("configuring mode %d\n",i);
+				modecfg = config_setting_get_elem(modes, (unsigned int) i);
+				assert(modecfg);
+				if (!read_mode(modecfg,&w->modes[i])) {
+					aerror_msg("reading mode %d\n", i);
+					goto destroy;
+				}
 			}
 		}
 	}
@@ -645,60 +773,56 @@ int waveform_parse(waveform_t* w) {
 		aerror("Section modules not found\n");
 		goto destroy;
 	}
+
 	nof_root_modules = config_setting_length(modules);
 	nof_modules = 0;
 
 	/* find multiple instances modules */
 	for (i=0;i<nof_root_modules;i++) {
 		modcfg = config_setting_get_elem(modules, (unsigned int) i);
-		if (config_setting_lookup_int(modcfg, "instances", &instances)) {
-			nof_modules += instances;
-		} else {
-			nof_modules ++;
+		if (!config_setting_lookup_string(modcfg, "include", &tmp)) {
+			if (config_setting_lookup_int(modcfg, "instances", &instances)) {
+				nof_modules += instances;
+			} else {
+				nof_modules ++;
+			}
 		}
 	}
 
 	pardebug("found %d modules\n",nof_modules);
-	if (!nof_modules) {
-		aerror("Any module was found\n");
-		goto destroy;
-	}
-	if (waveform_alloc(w,nof_modules)) {
-		aerror("allocating modules\n");
-		goto destroy;
+
+	if (nof_modules) {
+		if (waveform_alloc(w,nof_modules)) {
+			aerror("allocating modules\n");
+			goto destroy;
+		}
 	}
 	/* first read all modules */
-	k=0;
 	for (i=0;i<nof_root_modules;i++) {
-		pardebug("parsing module %d\n",i);
-		mod = &w->modules[i];
 		modcfg = config_setting_get_elem(modules, (unsigned int) i);
 		if (!config_setting_lookup_int(modcfg, "instances", &instances)) {
 			instances = 1;
 		}
 		for (j=0;j<instances;j++) {
-			mod = &w->modules[k];
+			pardebug("parsing module %d position %d\n",i,w->nof_parsed_modules);
+			if (nof_modules) {
+				mod = &w->modules[w->nof_parsed_modules];
+			} else {
+				mod = NULL;
+			}
 			if (!read_module(modcfg,mod, w, (instances==1)?-1:j)) {
 				aerror_msg("parsing module %d\n",i);
 				goto destroy;
 			}
-			mod->waveform = w;
-			mod->nof_modes = w->nof_modes;
-			mod->index = k;
-			k++;
 		}
 	}
 
-	maincfg = config_lookup(&config, "main");
-	if (waveform_main_config(w,maincfg)) {
-		aerror("Parsing section main\n");
-		goto destroy;
-	}
-
 	/* join pipeline stages */
-	if (join_stages(w,config_lookup(&config, "join_stages"))) {
-		aerror("Parsing join_stages section\n");
-		goto destroy;
+	if (is_mainwaveform) {
+		if (join_stages(w,config_lookup(&config, "join_stages"))) {
+			aerror("Parsing join_stages section\n");
+			goto destroy;
+		}
 	}
 
 	interfaces = config_lookup(&config, "interfaces");
@@ -706,12 +830,14 @@ int waveform_parse(waveform_t* w) {
 		aerror("Section interfaces not found\n");
 		goto destroy;
 	}
+
 	nof_itfs=config_setting_length(interfaces);
 	pardebug("found %d interfaces\n",nof_itfs);
 	if (!nof_itfs) {
 		aerror("Any module was found\n");
 		goto destroy;
 	}
+
 	/* now parse interfaces */
 	for (i=0;i<nof_itfs;i++) {
 		pardebug("parsing itf %d\n",i);
@@ -722,14 +848,23 @@ int waveform_parse(waveform_t* w) {
 			goto destroy;
 		}
 	}
-	for (i=0;i<w->nof_modules;i++) {
-		pardebug("checking and reallocing module %d\n",i);
-		check_interfaces(&w->modules[i]);
-		if (!realloc_interfaces(&w->modules[i])) {
+
+	if (is_mainwaveform) {
+		maincfg = config_lookup(&config, "main");
+		if (waveform_main_config(w,maincfg)) {
+			aerror("Parsing section main\n");
 			goto destroy;
 		}
+
+		for (i=0;i<w->nof_modules;i++) {
+			pardebug("checking and reallocing module %d\n",i);
+			check_interfaces(&w->modules[i]);
+			if (!realloc_interfaces(&w->modules[i])) {
+				goto destroy;
+			}
+		}
+		w->id = waveform_id++;
 	}
-	w->id = waveform_id++;
 	pardebug("done, waveform_id=%d\n",w->id);
 	ret = 0;
 destroy:

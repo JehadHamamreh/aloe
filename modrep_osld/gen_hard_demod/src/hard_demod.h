@@ -1,9 +1,9 @@
 
 /* LTE specifies QPSK, 16QAM and 64QAM for data and BPSK for some control channels */
-#define BPSK    0
-#define QPSK    1
-#define QAM16   2
-#define QAM64   3
+#define BPSK    1
+#define QPSK    2
+#define QAM16   3
+#define QAM64   4
 
 /* The symbols are specified in [3GPP TS 36.211 version 10.5.0 Release 10, Section 7] */
 /* from which the symbols levels follow: */

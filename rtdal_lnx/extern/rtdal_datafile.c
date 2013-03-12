@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <complex.h>
+#include <math.h>
 
 #include "rtdal_datafile.h"
 #include "rtdal.h"
@@ -87,7 +88,7 @@ void rtdal_datafile_write_complex(FILE *f, _Complex float* buf, int size) {
 		if (__imag__ buf[i] >= 0)
 			fprintf(f,"%g+%gi\n",__real__ buf[i],__imag__ buf[i]);
 		else
-			fprintf(f,"%g-%gi\n",__real__ buf[i],abs(__imag__ buf[i]));
+			fprintf(f,"%g-%gi\n",__real__ buf[i],fabsf(__imag__ buf[i]));
 	}
 }
 
@@ -109,7 +110,7 @@ void rtdal_datafile_write_complex_short(FILE *f, _Complex short* buf, int size) 
 		if (__imag__ buf[i] >= 0)
 			fprintf(f,"%d+%di\n",__real__ buf[i],__imag__ buf[i]);
 		else
-			fprintf(f,"%d-%di\n",__real__ buf[i],abs(__imag__ buf[i]));
+			fprintf(f,"%d-%di\n",__real__ buf[i],fabsf(__imag__ buf[i]));
 	}
 }
 

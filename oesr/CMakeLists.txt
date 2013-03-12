@@ -46,11 +46,14 @@ file(GLOB_RECURSE crm_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/crm/*.c")
 # swapi sources
 file(GLOB_RECURSE oesrapi_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/oesr_api_static/oesr_static.c")
 
+# params sources
+set(params_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/params.c)
+
 # skeleton sources
 set(skeleton_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/skeleton.c)
 
-# params sources
-set(params_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/params.c)
+# ctrl skeleton sources
+set(ctrl_skeleton_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/ctrl_skeleton.c)
 
 # mex sources
 set(mex_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/skeleton/mex.c)
@@ -67,13 +70,16 @@ add_library(oesr ${oesr_api_SOURCES} ${common_SOURCES} ${manager_SOURCES} ${oesr
 set_target_properties(oesr PROPERTIES LINK_FLAGS "-Wl,-export-dynamic -u _run_main")
 target_link_libraries(oesr crm ${LIBCONFIG_LIBRARIES})
 
-
 # swapi library
 add_library(oesrapi ${oesrapi_SOURCES} ${params_SOURCES})
 
 # skeleton library
 add_library(skeleton ${oesrapi_SOURCES} ${skeleton_SOURCES})
 set_target_properties(skeleton PROPERTIES COMPILE_FLAGS "-D_COMPILE_ALOE")
+
+# ctrl_skeleton library
+add_library(ctrl_skeleton ${oesrapi_SOURCES} ${ctrl_skeleton_SOURCES})
+set_target_properties(ctrl_skeleton PROPERTIES COMPILE_FLAGS "-D_COMPILE_ALOE")
 
 # standalone library
 add_library(standalone ${standalone_SOURCES} ${params_SOURCES})
@@ -108,5 +114,5 @@ endif()
 file(GLOB_RECURSE INCLUDE_FILES "include/*.h")
 
 # install 
-install(TARGETS oesrapi skeleton standalone ${install_mex} DESTINATION lib)
+install(TARGETS oesrapi skeleton ctrl_skeleton standalone ${install_mex} DESTINATION lib)
 install(FILES ${INCLUDE_FILES} DESTINATION include)

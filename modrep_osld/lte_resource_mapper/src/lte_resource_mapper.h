@@ -52,7 +52,7 @@ const int input_sample_sz = sizeof(input_t);
 const int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */
-const int nof_input_itf = NOF_INPUT_ITF;
+int nof_input_itf = NOF_INPUT_ITF;
 int nof_output_itf = 1;
 
 #endif

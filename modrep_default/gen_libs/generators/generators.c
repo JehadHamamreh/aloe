@@ -73,7 +73,7 @@ int work_binary(char *output, int block_size) {
 
 	random_bits(tmp_binary,block_size);
 	for (j=0;j<block_size;j++) {
-		output[j] = (rand()%2)?1:0;//tmp_binary[j];
+		output[j] = j%2;//(rand()%2)?1:0;//tmp_binary[j];
 	}
 	return block_size;
 }

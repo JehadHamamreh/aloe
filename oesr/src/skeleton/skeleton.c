@@ -6,6 +6,8 @@
 #include "rtdal.h"
 #include "params.h"
 #include "skeleton.h"
+#include "ctrl_pkt.h"
+
 
 #define MAX_INPUTS 		30
 #define MAX_OUTPUTS 	30
@@ -23,13 +25,13 @@ static int mem_ok=0, log_ok=0, check_ok=0;
 
 itf_t inputs[MAX_INPUTS], outputs[MAX_OUTPUTS];
 itf_t ctrl_in;
-
+/*
 var_t parameters[MAX_PARAMETERS];
 int nof_parameters;
-
+*/
 struct ctrl_in_pkt ctrl_in_buffer;
 
-#define CTRL_IN_BUFFER	sizeof(struct ctrl_in_pkt)
+#define CTRL_IN_BUFFER_SZ	sizeof(struct ctrl_in_pkt)
 
 user_var_t *user_vars;
 var_t vars[MAX_VARIABLES];
@@ -64,13 +66,13 @@ int check_configuration(void *ctx) {
 
 	if (nof_input_itf > MAX_INPUTS) {
 		moderror_msg("Maximum number of input interfaces is %d. The module uses %d. "
-				"Increase MAX_INPUTS in oesr_static/skeleton/skeleton.c and recompile ALOE\n",
+				"Increase MAX_INPUTS in oesr/src/skeleton/skeleton.c and recompile ALOE\n",
 				MAX_INPUTS,nof_input_itf);
 		return -1;
 	}
 	if (nof_output_itf > MAX_OUTPUTS) {
 		moderror_msg("Maximum number of output interfaces is %d. The module uses %d. "
-				"Increase MAX_OUTPUTS in oesr_static/skeleton/skeleton.c and recompile ALOE\n",
+				"Increase MAX_OUTPUTS in oesr/src/skeleton/skeleton.c and recompile ALOE\n",
 				MAX_OUTPUTS,nof_output_itf);
 		return -1;
 	}
@@ -83,25 +85,19 @@ int check_configuration(void *ctx) {
 
 int init_interfaces(void *ctx) {
 	int i;
-	int has_ctrl=0;
 
 	if (oesr_itf_nofinputs(ctx) > nof_input_itf) {
 		/* try to create control interface */
-		ctrl_in = oesr_itf_create(ctx, 0, ITF_READ, CTRL_IN_BUFFER);
-		if (ctrl_in == NULL) {
-			if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
-				return 0;
-			}
-		} else {
+		ctrl_in = oesr_itf_create(ctx, oesr_itf_nofinputs(ctx)-1, ITF_READ, CTRL_IN_BUFFER_SZ);
+		if (ctrl_in) {
 			modinfo("Created control port\n");
-			has_ctrl=1;
 		}
 	}
 
 	moddebug("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
 	for (i=0;i<nof_input_itf;i++) {
 		if (inputs[i] == NULL) {
-			inputs[i] = oesr_itf_create(ctx, has_ctrl+i, ITF_READ, input_max_samples*input_sample_sz);
+			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
 			if (inputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
 					return 0;
@@ -179,12 +175,12 @@ int init_variables(void *ctx) {
 		}
 	}
 
-	nof_parameters = oesr_var_param_list(ctx,parameters,MAX_PARAMETERS);
+/*	nof_parameters = oesr_var_param_list(ctx,parameters,MAX_PARAMETERS);
 	if (nof_parameters == -1) {
 		oesr_perror("oesr_var_param_list");
 		return -1;
 	}
-
+*/
 	return 0;
 }
 
@@ -257,18 +253,11 @@ int Init(void *_ctx) {
 		log_ok = 1;
 	}
 
-	if (!check_ok) {
-		if (check_configuration(ctx)) {
-			return -1;
-		}
-		check_ok = 1;
-	}
-
-	if (init_variables(ctx)) {
+/*	if (init_counter(ctx)) {
 		return -1;
 	}
-
-	if (init_counter(ctx)) {
+*/
+	if (init_variables(ctx)) {
 		return -1;
 	}
 
@@ -278,6 +267,13 @@ int Init(void *_ctx) {
 	if (initialize()) {
 		moddebug("error initializing module\n",oesr_tstamp(ctx));
 		return -1;
+	}
+
+	if (!check_ok) {
+		if (check_configuration(ctx)) {
+			return -1;
+		}
+		check_ok = 1;
 	}
 
 	n = init_interfaces(ctx);
@@ -310,9 +306,9 @@ int Stop(void *_ctx) {
 }
 
 int process_ctrl_packet(void) {
-
-	if (oesr_var_param_set_value(ctx,parameters[ctrl_in_buffer.pm_idx],ctrl_in_buffer.value,
-			ctrl_in_buffer.size)) {
+	moddebug("Received ctrl packet to %d, size %d\n",ctrl_in_buffer.pm_idx,ctrl_in_buffer.size);
+	if (oesr_var_param_set_value_idx(ctx,ctrl_in_buffer.pm_idx,ctrl_in_buffer.value,
+			ctrl_in_buffer.size) == -1) {
 		oesr_perror("Error setting control parameter\n");
 		return -1;
 	}
@@ -329,7 +325,7 @@ int Run(void *_ctx) {
 
 	if (ctrl_in) {
 		do {
-			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER);
+			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER_SZ);
 			if (n == -1) {
 				oesr_perror("oesr_itf_read");
 				return -1;
@@ -365,8 +361,8 @@ int Run(void *_ctx) {
 		} else {
 			n = oesr_itf_ptr_request(outputs[i], &output_ptr[i]);
 			if (n == 0) {
-/*				moderror_msg("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
-*/			} else if (n == -1) {
+				moderror_msg("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
+			} else if (n == -1) {
 				oesr_perror("oesr_itf_request");
 				return -1;
 			}
@@ -376,11 +372,13 @@ int Run(void *_ctx) {
 	memset(snd_len,0,sizeof(int)*nof_output_itf);
 
 #if MOD_DEBUG==1
-	oesr_counter_start(counter);
+	if (counter)
+		oesr_counter_start(counter);
 #endif
 	n = work(input_ptr,output_ptr);
 #if MOD_DEBUG==1
-	oesr_counter_stop(counter);
+	if (counter)
+		oesr_counter_stop(counter);
 	moddebug("work exec time: %d us\n",oesr_counter_usec(counter));
 #endif
 	if (n<0) {
@@ -463,6 +461,10 @@ int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value,
 	pkt = out_ptr[module_idx];
 	if (value_sz > CTRL_PKT_VALUE_SZ) {
 		return -1;
+	}
+	if (!pkt) {
+		printf("output packet not ready, remote parameter %d:%d won't be sent\n",module_idx,param_idx);
+		return 0;
 	}
 	pkt->pm_idx = param_idx;
 	pkt->size = value_sz;

@@ -70,7 +70,7 @@ int variable_report_stop(variable_t *var);
  */
 int waveform_load(waveform_t* waveform);
 int waveform_update(waveform_t *waveform);
-int waveform_parse(waveform_t* waveform);
+int waveform_parse(waveform_t* waveform, int is_mainwaveform);
 int waveform_mode_set(waveform_t* waveform, char *name);
 /**@} */
 

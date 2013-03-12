@@ -78,6 +78,10 @@ int work(void **inp, void **out) {
 	input_t *input;
 	output_t *output;
 
+	if (!get_input_samples(0)) {
+		return 0;
+	}
+
 	/* Dynamically obtain modulation type */
 	if (param_get_int(modulation_id, &modulation) != 1) {
 		moderror("Error getting 'modulation' parameter. Assuming QPSK.\n");
@@ -86,12 +90,9 @@ int work(void **inp, void **out) {
 
 	/* Verify parameters */
 	if (modulation > 3 || modulation < 0) {
-		moderror_msg("Invalid modulation %d. Specify 0 for BPSK, 1 for QPSK,"
-				"2 for 16QAM, or 3 for 64QAM\n", modulation);
+		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
+				"3 for 16QAM, or 4 for 64QAM\n", modulation);
 		return -1;
-	} else {
-		modinfo_msg("Modulation type is %d (0:BPSK; 1:QPSK; 2:16QAM;"
-				"3:64QAM)\n",modulation);
 	}
 
 	input = inp[0];
@@ -101,11 +102,6 @@ int work(void **inp, void **out) {
 	hard_demod(input, output, rcv_samples, modulation);
 	snd_samples = rcv_samples*bits_per_symbol;
 
-/*	printf("\n\n");
-	for (i=0; i<snd_samples; i++) {
-		printf("%d",output[i]);
-	}
-*/
 	return snd_samples;
 }
 

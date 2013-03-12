@@ -101,10 +101,10 @@ int get_vector_len(const mxArray *in) {
 	int m,n;
 	n = mxGetN(in);
 	m = mxGetM(in);
-	if (MIN(m,n) != 1) {
+	if (n > 1) {
 		help();
 	}
-	return MAX(m,n);
+	return m;
 }
 
 int fill_input_lengths(const mxArray *in) {
@@ -178,6 +178,10 @@ void format_input(const mxArray *in) {
 
 	if (mxIsCell(in)) {
 		n = mxGetNumberOfElements(in);
+		if (n>nof_input_itf) {
+			help();
+			exit(1);
+		}
 		for(i=0;i<n;i++) {
 			format_input_vector(&input_buffer[i*input_max_samples*input_sample_sz],mxGetCell(in,i),
 					input_len[i]);

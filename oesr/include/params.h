@@ -58,6 +58,19 @@ int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type);
  */
 pmid_t param_id(char *name);
 
+/* Sets the value of a remote parameter assuming that the control plane is configured automatically
+ * (field auto_ctrl_module in the app).
+ *
+ * This mode assumes that the i-th output interface of the control module is connected with
+ * the control interface of the i-th module of the waveform.
+ *
+ * \param out_ptr is the set of output interfaces pointers given in the work() function of the control module
+ * \param module_idx Index in the waveform of the remote module
+ * \param param_idx Index of the variable to change in the remote module's parameters set
+ * \param value Pointer to the new variable data
+ * \param value_sz size of the new data (in bytes)
+ */
+int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value, int value_sz);
 
 /**
  * @returns -1 on error, 0 if parameter found but not integer, 1 on success

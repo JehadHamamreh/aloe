@@ -1,10 +1,10 @@
 # This configuration is for the aloe++ skeleton
 
 # set-up the program libraries here
-set(LIBRARIES m rt)
+set(LIBRARIES m lte_lib)
 
 # set-up program includes here
-include_directories(/usr/local/include/)
+include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 
@@ -25,7 +25,6 @@ endif()
 
 
 file(GLOB_RECURSE SOURCES "src/*.c")
-file(GLOB_RECURSE TEST_SOURCES "test/*.c")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -33,24 +32,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_library(${module}-aloe SHARED ${SOURCES})
 set_target_properties(${module}-aloe PROPERTIES OUTPUT_NAME ${module})
 set_target_properties(${module}-aloe PROPERTIES COMPILE_FLAGS "-D_COMPILE_ALOE")
-target_link_libraries(${module}-aloe oesrapi skeleton ${LIBRARIES})
+target_link_libraries(${module}-aloe oesrapi ctrl_skeleton ${LIBRARIES})
 install(TARGETS ${module}-aloe DESTINATION lib/${MODULE_REPOS_NAME}/)
-
-
-if (NOT ${TEST_SOURCES} STREQUAL "")
-	# standalone program for testing
-	add_executable(${module}-bin ${SOURCES} ${TEST_SOURCES})
-	set_target_properties(${module}-bin PROPERTIES OUTPUT_NAME ${module})
-	set_target_properties(${module}-bin PROPERTIES COMPILE_FLAGS "-D_COMPILE_STANDALONE")
-	target_link_libraries(${module}-bin standalone ${LIBRARIES})
-	install(TARGETS ${module}-bin DESTINATION bin)
-endif()
-
-
-
-
-
-
 
 
 
