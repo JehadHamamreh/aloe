@@ -102,6 +102,108 @@ int copy_signal(void *in, void **out) {
 	}
 }
 
+int is_enabled(int pm_id, int *channel_ids, int nof_channels) {
+	int i;
+	for (i=0;i<nof_channels;i++) {
+		if (channel_ids[i] == pm_id) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int init_other(struct channel *ch) {
+	if (!strcmp(ch->name,"PCFICH")) {
+		if (lte_grid_init_params(&grid)==-1) {
+			moderror("Initiating grid params\n");
+			return -1;
+		}
+		if (lte_grid_init_reg(&grid,1)) {
+			moderror("Allocating REGs\n");
+			return -1;
+		}
+		if (lte_pcfich_init(&grid.phch[CH_PCFICH],&grid)) {
+			moderror("Initiating PCFICH grid\n");
+		}
+		return 0;
+	} else {
+		modinfo_msg("Channel %s not yet supported. Full grid init\n",ch->name);
+
+		if (lte_grid_init(&grid)) {
+			moderror("Initiating resource grid\n");
+			return -1;
+		}
+
+		return 0;
+	}
+}
+
+int init_pdsch(int ch_id) {
+
+	if (lte_grid_init_params(&grid)==-1) {
+		return -1;
+	}
+
+	if (grid.cfi == -1) {
+		moderror("CFI not yet initialized\n");
+		return -1;
+	}
+	if (lte_pdsch_init_params_ch(ch_id, &grid)) {
+		moderror_msg("Initiating PDSCH channel %d\n",ch_id);
+		return -1;
+	}
+	if (lte_pdsch_init_sf(subframe_idx, &grid.phch[CH_PDSCH], &grid)) {
+		moderror_msg("Initiating PDSCH channel %d SF=%d\n",ch_id,subframe_idx);
+		return -1;
+	}
+	lte_pdsch_setup_rbgmask(&grid.pdsch[ch_id],&grid);
+
+	return 0;
+}
+
+int init_pdcch(int ch_id) {
+
+
+	if (lte_grid_init(&grid)) {
+		moderror("Initiating resource grid\n");
+		return -1;
+	}
+	return 0;
+}
+
+int channels_init_grid(int *channel_ids, int nof_channels) {
+	int i;
+	for (i=0;i<nof_pdsch;i++) {
+		if (pdsch[i].out_port >=0) {
+			if (is_enabled(pdsch[i].param_value,channel_ids,nof_channels)) {
+				if (init_pdsch(i) == -1) {
+					return -1;
+				}
+			}
+		}
+	}
+	for (i=0;i<nof_pdcch;i++) {
+		if (pdcch[i].out_port >=0) {
+			if (is_enabled(pdcch[i].param_value,channel_ids,nof_channels)) {
+				if (init_pdcch(i) == -1) {
+					return -1;
+				}
+			}
+		}
+	}
+
+	for (i=0;i<nof_other;i++) {
+		if (other[i].out_port >=0) {
+			if (is_enabled(other[i].param_value,channel_ids,nof_channels)) {
+				if (init_other(&other[i]) == -1) {
+					return -1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 	int n;
 	if (!out[ch->out_port]) {
@@ -117,16 +219,6 @@ int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 	}
 
 	return n;
-}
-
-int is_enabled(int pm_id, int *channel_ids, int nof_channels) {
-	int i;
-	for (i=0;i<nof_channels;i++) {
-		if (channel_ids[i] == pm_id) {
-			return 1;
-		}
-	}
-	return 0;
 }
 
 int deallocate_all_channels(int *channel_ids, int nof_channels, void *input, void **out) {

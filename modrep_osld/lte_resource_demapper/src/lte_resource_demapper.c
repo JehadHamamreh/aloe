@@ -126,7 +126,7 @@ int work(void **inp, void **out) {
 		return n;
 	}
 
-	if (lte_grid_init(&grid)) {
+	if (channels_init_grid(channel_ids, nof_channels)) {
 		moderror("Initiating resource grid\n");
 		return -1;
 	}

@@ -41,7 +41,11 @@ int lte_symbol_has_refsig_or_resv(struct lte_symbol *symbol, struct lte_grid_con
 		return 0;
 	}
 	if (config->nof_ports == 1 && symbol->symbol_id > 0) {
-		return 2;
+		if (config->nof_osymb_x_subf == NOF_OSYMB_X_SLOT_EXT && symbol->symbol_id == config->nof_osymb_x_subf/2-3) {
+			return 4;
+		} else {
+			return 2;
+		}
 	} else {
 		return 4;
 	}

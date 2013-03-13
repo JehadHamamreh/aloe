@@ -31,7 +31,7 @@ struct lte_grid_regs {
 #else
 int lte_reg_num(int sym_id, struct lte_grid_config *config);
 const char *reg_print_state(struct lte_reg *reg);
-int lte_grid_init_reg(struct lte_grid_config *config);
+int lte_grid_init_reg(struct lte_grid_config *config, int nof_ctrl_symbols);
 struct lte_reg *lte_reg_get_k(int k, int l, struct lte_grid_config *config);
 int lte_reg_put(complex_t *input, complex_t *output, struct lte_reg *reg,struct lte_grid_config *config);
 int lte_reg_get(complex_t *input, complex_t *output, struct lte_reg *reg,struct lte_grid_config *config);

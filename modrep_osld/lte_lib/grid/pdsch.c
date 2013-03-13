@@ -30,9 +30,23 @@ void lte_pdsch_setup_rbgmask(struct lte_pdsch *ch,struct lte_grid_config *config
 	}
 }
 
+int lte_pdsch_init_params_ch(int ch_id, struct lte_grid_config *config) {
+	char tmp[64];
+
+	snprintf(tmp,64,"pdsch_rbgmask_%d",ch_id);
+	if (param_get_int_name(tmp,&config->pdsch[ch_id].rbg_mask)) {
+		if (config->nof_pdsch == 1) {
+			config->pdsch[ch_id].rbg_mask = 0xFFFFFFFF;
+		} else {
+			config->pdsch[ch_id].rbg_mask = 1<<ch_id;
+		}
+	}
+	return 0;
+}
+
 int lte_pdsch_init_params(struct lte_grid_config *config) {
 	int i;
-	char tmp[64];
+
 
 	param_get_int_name("nof_pdsch",&config->nof_pdsch);
 	if (config->nof_pdsch>MAX_PDSCH) {
@@ -40,14 +54,7 @@ int lte_pdsch_init_params(struct lte_grid_config *config) {
 		return -1;
 	}
 	for (i=0;i<config->nof_pdsch;i++) {
-		snprintf(tmp,64,"pdsch_rbgmask_%d",i);
-		if (param_get_int_name(tmp,&config->pdsch[i].rbg_mask)) {
-			if (config->nof_pdsch == 1) {
-				config->pdsch[i].rbg_mask = 0xFFFFFFFF;
-			} else {
-				config->pdsch[i].rbg_mask = 1<<i;
-			}
-		}
+		lte_pdsch_init_params_ch(i,config);
 	}
 	return 0;
 }
@@ -81,6 +88,42 @@ int lte_pdsch_re_x_prb(int subframe_idx, struct lte_grid_config *config) {
 			pdsch_ref_prb[i][j];
 }
 
+int lte_pdsch_init_sf(int subframe_id, struct lte_phch_config *ch, struct lte_grid_config *config) {
+	int i,j;
+
+	if (subframe_id<0 || subframe_id > NOF_SUBFRAMES_X_FRAME) {
+		return -1;
+	}
+	i = subframe_id;
+	/* transmit all symbols... */
+	ch->symbol_mask[i] = ((0x1<<(config->nof_osymb_x_subf+1))-1);
+
+	/* ... except control symbols */
+	for (j=0;j<config->nof_control_symbols;j++) {
+		ch->symbol_mask[i] ^= (0x1<<j);
+	}
+	/*... if 6 prb*/
+	if (config->nof_prb == 6) {
+		/* switch off in pbch */
+		if (i==0) {
+			for (j=config->nof_osymb_x_subf/2;j<config->nof_osymb_x_subf/2+4;j++) {
+				ch->symbol_mask[i] ^= (0x1<<j);
+			}
+		}
+		/* and pss/sss */
+		if (i==0 || i==5) {
+			ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-1);
+			ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-2);
+		}
+	}
+	ch->nof_re_x_sf[i] = config->nof_prb*lte_pdsch_re_x_prb(i,config);
+	if (ch->nof_re_x_sf[i]<0) {
+		printf("PDSCH: Error computing RE x RB\n");
+		return -1;
+	}
+	return 0;
+}
+
 int lte_pdsch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 	int i,j;
 	struct lte_symbol symbol;
@@ -95,32 +138,9 @@ int lte_pdsch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 	}
 
 	for (i=0;i<NOF_SUBFRAMES_X_FRAME;i++) {
-		/* transmit all symbols... */
-		ch->symbol_mask[i] = ((0x1<<(config->nof_osymb_x_subf+1))-1);
-		/* ... except control symbols */
-		for (j=0;j<config->nof_control_symbols;j++) {
-			ch->symbol_mask[i] ^= (0x1<<j);
-		}
-		/*... if 6 prb*/
-		if (config->nof_prb == 6) {
-			/* switch off in pbch */
-			if (i==0) {
-				for (j=config->nof_osymb_x_subf/2;j<config->nof_osymb_x_subf/2+4;j++) {
-					ch->symbol_mask[i] ^= (0x1<<j);
-				}
-			}
-			/* and pss/sss */
-			if (i==0 || i==5) {
-				ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-1);
-				ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-2);
-			}
-		}
-		ch->nof_re_x_sf[i] = config->nof_prb*lte_pdsch_re_x_prb(i,config);
-		if (ch->nof_re_x_sf[i]<0) {
-			printf("PDSCH: Error computing RE x RB\n");
-			return -1;
-		}
+		lte_pdsch_init_sf(i, ch, config);
 	}
+
 	for (i=0;i<config->nof_pdsch;i++) {
 		lte_pdsch_setup_rbgmask(&config->pdsch[i],config);
 		for (j=0;j<NOF_SUBFRAMES_X_FRAME;j++) {

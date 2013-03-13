@@ -146,6 +146,7 @@ void lte_set_guard_sf(complex_t *output, struct lte_grid_config *config);
 
 int lte_get_ns(struct lte_symbol *location, struct lte_grid_config *config);
 int lte_grid_init(struct lte_grid_config *config);
+int lte_grid_init_params(struct lte_grid_config *config);
 
 #define DECLARE
 #include "pbch.h"

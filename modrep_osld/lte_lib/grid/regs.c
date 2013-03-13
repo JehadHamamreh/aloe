@@ -4,57 +4,45 @@
 
 
 int lte_reg_num(int sym_id, struct lte_grid_config *config) {
-	switch(sym_id) {
-	case 0:
+	struct lte_symbol symbol;
+	symbol.subframe_id = 0;
+	symbol.symbol_id = sym_id;
+	if (lte_symbol_has_refsig_or_resv(&symbol, config)) {
 		return 2;
-	case 1:
-		if (config->nof_ports<4) {
-			return 3;
-		} else {
-			return 3;
-		}
-	case 2:
+	} else {
 		return 3;
-	case 3:
-		if (config->nof_osymb_x_subf == NOF_OSYMB_X_SLOT_NORMAL) {
-			return 3;
-		} else {
-			return 2;
-		}
 	}
-	return 0;
 }
 
 
-int lte_reg_indices(int nreg, int kp, int sym_id, struct lte_reg *reg, struct lte_grid_config *config) {
+int lte_reg_indices(int nreg, int kp, int sym_id, int maxreg, int vo,
+		struct lte_reg *reg, struct lte_grid_config *config) {
 	int i,k0,j,z;
-	int maxreg;
-	maxreg = lte_reg_num(sym_id,config);
-	if (nreg>=maxreg) {
-		return -1;
-	}
 	switch(maxreg) {
 	case 2:
 		k0=nreg*6;
 		/* there are two references in the middle */
 		j=z=0;
-		for (i=0;i<6;i++) {
-			if (lte_re_has_refsig_or_resv(kp+k0+i,sym_id,config)) {
-				if (z >= 2) {
-					printf("Something went worng, expected 2 reference in the reg\n");
-					return -1;
-				}
-				reg->k_ref[z] = kp+k0+i;
-				z++;
-			} else {
-				if (j >= 4) {
-					printf("Something went worng, expected 4 free RE in the reg\n");
-					return -1;
-				}
-				reg->k[j]=kp+k0+i;
-				j++;
-			}
+		for (i=0;i<vo;i++) {
+			reg->k[j] = kp+k0+i;
+			j++;
 		}
+		reg->k_ref[0] = kp+k0+vo;
+		for (i=0;i<2;i++) {
+			reg->k[j] = kp+k0+i+vo+1;
+			j++;
+		}
+		reg->k_ref[1] = kp+k0+vo+3;
+		z=j;
+		for (i=0;i<4-z;i++) {
+			reg->k[j] = kp+k0+vo+3+i+1;
+			j++;
+		}
+		if (j!=4) {
+			printf("Something went wrong: expected 2 references\n");
+			return -1;
+		}
+
 		reg->k0=kp+k0;
 		reg->k3=kp+k0+6;
 		break;
@@ -73,6 +61,42 @@ int lte_reg_indices(int nreg, int kp, int sym_id, struct lte_reg *reg, struct lt
 	}
 	return 0;
 }
+
+
+int lte_grid_init_reg(struct lte_grid_config *config, int nof_ctrl_symbols) {
+	int i,j,n,p,nr;
+	int vo=config->cell_id % 3;
+
+	config->control.total_nregs=0;
+	for (i=0;i<nof_ctrl_symbols;i++) {
+		config->control.total_nregs += config->nof_prb*lte_reg_num(i,config);
+	}
+
+	nr=0;
+	for (i=0;i<nof_ctrl_symbols;i++) {
+		n=lte_reg_num(i,config);
+		for (p=0;p<config->nof_prb;p++) {
+			for (j=0;j<n;j++) {
+				if (lte_reg_indices(j,p*NOF_RE_X_OSYMB,i,n,vo,&config->control.regs[p][i][j],config)) {
+					printf("Error initializing REGs\n");
+					return -1;
+				}
+				config->control.regs[p][i][j].symbol = i;
+				config->control.regs[p][i][j].id=j;
+				config->control.regs[p][i][j].assigned = 1;
+				if (config->verbose) {
+					printf("Available REG #%d: %d:%d:%d (k0=%d,k3=%d)\n",nr,i,p,j,
+							config->control.regs[p][i][j].k0,config->control.regs[p][i][j].k3);
+				}
+				nr++;
+			}
+		}
+	}
+	return 0;
+}
+
+
+
 
 struct lte_reg *lte_reg_get_k(int k, int l, struct lte_grid_config *config) {
 	int i;
@@ -128,45 +152,4 @@ const char *reg_print_state(struct lte_reg *reg) {
 		return "Invalid";
 	}
 }
-
-
-int lte_grid_init_reg(struct lte_grid_config *config) {
-	int i,j,n,p,nr;
-	int nof_ctrl_symbols;
-
-	/* if we don't know CFI, scan first symbol for PCFICH */
-	if (config->cfi == -1) {
-		nof_ctrl_symbols = 1;
-	} else {
-		nof_ctrl_symbols = config->nof_control_symbols;
-	}
-
-	config->control.total_nregs=0;
-	for (i=0;i<nof_ctrl_symbols;i++) {
-		config->control.total_nregs += config->nof_prb*lte_reg_num(i,config);
-	}
-
-	nr=0;
-	for (i=0;i<nof_ctrl_symbols;i++) {
-		for (p=0;p<config->nof_prb;p++) {
-			n=lte_reg_num(i,config);
-			for (j=0;j<n;j++) {
-				if (lte_reg_indices(j,p*NOF_RE_X_OSYMB,i,&config->control.regs[p][i][j],config)) {
-					printf("Error initializing REGs\n");
-					return -1;
-				}
-				config->control.regs[p][i][j].symbol = i;
-				config->control.regs[p][i][j].id=j;
-				config->control.regs[p][i][j].assigned = 1;
-				if (config->verbose) {
-					printf("Available REG #%d: %d:%d:%d (k0=%d,k3=%d)\n",nr,i,p,j,
-							config->control.regs[p][i][j].k0,config->control.regs[p][i][j].k3);
-				}
-				nr++;
-			}
-		}
-	}
-	return 0;
-}
-
 

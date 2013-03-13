@@ -66,7 +66,7 @@ int initialize() {
 	grid.verbose = 1;
 
 	if (lte_grid_init(&grid)) {
-		moderror("Initiating resource grid\n");
+		moderror("Initiating channels grid\n");
 		return -1;
 	}
 

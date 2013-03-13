@@ -342,10 +342,17 @@ int lte_grid_init_channels(struct lte_grid_config *config) {
 }
 
 int lte_grid_init(struct lte_grid_config *config) {
+	int nof_ctrl_symb;
+
 	if (lte_grid_init_params(config)==-1) {
 		return -1;
 	}
-	if (lte_grid_init_reg(config)) {
+	if (config->cfi == -1) {
+		nof_ctrl_symb = 1;
+	} else {
+		nof_ctrl_symb = config->nof_control_symbols;
+	}
+	if (lte_grid_init_reg(config,nof_ctrl_symb)) {
 		printf("Error allocating REGs\n");
 		return -1;
 	}
