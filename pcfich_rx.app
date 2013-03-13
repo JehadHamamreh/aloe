@@ -35,6 +35,7 @@ interfaces:
 (
 	{src="_input";dest="demodulation"},
 	{src="demodulation";dest="descrambling"},
-	{src="descrambling";dest="decoder"}
+	{src="descrambling";dest="decoder"},
+	{src="decoder";dest="_output"}
 );
 

@@ -419,7 +419,10 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 
 	if (src_itf) {
 		if (!config_setting_lookup_int(cfg, "delay", &src_itf->delay)) {
-			src_itf->delay = 0;
+			src_itf->delay = 1;
+		}
+		if (dest_itf) {
+			dest_itf->delay = src_itf->delay;
 		}
 	}
 	if (dest_module && src_module) {
@@ -650,10 +653,12 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 			aerror("allocating memory\n");
 			return 0;
 		}
-		for (i=0;i<w->nof_modules;i++) {
+		for (i=ctrl->index+1;i<w->nof_modules;i++) {
 			pardebug("ctrl module port %d dest %d:%d\n",ctrl->nof_outputs,w->modules[i].id,w->modules[i].nof_inputs);
 			ctrl->outputs[ctrl->nof_outputs].remote_module_id = w->modules[i].id;
 			ctrl->outputs[ctrl->nof_outputs].remote_port_idx = w->modules[i].nof_inputs;
+			ctrl->outputs[ctrl->nof_outputs].delay = 1;
+			ctrl->outputs[ctrl->nof_outputs].total_mbpts = 0.0001;
 			w->modules[i].inputs[w->modules[i].nof_inputs].remote_module_id = ctrl->id;
 			w->modules[i].inputs[w->modules[i].nof_inputs].remote_port_idx = ctrl->nof_outputs;
 			w->modules[i].nof_inputs++;

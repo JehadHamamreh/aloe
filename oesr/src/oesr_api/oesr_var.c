@@ -48,7 +48,7 @@ var_t oesr_var_create(void *context, char *name, void *ptr, int size) {
 	variable_t *variable;
 	variable = nod_module_variable_get(module, name);
 	if (!variable) {
-		variable = nod_module_variable_create(module, name);
+		variable = nod_module_variable_create(module, name,0);
 		if (!variable) {
 			return NULL;
 		}
@@ -56,6 +56,21 @@ var_t oesr_var_create(void *context, char *name, void *ptr, int size) {
 	variable->size = size;
 	variable->cur_value = ptr;
 	return 0;
+}
+
+var_t oesr_var_param_create_remote(void *context, int module_idx, char *name, int size) {
+	oesr_context_t *ctx = context;
+	OESR_ASSERT_PARAM_P(name);
+	sdebug("remote_idx=%d name=%s, size=%d\n",module_idx,name,size);
+	OESR_ASSERT_PARAM_P(module_idx);
+	OESR_ASSERT_PARAM_P(size>=0);
+
+	nod_module_t *my_module = ctx->module;
+	nod_waveform_t *waveform = (nod_waveform_t*) my_module->parent.waveform;
+	nod_module_t *his_module = (nod_module_t*) &waveform->modules[module_idx];
+
+
+	return (var_t) nod_module_variable_create(his_module, name, size);
 }
 
 /** Sets up to size bytes of the buffer pointed by ptr to the value of the parameter

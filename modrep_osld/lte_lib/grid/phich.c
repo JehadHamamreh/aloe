@@ -62,9 +62,11 @@ struct lte_reg *lte_grid_init_reg_phich_ni(int symbol_id, int ni, struct lte_gri
 int lte_grid_init_reg_phich(struct lte_grid_config *config) {
 	int i,ni,li,n[3],p,r,nip,nreg,mi;
 
-	memset(n,0,sizeof(int)*3);
-	for (i=0;i<3;i++) {
-		n[i] = lte_grid_init_reg_phich_countfree(i,config);
+	if (config->phich_ngroups) {
+		memset(n,0,sizeof(int)*3);
+		for (i=0;i<3;i++) {
+			n[i] = lte_grid_init_reg_phich_countfree(i,config);
+		}
 	}
 
 	nreg=0;
@@ -92,7 +94,11 @@ int lte_grid_init_reg_phich(struct lte_grid_config *config) {
 int lte_phich_init_params(struct lte_grid_config *config) {
 	config->phich_duration = 1;
 	config->phich_ngfactor = 1.0;
-	config->phich_ngroups = (int) ((config->phich_ngfactor*config->nof_prb-1)/8+1);
+	if (config->nof_control_symbols) {
+		config->phich_ngroups = (int) ((config->phich_ngfactor*config->nof_prb-1)/8+1);
+	} else {
+		config->phich_ngroups = 0;
+	}
 	return 0;
 }
 

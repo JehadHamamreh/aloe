@@ -105,9 +105,9 @@ int rtdal_itfspscq_push(r_itf_t obj, int len, int tstamp) {
 	itf->packets[itf->write].tstamp = tstamp+itf->parent.delay;
 	itf->packets[itf->write].len = len;
 	itf->packets[itf->write].valid = 1;
-	itf->write += (itf->write+1 >= itf->max_msg) ? (1-itf->max_msg) : 1;
+	qdebug("write=%d/%d, len=%d tstamp=%d\n",itf->write,itf->max_msg,len,itf->packets[itf->write].tstamp);
 
-	qdebug("write=%d/%d, len=%d\n",itf->write,itf->max_msg,len);
+	itf->write += (itf->write+1 >= itf->max_msg) ? (1-itf->max_msg) : 1;
 
 	return 1;
 }
@@ -125,11 +125,13 @@ int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len, int tstamp) {
 		return 0;
 	}
 	if (itf->packets[itf->read].tstamp > tstamp) {
-		qdebug("[delay] read=%d, tstamp=%d\n",itf->read,itf->packets[itf->read].tstamp);
+		qdebug("[delay] read=%d, tstamp=%d now=%d\n",itf->read,itf->packets[itf->read].tstamp,tstamp);
 		return 0;
 	}
-	if (itf->packets[itf->read].tstamp < tstamp && itf->parent.delay) {
+	if (itf->packets[itf->read].tstamp < tstamp-1) {
+		qdebug("[old] read=%d, tstamp=%d now=%d\n",itf->read,itf->packets[itf->read].tstamp,tstamp);
 		rtdal_itfspscq_release(obj);
+		return 0;
 	}
 
 	qdebug("[ok] read=%d, tstamp=%d (now=%d)\n",itf->read,itf->packets[itf->read].tstamp,tstamp);
@@ -180,7 +182,7 @@ int rtdal_itfspscq_get_blocking(r_itf_t obj) {
 }
 
 
-int rtdal_itfspscq_send(r_itf_t obj, void* buffer, int len) {
+int rtdal_itfspscq_send(r_itf_t obj, void* buffer, int len, int tstamp) {
 	cast(obj,itf);
 	RTDAL_ASSERT_PARAM(buffer);
 	RTDAL_ASSERT_PARAM(len>=0);
@@ -193,40 +195,42 @@ int rtdal_itfspscq_send(r_itf_t obj, void* buffer, int len) {
 		return -1;
 	}
 
-	hdebug("requesting pkt for 0x%x\n",obj);
+	qdebug("requesting pkt for 0x%x\n",obj);
 	if ((n = rtdal_itfspscq_request(obj, &ptr)) != 1) {
 		return n;
 	}
 
 	memcpy(ptr, buffer, (size_t) len);
 
-	hdebug("put pkt for 0x%x pkt 0x%x\n",obj,ptr);
-	return rtdal_itfspscq_push(obj,len,rtdal_time_slot());
+	qdebug("put pkt for 0x%x pkt 0x%x\n",obj,ptr);
+	return rtdal_itfspscq_push(obj,len,tstamp);
 }
 
-int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len) {
-
+int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len, int tstamp) {
+	cast(obj,itf);
 	RTDAL_ASSERT_PARAM(buffer);
 	RTDAL_ASSERT_PARAM(len>=0);
 
 	int n, plen;
 	void *ptr;
 
-	if ((n = rtdal_itfspscq_pop(obj, &ptr, &plen, rtdal_time_slot())) != 1) {
+	qdebug("popping obj=0x%x, rcv pkt=0x%x\n",obj,ptr);
+
+	if ((n = rtdal_itfspscq_pop(obj, &ptr, &plen, tstamp)) != 1) {
 		return n;
 	}
 	if (plen > len) {
 		plen = len;
 	}
 
-	hdebug("obj=0x%x, rcv pkt=0x%x\n",obj,ptr);
+	qdebug("obj=0x%x, rcv pkt=0x%x\n",obj,ptr);
 	memcpy(buffer, ptr, (size_t) plen);
 
-	if ((n = rtdal_itfspscq_release(obj)) == 1) {
-		return n;
+	if ((n = rtdal_itfspscq_release(obj)) != 1) {
+		printf("Caution packet could not be released (%d)\n",n);
 	}
 
-	hdebug("release pkt 0x%x\n",ptr);
+	qdebug("release pkt 0x%x\n",ptr);
 
 	return plen;
 }

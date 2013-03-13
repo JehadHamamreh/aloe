@@ -315,10 +315,14 @@ int lte_grid_init_params(struct lte_grid_config *config) {
 		printf("Number of PRB must be between 0 and 110 (nof_prb=%d)\n",config->nof_prb);
 		return -1;
 	}
-	if (config->nof_prb<=10) {
-		config->nof_control_symbols = config->cfi+1;
+	if (config->cfi == -1) {
+		config->nof_control_symbols = 0;
 	} else {
-		config->nof_control_symbols = config->cfi;
+		if (config->nof_prb<=10) {
+			config->nof_control_symbols = config->cfi+1;
+		} else {
+			config->nof_control_symbols = config->cfi;
+		}
 	}
 	return n;
 }

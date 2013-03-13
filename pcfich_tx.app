@@ -7,7 +7,7 @@ modules:
 		binary="modrep_osld/liblte_cfi_coding.so";	
 		mopts=8;
 		variables=(
-			{name="cfi";value=2}
+			{name="cfi";value=-1}
 		);
 	};
 

@@ -86,30 +86,6 @@ int check_configuration(void *ctx) {
 int init_interfaces(void *ctx) {
 	int i;
 
-	if (oesr_itf_nofinputs(ctx) > nof_input_itf) {
-		/* try to create control interface */
-		ctrl_in = oesr_itf_create(ctx, oesr_itf_nofinputs(ctx)-1, ITF_READ, CTRL_IN_BUFFER_SZ);
-		if (ctrl_in) {
-			modinfo("Created control port\n");
-		}
-	}
-
-	moddebug("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
-	for (i=0;i<nof_input_itf;i++) {
-		if (inputs[i] == NULL) {
-			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
-			if (inputs[i] == NULL) {
-				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
-					return 0;
-				} else {
-					oesr_perror("creating input interface\n");
-					return -1;
-				}
-			} else {
-				moddebug("input_%d=0x%x\n",i,inputs[i]);
-			}
-		}
-	}
 
 	for (i=0;i<nof_output_itf;i++) {
 		if (outputs[i] == NULL) {
@@ -127,6 +103,35 @@ int init_interfaces(void *ctx) {
 			}
 		}
 	}
+
+	if (oesr_itf_nofinputs(ctx) > nof_input_itf) {
+		if (!ctrl_in) {
+			/* try to create control interface */
+			ctrl_in = oesr_itf_create(ctx, oesr_itf_nofinputs(ctx)-1, ITF_READ, CTRL_IN_BUFFER_SZ);
+			if (ctrl_in) {
+				modinfo("Created control port\n");
+			}
+		}
+	}
+
+	moddebug("configuring %d inputs and %d outputs %d %d %d\n",nof_input_itf,nof_output_itf,inputs[0],input_max_samples,input_sample_sz);
+	for (i=0;i<nof_input_itf;i++) {
+		if (inputs[i] == NULL) {
+			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
+			if (inputs[i] == NULL) {
+				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
+					modinfo_msg("input %d not ready\n",i);
+					return 0;
+				} else {
+					oesr_perror("creating input interface\n");
+					return -1;
+				}
+			} else {
+				moddebug("input_%d=0x%x\n",i,inputs[i]);
+			}
+		}
+	}
+
 
 	return 1;
 }
@@ -325,7 +330,7 @@ int Run(void *_ctx) {
 
 	if (ctrl_in) {
 		do {
-			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER_SZ);
+			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER_SZ,oesr_tstamp(ctx));
 			if (n == -1) {
 				oesr_perror("oesr_itf_read");
 				return -1;
@@ -345,7 +350,6 @@ int Run(void *_ctx) {
 		} else {
 			n = oesr_itf_ptr_get(inputs[i], &input_ptr[i], &rcv_len[i], tstamp);
 			if (n == 0) {
-				itfdebug("[ts=%d] received no input from %d\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_get");
 				return -1;
@@ -469,7 +473,7 @@ int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value,
 	pkt->pm_idx = param_idx;
 	pkt->size = value_sz;
 	memcpy(pkt->value,value,value_sz);
-	set_output_samples(module_idx,1);
+	set_output_samples(module_idx,sizeof(struct ctrl_in_pkt)/output_sample_sz);
 	return 0;
 }
 

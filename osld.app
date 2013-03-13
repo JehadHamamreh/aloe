@@ -5,18 +5,35 @@ main:
 	waveform_granularity_us=0;
 	
 	precach_pipeline=false;
-	auto_ctrl_module="ctrl_tx";
+	auto_ctrl_module="ctrl";
 };
 
 modules:
 {
-	ctrl_tx:
+	/* muxes all control messages from other modules */
+	ctrl_mux: 
 	{
-		binary="modrep_osld/liblte_ctrl_tx.so";	
+		binary="modrep_osld/libgen_mux.so";	
+		mopts=12;
+		variables=(
+			{name="nof_inputs";value=1;},{name="data_type";value=0;});
+	};
+	
+	ctrl:
+	{
+		binary="modrep_osld/liblte_ctrl.so";	
 		mopts=0.1;
 		variables=(
+			{name="mode";value=2}, /* 0 tx, 1 rx, 2 both */
 			{name="mcs";value=0},{name="nrb";value=4},{name="fft_size";value=128},
-			{name="cp_is_long";value=0;}
+			
+			{name="cfi_tx";value=1},{name="cfi_rx";value=-1},
+			
+			{name="nof_ports";value=1},
+			{name="nof_prb";value=6;},
+			{name="nof_pdsch";value=1},{name="pdsch_rbgmask_0";value=0xffff},
+			{name="cell_id";value=0},{name="nof_osymb_x_subf";value=14},
+			{name="itf_77_delay";value=4}
 		);
 	};
 		
@@ -31,13 +48,12 @@ modules:
 	
 	pcfich_tx:
 	{
-		include="./pcfich_tx.app";	
+		include="../aloe_git/pcfich_tx.app";	
 	};
 	
-
 	pdsch_tx:
 	{
-		include="./pdsch_tx.app";	
+		include="../aloe_git/pdsch_tx.app";	
 	};
 
 	resmapp:
@@ -45,7 +61,7 @@ modules:
 		binary="modrep_osld/liblte_resource_mapper.so";	
 		mopts=15;
 		variables=(
-			{name="direction";value=0;},{name="subframe_idx";value=0});
+			{name="subframe_idx";value=0});
 	};
 	
 	demux_tx:
@@ -58,7 +74,7 @@ modules:
 	
 	symb_tx:
 	{
-		include="./symb_tx.app";	
+		include="../aloe_git/symb_tx.app";	
 	};
 
 	channel:
@@ -75,7 +91,7 @@ modules:
 
 	symb_rx:
 	{
-		include="./symb_rx.app";	
+		include="../aloe_git/symb_rx.app";	
 	};
 	
 	mux_rx:
@@ -85,23 +101,30 @@ modules:
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
 	
-	resdemapp:
+	resdemapp_pcfich:
 	{
-		binary="modrep_osld/liblte_resource_mapper.so";	
+		binary="modrep_osld/liblte_resource_demapper.so";	
 		mopts=12;
 		variables=(
-			{name="direction";value=1;},{name="subframe_idx";value=0});
+			{name="channel_id_0";value=4},{name="subframe_idx";value=0});
 	};
 	
 	pcfich_rx:
 	{
-		include="./pcfich_rx.app";	
+		include="../aloe_git/pcfich_rx.app";	
 	};
 	
+	resdemapp_pdsch:
+	{
+		binary="modrep_osld/liblte_resource_demapper.so";	
+		mopts=12;
+		variables=(
+			{name="cfi";value=-1},{name="channel_id_0";value=0},{name="subframe_idx";value=0});
+	};
 	
 	pdsch_rx:
 	{
-		include="./pdsch_rx.app";	
+		include="../aloe_git/pdsch_rx.app";	
 	};
 	
 	sink:
@@ -116,7 +139,9 @@ modules:
 
 interfaces:
 (
-	{src=("source",0);dest=("pdsch_tx",0)},
+	{src="ctrl_mux";dest="ctrl";delay=0},
+	
+	{src="source";dest="pdsch_tx"},
 	{src="pdsch_tx";dest=("resmapp",0)},
 	{src="pcfich_tx";dest=("resmapp",1)},
 		
@@ -156,10 +181,14 @@ interfaces:
 	{src=("symb_rx",12);dest=("mux_rx",12)},
 	{src=("symb_rx",13);dest=("mux_rx",13)},
 	
-	{src="mux_rx";dest="resdemapp"},	
+	{src="mux_rx";dest="resdemapp_pcfich"},	
 	
-	{src=("resdemapp",0);dest="pdsch_rx"},	
-	{src=("resdemapp",1);dest="pcfich_rx"},	
+	{src=("resdemapp_pcfich",0);dest="pcfich_rx"},	
+	{src=("resdemapp_pcfich",1);dest="resdemapp_pdsch";delay=22},	
+	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
+
+	/* loop back to control */
+	{src="pcfich_rx";dest="ctrl_mux";mbpts=0.0;delay=0},
 	
 	{src="pdsch_rx";dest="sink"}
 );

@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012
+ * Copyright (c) 2012,
  * Ismael Gomez-Miguelez <ismael.gomez@tsc.upc.edu>.
  * This file is part of ALOE++ (http://flexnets.upc.edu/)
  * 
@@ -24,9 +24,9 @@
 #include <params.h>
 #include <skeleton.h>
 
-#include "lte_resource_mapper.h"
+#include "lte_resource_demapper.h"
 #include "lte_lib/grid/base.h"
-#include "channelize.h"
+#include "dechannelize.h"
 
 extern int nof_input_itf;
 extern int nof_output_itf;
@@ -35,8 +35,14 @@ int subframe_idx;
 int last_tslotidx;
 
 pmid_t subframe_idx_id;
+int nof_channels;
+
+#define MAX_CHANNELS 10
+
+int channel_ids[MAX_CHANNELS];
 
 struct lte_grid_config grid;
+
 
 
 /**
@@ -44,43 +50,50 @@ struct lte_grid_config grid;
  *
  *	See lte_ctrl_tx for grid params.
  *
- * \param direction 0 for the transmitter side, 1 for the receiver side
+ * \param nof_channels Number of channels to extract
+ * \param channel_id_n Id of the n-th channel to extract (configured in channel_setup.h)
  * \param (optional) subframe_idx, if not provided, subframe_idx is counted automatically starting at zero
  *
  * \returns This function returns 0 on success or -1 on error
  */
 int initialize() {
-	int max_in_port;
+	int i;
+	char tmp[64];
+	int max_out_port;
 
-	max_in_port = read_channels();
+	max_out_port = read_channels();
 
 	grid.fft_size = 128;
 	grid.nof_prb = 6;
 	grid.nof_osymb_x_subf = 14;
 	grid.nof_ports = 1;
 	grid.cell_id = 0;
-	grid.cfi = 1;
-	grid.nof_pdcch = 1;
-	grid.nof_pdsch = 1;
-	grid.pdsch[0].rbg_mask=0xFFFF;
-	grid.verbose = 1;
-
-	if (lte_grid_init(&grid)) {
-		moderror("Initiating resource grid\n");
-		return -1;
-	}
-
-	nof_output_itf = 1;
-	nof_input_itf = max_in_port+1;
-
-	if (init_refsinc_signals()) {
-		return -1;
-	}
+	grid.cfi = -1;
+	grid.nof_pdsch = 0;
+	grid.nof_pdcch = 0;
 
 	subframe_idx_id = param_id("subframe_idx");
 	if (!subframe_idx_id) {
 		subframe_idx = 0;
 	}
+
+	if (param_get_int_name("nof_channels",&nof_channels)) {
+		nof_channels = 1;
+	}
+	if (nof_channels > MAX_CHANNELS) {
+		moderror_msg("Maximum allowed channels is %d (%d)\n",nof_channels,MAX_CHANNELS);
+		return -1;
+	}
+	for (i=0;i<nof_channels;i++) {
+		snprintf(tmp,64,"channel_id_%d",i);
+		if (param_get_int_name(tmp,&channel_ids[i])) {
+			channel_ids[i] = i;
+		}
+	}
+
+	nof_output_itf = max_out_port+1;
+	nof_input_itf = 1;
+
 
 	return 0;
 }
@@ -100,28 +113,33 @@ int initialize() {
 int work(void **inp, void **out) {
 	int n;
 
-
 	if (subframe_idx_id) {
 		param_get_int(subframe_idx_id, &subframe_idx);
 	}
 
 #ifdef _COMPILE_ALOE
-	moddebug("subframe_idx=%d tstamp=%d last=%d\n",subframe_idx,oesr_tstamp(ctx),last_tslotidx);
+	moddebug("subframe_idx=%d tstamp=%d rcv_len=%d\n",subframe_idx,oesr_tstamp(ctx),get_input_samples(0));
 #endif
 
-	n=check_received_samples_mapper();
+	n=check_received_samples_demapper();
 	if (n < 1) {
 		return n;
 	}
 
-	if (allocate_all_channels(inp,out[0])) {
-		moderror("Error allocating channels\n");
-		return 0;
+	if (lte_grid_init(&grid)) {
+		moderror("Initiating resource grid\n");
+		return -1;
 	}
 
-	subframe_idx++;
-	if (subframe_idx==NOF_SUBFRAMES_X_FRAME) {
-		subframe_idx=0;
+	if (deallocate_all_channels(channel_ids, nof_channels, inp[0],out)) {
+		return -1;
+	}
+	if (extract_refsig(inp[0],out)) {
+		return -1;
+	}
+
+	if (copy_signal(inp[0],out)) {
+		return -1;
 	}
 
 	return 0;

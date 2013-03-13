@@ -13,7 +13,7 @@ rtdal:
 							   	for best real-time control. 
 							 */
 	
-	time_slot_us=10000; 		/* time slot length, in microseconds
+	time_slot_us=50000; 		/* time slot length, in microseconds
 								IGNORED if use_usrp=true 
 							*/
 	cores="1";				/* Options: 
@@ -22,7 +22,7 @@ rtdal:
 								- to use a single core, use 1, for instance, to use core 1
 							*/
 						
-	path_to_libs="/usr/local/lib";
+	path_to_libs="./lib";
 	
 };
 

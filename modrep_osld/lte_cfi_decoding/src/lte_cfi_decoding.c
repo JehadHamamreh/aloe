@@ -25,7 +25,7 @@
 #include "cfi_decoding.h"
 
 char table[4][32];
-
+int cfi_pm_idx;
 
 /**
  * @ingroup lte_cfi_decoding
@@ -36,6 +36,15 @@ char table[4][32];
  */
 int initialize() {
 	coding_table(table);
+
+	/* get ctrl cfi param index */
+#ifdef _COMPILE_ALOE
+	cfi_pm_idx = oesr_get_variable_idx(ctx, "ctrl","cfi_rx");
+	if (cfi_pm_idx < 0) {
+		moderror("Error getting remote parameter cfi_rx\n");
+	}
+	modinfo_msg("Remote CFI parameter is a at %d\n",cfi_pm_idx)
+#endif
 	return 0;
 }
 
@@ -71,11 +80,14 @@ int work(void **inp, void **out) {
 			"bits.\n", rcv_samples);
 		return -1;
 	}
-	index = cfi_decoding(input, table);
-	if (output) {
-		output[0] = index+1;
+	index = cfi_decoding(input, table)+1;
+
+	if (param_remote_set(out, 0, cfi_pm_idx, &index, sizeof(int))) {
+		moderror("Setting parameter\n");
+		return -1;
 	}
-	return snd_samples;
+
+	return 0;
 }
 
 /**  Deallocates resources created during initialize().

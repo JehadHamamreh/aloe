@@ -33,7 +33,7 @@ int oesr_counter_init(void *context, oesr_counter_t *counter, string name) {
 	nod_module_t *module = ctx->module;
 	OESR_ASSERT_PARAM(counter);
 	OESR_ASSERT_PARAM(name);
-	variable_t *variable = nod_module_variable_create(module, name);
+	variable_t *variable = nod_module_variable_create(module, name,0);
 	if (!variable) {
 		return -1;
 	}

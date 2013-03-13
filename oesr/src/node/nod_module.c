@@ -231,7 +231,7 @@ variable_t* nod_module_variable_get(nod_module_t *module, string name) {
 /** Returns a pointer to the first empty variable in the module structure. Fills
  * the variable name with the second parameter string and sets the variable id to a non-zero integer.
  */
-variable_t* nod_module_variable_create(nod_module_t *module, string name) {
+variable_t* nod_module_variable_create(nod_module_t *module, string name, int size) {
 	ndebug("module_id=%d, nof_variables=%d, name=%s\n",module->parent.id,
 				module->parent.nof_variables, name);
 	int i;
@@ -251,6 +251,11 @@ variable_t* nod_module_variable_create(nod_module_t *module, string name) {
 				5*sizeof(variable_t));
 		module->parent.nof_variables+=5;
 		ndebug("nof_variables=%d\n",module->parent.nof_variables);
+	}
+
+	if (size) {
+		module->parent.variables[i].size = size;
+		variable_alloc(&module->parent.variables[i], module->parent.nof_modes);
 	}
 
 	module->parent.variables[i].id = i+1;

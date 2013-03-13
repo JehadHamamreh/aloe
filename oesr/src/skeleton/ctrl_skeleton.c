@@ -62,7 +62,7 @@ void init_memory() {
 
 int kkts=0;
 
-int ctrl_skeleton_send_idx(int dest_idx, void *value, int size) {
+int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	int n;
 	if (dest_idx<0 || dest_idx>nof_remote_variables) {
 		return -1;
@@ -70,18 +70,18 @@ int ctrl_skeleton_send_idx(int dest_idx, void *value, int size) {
 	ctrl_out_buffer.pm_idx = remote_variables[dest_idx].variable_idx;
 	ctrl_out_buffer.size = size;
 	memcpy(ctrl_out_buffer.value,value,size);
-	n=oesr_itf_write(remote_variables[dest_idx].addr->itf,&ctrl_out_buffer,size + CTRL_PKT_HEADER_SZ);
+	n=oesr_itf_write(remote_variables[dest_idx].addr->itf,&ctrl_out_buffer,size + CTRL_PKT_HEADER_SZ,tstamp);
 	if (n == -1) {
 		return -1;
 	} else if (!n) {
-		printf("Sending control packet to %s:%s\n",remote_params_db[dest_idx].module_name,
+		printf("Buffer full while sending control packet to %s:%s\n",remote_params_db[dest_idx].module_name,
 				remote_params_db[dest_idx].variable_name);
 		return -1;
 	}
 	return 0;
 }
 
-int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size) {
+int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size,int tstamp) {
 	int i;
 	i=0;
 	while(i<nof_remote_variables && strcmp(remote_params_db[i].module_name,module_name)
@@ -91,16 +91,15 @@ int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value,
 	if (i==nof_remote_variables) {
 		return -1;
 	}
-	return ctrl_skeleton_send_idx(i,value,size);
+	return ctrl_skeleton_send_idx(i,value,size,tstamp);
 }
 
 int remote_parameters_sendall(void *ctx) {
 	int i;
 	for (i=0;i<nof_remote_variables;i++) {
-		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size)) {
+		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size,oesr_tstamp(ctx))) {
 			moderror_msg("sending ctrl packet to %s:%s\n",
 					remote_params_db[i].module_name,remote_params_db[i].variable_name);
-			oesr_error_print(ctx,"oesr_itf_write");
 			return -1;
 		}
 	}
@@ -136,9 +135,18 @@ int init_remote_variables(void *ctx) {
 		remote_variables[i].variable_idx = oesr_get_variable_idx(ctx, (char*) remote_params_db[i].module_name,
 				(char*) remote_params_db[i].variable_name);
 		if (remote_variables[i].variable_idx == -1) {
-			moderror_msg("Variable %s not found in module %s\n",remote_params_db[i].variable_name,
+			modinfo_msg("Variable %s not found in module %s. Creating...\n",remote_params_db[i].variable_name,
 					remote_params_db[i].module_name);
-			return -1;
+
+			/* create a new variable if not defined in .app */
+			var_t new_var = oesr_var_param_create_remote(ctx,remote_variables[i].module_idx,
+					(char*) remote_params_db[i].variable_name,remote_params_db[i].size);
+			if (!new_var) {
+				moderror_msg("Error creating remote variable %s in module %s.\n",remote_params_db[i].variable_name,
+						remote_params_db[i].module_name);
+				return -1;
+			}
+			remote_variables[i].variable_idx = new_var->id-1;
 		}
 		modinfo_msg("Init remote parameter %s:%s (%d,%d)\n",remote_params_db[i].module_name,
 				remote_params_db[i].variable_name,remote_variables[i].module_idx,
@@ -213,10 +221,13 @@ int close_local_variables(void *ctx, int nof_vars) {
 }
 
 int init_remote_itf(void *ctx, int nof_itf) {
-	int i;
+	int i,j;
+	int port,delay;
+	char tmp[64];
 
 	for (i=0;i<nof_itf;i++) {
-		outputs[i].itf = oesr_itf_create(ctx, outputs[i].module_idx,
+		port = outputs[i].module_idx-oesr_module_id(ctx);
+		outputs[i].itf = oesr_itf_create(ctx, port,
 				ITF_WRITE, sizeof(struct ctrl_in_pkt));
 		if (outputs[i].itf == NULL) {
 			if (oesr_error_code(ctx) == OESR_ERROR_NOTFOUND) {
@@ -226,6 +237,19 @@ int init_remote_itf(void *ctx, int nof_itf) {
 				oesr_perror("oesr_itf_create\n");
 				return -1;
 			}
+		}
+		snprintf(tmp,64,"itf_%d_delay",port);
+		if (!param_get_int_name(tmp,&delay)) {
+			for (j=0;j<nof_remote_variables;j++) {
+				if (remote_variables[j].module_idx == outputs[i].module_idx) {
+					break;
+				}
+			}
+			if (j < nof_remote_variables) {
+				modinfo_msg("Adding a delay of %d slots to port %d, module %s\n",delay,port,
+						remote_params_db[j].module_name);
+			}
+			oesr_itf_delay_add(outputs[i].itf,delay);
 		}
 	}
 
@@ -255,10 +279,10 @@ int Init(void *ctx) {
 	ctrl_init();
 
 	ctrl_in = NULL;
-/*	if (!init_ctrl_input(ctx)) {
+	if (!init_ctrl_input(ctx)) {
 		return 0;
 	}
-*/
+
 	nof_remote_variables = init_remote_variables(ctx);
 	if (nof_remote_variables == -1) {
 		return -1;
@@ -296,9 +320,8 @@ int local_parameters_update(void *ctx) {
 }
 
 int process_ctrl_packet(void *ctx) {
-
-	if (oesr_var_param_set_value(ctx,local_variables[ctrl_in_buffer.pm_idx],ctrl_in_buffer.value,
-			ctrl_in_buffer.size)) {
+	if (oesr_var_param_set_value_idx(ctx,ctrl_in_buffer.pm_idx,ctrl_in_buffer.value,
+			ctrl_in_buffer.size) == -1) {
 		oesr_perror("Error setting control parameter\n");
 		return -1;
 	}
@@ -310,12 +333,11 @@ int process_ctrl_packets(void *ctx) {
 	int n;
 
 	do {
-		n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, sizeof(struct ctrl_in_pkt));
+		n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, sizeof(struct ctrl_in_pkt),oesr_tstamp(ctx));
 		if (n == -1) {
 			oesr_perror("oesr_itf_read");
 			return -1;
 		} else if (n>0) {
-			modinfo_msg("Received ctrl packet for pm %d\n",ctrl_in_buffer.pm_idx);
 			if (process_ctrl_packet(ctx)) {
 				moderror("Error processing control packet\n");
 				return -1;
@@ -364,30 +386,6 @@ int Stop(void *ctx) {
 	return 0;
 }
 
-int param_get_int_name(char *name, int *value) {
-	pmid_t id = param_id(name);
-	if (id == NULL) {
-		return -1;
-	}
-	param_type_t type;
-	int size;
-	int tmp = *value;
-	int max_size = sizeof(int);
-
-	if ((size = param_get(id,value,max_size,&type)) == -1) {
-		*value = tmp;
-		return -1;
-	}
-	if (size != max_size) {
-		*value = tmp;
-		return -1;
-	}
-	if (type != INT) {
-		*value = tmp;
-		return -1;
-	}
-	return 0;
-}
 
 int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type) {
 	if (type) {

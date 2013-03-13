@@ -132,14 +132,22 @@ const char *reg_print_state(struct lte_reg *reg) {
 
 int lte_grid_init_reg(struct lte_grid_config *config) {
 	int i,j,n,p,nr;
+	int nof_ctrl_symbols;
+
+	/* if we don't know CFI, scan first symbol for PCFICH */
+	if (config->cfi == -1) {
+		nof_ctrl_symbols = 1;
+	} else {
+		nof_ctrl_symbols = config->nof_control_symbols;
+	}
 
 	config->control.total_nregs=0;
-	for (i=0;i<config->nof_control_symbols;i++) {
+	for (i=0;i<nof_ctrl_symbols;i++) {
 		config->control.total_nregs += config->nof_prb*lte_reg_num(i,config);
 	}
 
 	nr=0;
-	for (i=0;i<config->nof_control_symbols;i++) {
+	for (i=0;i<nof_ctrl_symbols;i++) {
 		for (p=0;p<config->nof_prb;p++) {
 			n=lte_reg_num(i,config);
 			for (j=0;j<n;j++) {

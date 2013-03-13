@@ -137,8 +137,6 @@ int rtdal_itfphysic_disconnect(r_itf_t obj);
 r_itf_t rtdal_itfspscq_new(int max_msg, int msg_sz, int delay);
 
 int rtdal_itf_remove(r_itf_t obj);
-int rtdal_itf_send(r_itf_t obj, void* buffer, int len);
-int rtdal_itf_recv(r_itf_t obj, void* buffer, int len);
 int rtdal_itf_set_callback(r_itf_t obj, void (*fnc)(void), int prio);
 int rtdal_itf_set_blocking(r_itf_t obj, int block);
 int rtdal_itf_get_blocking(r_itf_t obj);
@@ -146,8 +144,8 @@ int rtdal_itf_push(r_itf_t obj, int len, int tstamp);
 int rtdal_itf_pop(r_itf_t obj, void **ptr, int *len, int tstamp);
 int rtdal_itf_request(r_itf_t obj, void **ptr);
 int rtdal_itf_release(r_itf_t obj);
-int rtdal_itf_send(r_itf_t obj, void* buffer, int len);
-int rtdal_itf_recv(r_itf_t obj, void* buffer, int len);
+int rtdal_itf_send(r_itf_t obj, void* buffer, int len, int tstamp);
+int rtdal_itf_recv(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itf_set_delay(r_itf_t obj, int delay);
 int rtdal_itf_get_delay(r_itf_t obj);
 /**@} */

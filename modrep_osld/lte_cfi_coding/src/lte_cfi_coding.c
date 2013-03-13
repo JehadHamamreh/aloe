@@ -64,12 +64,18 @@ int work(void **inp, void **out) {
 	output = out[0];
 	rcv_samples = get_input_samples(0);
 
-	if (!rcv_samples) {
+	if (nof_input_itf == 0) {
 		if (param_get_int_name("cfi",&cfi)) {
 			moderror("No input nor parameter CFI received\n");
 			return -1;
 		}
+		if (cfi == -1) {
+			return 0;
+		}
 	} else {
+		if (!rcv_samples) {
+			return 0;
+		}
 		cfi = input[0];
 	}
 

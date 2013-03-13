@@ -46,7 +46,7 @@ extern FILE *trace_buffer;
 /* debug spscq */
 #define DEBUG_spscq 0
 #define qdebug(_fmt, ...) \
-	do { if (DEBUG_spscq) fprintf(debug_buffer,"[debug-spscq-%d][ts=%d]\t[%s()]: " _fmt, itf->parent.id,rtdal_time_slot(),__func__,__VA_ARGS__);} while(0);
+	do { if (DEBUG_spscq == itf->parent.id) fprintf(debug_buffer,"[debug-spscq-%d][ts=%d]\t[%s()]: " _fmt, itf->parent.id,rtdal_time_slot(),__func__,__VA_ARGS__);} while(0);
 
 
 #define WHERESTR  "[%s():%d]: "

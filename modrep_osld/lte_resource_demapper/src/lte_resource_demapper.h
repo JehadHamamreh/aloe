@@ -1,5 +1,6 @@
 /* 
- * Copyright (c) 2012, Ismael Gomez-Miguelez <ismael.gomez@tsc.upc.edu>.
+ * Copyright (c) 2012, Xavier Arteaga, Antoni Gelonch <antoni@tsc.upc.edu> &
+ * Ismael Gomez-Miguelez <ismael.gomez@tsc.upc.edu>.
  * This file is part of ALOE++ (http://flexnets.upc.edu/)
  * 
  * ALOE++ is free software: you can redistribute it and/or modify
@@ -17,30 +18,28 @@
  */
 
 
+
 /**
- * @defgroup lte_cfi_decoding lte_cfi_decoding
+ * @defgroup lte_resource_mapper lte_resource_mapper
  * Document here your module
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef char input_t;
-typedef int output_t;
+typedef _Complex float input_t;
+typedef _Complex float output_t;
 
 #define OUTPUT_MAX_SAMPLES 	14*2048
 #define INPUT_MAX_SAMPLES 	14*2048
 
 #define NOF_INPUT_ITF		1
-#define NOF_OUTPUT_ITF		1
 
 #endif
 
 /**@} */
+#define GENERATE_COMPLEX
 
-//#define GENERATE_COMPLEX
-
-/********* do not need to modify beyond here */
 
 #ifndef INCLUDE_DEFS_ONLY
 
@@ -53,7 +52,7 @@ const int input_sample_sz = sizeof(input_t);
 const int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */
-const int nof_input_itf = NOF_INPUT_ITF;
-const int nof_output_itf = NOF_OUTPUT_ITF;
+int nof_input_itf = NOF_INPUT_ITF;
+int nof_output_itf = 1;
 
 #endif

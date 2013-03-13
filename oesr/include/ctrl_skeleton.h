@@ -20,13 +20,13 @@
  * dest_idx in the structure remote_params_db_t remote_params_db[]
  * \returns 0 on success, or -1 on error
  */
-int ctrl_skeleton_send_idx(int dest_idx, void *value, int size);
+int ctrl_skeleton_send_idx(int dest_idx, void *value, int size, int tstamp);
 
 /** Sends size bytes from the buffer value to the destination variable given by
  * module_name and variable_name
  * \returns 0 on success, or -1 on error
  */
-int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size);
+int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size, int tstamp);
 
 /* This function is called each timeslot, regardless of the parameters having changed or not.
  *

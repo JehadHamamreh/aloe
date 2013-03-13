@@ -104,6 +104,7 @@ struct lte_grid_config {
 	int nof_pdsch;
 	int debug;
 	int verbose;
+	int subframe_idx;
 	struct lte_phch_config refsig_cfg[MAX_PORTS];
 	struct lte_phch_config phch[NOF_PHCH];
 	struct lte_pdcch pdcch[MAX_PDCCH];

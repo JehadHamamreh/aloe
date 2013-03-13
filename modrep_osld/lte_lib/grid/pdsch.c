@@ -34,9 +34,7 @@ int lte_pdsch_init_params(struct lte_grid_config *config) {
 	int i;
 	char tmp[64];
 
-	if (param_get_int_name("nof_pdsch",&config->nof_pdsch)) {
-		config->nof_pdsch = 1;
-	}
+	param_get_int_name("nof_pdsch",&config->nof_pdsch);
 	if (config->nof_pdsch>MAX_PDSCH) {
 		printf("Error only %d PDSCH are supported (%d)\n",MAX_PDCCH,config->nof_pdsch);
 		return -1;
@@ -54,45 +52,73 @@ int lte_pdsch_init_params(struct lte_grid_config *config) {
 	return 0;
 }
 
+const int pdsch_ref_prb[MAX_PORTS][2] = {
+		{4,6},
+		{8,12},
+		{4,8},
+		{4,16}
+};
+
+const int pdsch_used_symbols[10] = {
+		6,0,0,0,0,2,0,0,0,0
+};
+
+int lte_pdsch_re_x_prb(int subframe_idx, struct lte_grid_config *config) {
+	int i,j;
+	switch(config->nof_ports) {
+	case 1: i=0; break;
+	case 2: i=1; break;
+	case 4: i=2; break;
+	default: return -1;
+	}
+	if (!subframe_idx) {
+		j=0;
+	} else {
+		j=1;
+	}
+	return NOF_RE_X_OSYMB*(config->nof_osymb_x_subf-
+			config->nof_control_symbols-pdsch_used_symbols[subframe_idx])-
+			pdsch_ref_prb[i][j];
+}
+
 int lte_pdsch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 	int i,j;
+	struct lte_symbol symbol;
 	strcpy(ch->name,"PDSCH");
 
 	if (lte_pdsch_init_params(config)) {
 		return -1;
 	}
 
+	if (!config->nof_pdsch) {
+		return 0;
+	}
+
 	for (i=0;i<NOF_SUBFRAMES_X_FRAME;i++) {
-		/* transmit on those symbols not used by pdcch */
-		ch->symbol_mask[i] = ((0x1<<(config->nof_osymb_x_subf+1))-1)^config->phch[CH_PDCCH].symbol_mask[i];
-		/* if 6 prb, switch off on pss/sss/pbch symbols either */
+		/* transmit all symbols... */
+		ch->symbol_mask[i] = ((0x1<<(config->nof_osymb_x_subf+1))-1);
+		/* ... except control symbols */
+		for (j=0;j<config->nof_control_symbols;j++) {
+			ch->symbol_mask[i] ^= (0x1<<j);
+		}
+		/*... if 6 prb*/
 		if (config->nof_prb == 6) {
-			ch->symbol_mask[i] ^= config->phch[CH_PBCH].symbol_mask[i];
-			ch->symbol_mask[i] ^= config->phch[CH_PSS].symbol_mask[i];
-			ch->symbol_mask[i] ^= config->phch[CH_SSS].symbol_mask[i];
-		}
-		ch->nof_re_x_sf[i] = config->nof_prb*config->nof_osymb_x_subf*NOF_RE_X_OSYMB;
-
-		/* remove re used by control or synch channels */
-		for (j=0;j<CH_PDSCH;j++) {
-			ch->nof_re_x_sf[i] -= config->phch[j].nof_re_x_sf[i];
-		}
-		/* remove re used by reference signals */
-		for (j=0;j<config->nof_ports;j++) {
-			ch->nof_re_x_sf[i] -= config->refsig_cfg[j].nof_re_x_sf[i];
-		}
-
-		/* and remove unused re if one port only */
-		if (config->nof_ports == 1) {
-			ch->nof_re_x_sf[i] -= 2*config->nof_prb;
-			/* in subframe 0, bch has 6 refs unused */
+			/* switch off in pbch */
 			if (i==0) {
-				ch->nof_re_x_sf[i] -= 6*config->nof_prb;
+				for (j=config->nof_osymb_x_subf/2;j<config->nof_osymb_x_subf/2+4;j++) {
+					ch->symbol_mask[i] ^= (0x1<<j);
+				}
 			}
-		} else if (config->nof_ports == 2) {
-			if (i==0) {
-				ch->nof_re_x_sf[i] -= 4*config->nof_prb;
+			/* and pss/sss */
+			if (i==0 || i==5) {
+				ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-1);
+				ch->symbol_mask[i] ^= 0x1<<(config->nof_osymb_x_subf/2-2);
 			}
+		}
+		ch->nof_re_x_sf[i] = config->nof_prb*lte_pdsch_re_x_prb(i,config);
+		if (ch->nof_re_x_sf[i]<0) {
+			printf("PDSCH: Error computing RE x RB\n");
+			return -1;
 		}
 	}
 	for (i=0;i<config->nof_pdsch;i++) {

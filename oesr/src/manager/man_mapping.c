@@ -33,7 +33,8 @@ struct mapping_algorithm malg;
 struct cost_function costf;
 struct mapping_result result;
 int *join_function, *joined_function, *joined_function_inv;
-float *tmp_c, *tmp_stages;
+float *tmp_c;
+int *tmp_stages;
 float **tmp_b;
 
 static int mapping_alloc(mapping_t *m, int nof_modules, int nof_processors) {
@@ -225,15 +226,19 @@ void generate_model_b_matrix(waveform_t *waveform, int multiplicity) {
 			wave.b[i][j] = tmp_b[joined_function[i]][joined_function[j]];
 		}
 	}
-	/*
+
 	for (i=0;i<wave.nof_tasks;i++) {
-		mapdebug("b_%d=",i);
 		for (j=0;j<wave.nof_tasks;j++) {
-			mapdebug("%g,",wave.b[i][j]);
+			if (wave.b[i][j]>0.0 && i>=j) {
+				printf("Caution non-DAG graph: ");
+				printf("b(%d,%d)=%f\n",i,j,wave.b[i][j]);
+			}
+			if (wave.b[i][j]>0.0) {
+				mapdebug("b(%d,%d)=%f\n",i,j,wave.b[i][j]);
+			}
 		}
-		mapdebug("\n",0);
 	}
-	*/
+
 }
 
 void generate_model_stages(waveform_t *waveform) {
@@ -247,7 +252,7 @@ void generate_model_stages(waveform_t *waveform) {
 
 	for (i=0;i<M-1;i++) {
 		for (j=i+1;j<M;j++) {
-			if (wave.b[i][j] > 0) {
+			if (wave.b[i][j] > 0.0) {
 				if (tmp_stages[j] <= tmp_stages[i]) {
 					tmp_stages[j] = tmp_stages[i]+1;
 				}
@@ -270,10 +275,21 @@ void generate_model_stages(waveform_t *waveform) {
 			for (k = 0; k < waveform->nof_modules; k++) {
 				if (waveform->modules[i].outputs[j].remote_module_id ==
 						waveform->modules[k].id) {
-					waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
-					mapdebug("delay %s->%s is %d slots\n",waveform->modules[i].name,
+					if (waveform->modules[i].outputs[j].delay == 1) {
+						waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
+					}
+					if (!waveform->modules[i].outputs[j].delay) {
+						printf("delay %s->%s is %d slots %d,%d\n",waveform->modules[i].name,
+								waveform->modules[k].name,waveform->modules[i].outputs[j].delay,
+								waveform->modules[i].stage,waveform->modules[k].stage);
+					}
+					if (i==0 && k==1) {
+						printf("delay %s->%s is %d slots\n",waveform->modules[i].name,
+								waveform->modules[k].name,waveform->modules[i].outputs[j].delay);
+					}
+/*					mapdebug("delay %s->%s is %d slots\n",waveform->modules[i].name,
 							waveform->modules[k].name,waveform->modules[i].outputs[j].delay);
-				}
+*/				}
 			}
         }
 	}

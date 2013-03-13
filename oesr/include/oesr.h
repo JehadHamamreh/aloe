@@ -113,9 +113,12 @@ typedef enum {
 itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int size);
 int oesr_itf_nofinputs(void *context);
 int oesr_itf_nofoutputs(void *context);
+int oesr_itf_delay_get(itf_t itf);
+void oesr_itf_delay_set(itf_t itf, int delay);
+void oesr_itf_delay_add(itf_t itf, int delay);
 int oesr_itf_close(itf_t itf);
-int oesr_itf_write(itf_t itf, void* buffer, int size);
-int oesr_itf_read(itf_t itf, void* buffer, int size);
+int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp);
+int oesr_itf_read(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_status(itf_t itf);
 int oesr_itf_ptr_request(itf_t itf, void **ptr);
 int oesr_itf_ptr_release(itf_t itf);
@@ -131,6 +134,7 @@ typedef enum {
 }oesr_var_type_t;
 
 var_t oesr_var_create(void *context, char* name, void *ptr, int size);
+var_t oesr_var_param_create_remote(void *context, int module_idx, char *name, int size);
 int oesr_var_close(void *context, var_t var);
 var_t oesr_var_param_get(void *context, char *name);
 int oesr_var_param_list(void *context, var_t *parameters, int max_elems);

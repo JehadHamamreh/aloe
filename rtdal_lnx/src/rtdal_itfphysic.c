@@ -43,12 +43,12 @@ int rtdal_itfphysic_remove(r_itf_t obj) {
 	return -1;
 }
 
-int rtdal_itfphysic_recv(r_itf_t obj, void* buffer, int len) {
+int rtdal_itfphysic_recv(r_itf_t obj, void* buffer, int len, int tstamp) {
 	aerror("Not yet implemented");
 	return -1;
 }
 
-int rtdal_itfphysic_send(r_itf_t obj, void* buffer, int len) {
+int rtdal_itfphysic_send(r_itf_t obj, void* buffer, int len, int tstamp) {
 	aerror("Not yet implemented");
 	return -1;
 }

@@ -40,8 +40,8 @@ int rtdal_itf_remove(r_itf_t obj) {
  * \returns A non-negative number indicating the number of useful received bytes,
  * 0 if there are no pending packets in the interface or -1 on error
  */
-int rtdal_itf_recv(r_itf_t obj, void* buffer, int len) {
-	call(recv,obj,buffer,len);
+int rtdal_itf_recv(r_itf_t obj, void* buffer, int len, int tstamp) {
+	call(recv,obj,buffer,len,tstamp);
 }
 
 /** Sends len bytes from the memory pointed by buffer through the interface
@@ -53,8 +53,8 @@ int rtdal_itf_recv(r_itf_t obj, void* buffer, int len) {
  *
  * \returns 1 if the packet was sent, 0 if there is no space in the interface or -1 on error
  */
-int rtdal_itf_send(r_itf_t obj, void* buffer, int len) {
-	call(send,obj,buffer,len);
+int rtdal_itf_send(r_itf_t obj, void* buffer, int len, int tstamp) {
+	call(send,obj,buffer,len,tstamp);
 }
 
 int rtdal_itf_set_blocking(r_itf_t obj, int block) {

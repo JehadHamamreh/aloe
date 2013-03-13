@@ -74,6 +74,10 @@ int lte_pdcch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 		return -1;
 	}
 
+	if (!config->nof_pdcch) {
+		return 0;
+	}
+
 	config->control.pdcch_nregs = config->control.total_nregs-config->control.pcfich_nregs-
 			config->control.phich_nregs;
 

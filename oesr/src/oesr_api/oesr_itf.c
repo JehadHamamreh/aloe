@@ -53,6 +53,7 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int siz
 			port_idx, mode, size,module->parent.nof_inputs,module->parent.nof_outputs);
 	r_itf_t rtdal_itf;
 	interface_t *nod_itf = NULL;
+	int nof_msg;
 
 	OESR_ASSERT_PARAM_P(module);
 	OESR_ASSERT_PARAM_P(port_idx>=0);
@@ -80,7 +81,8 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int siz
 	} else {
 		/* is internal */
 		if (mode == ITF_WRITE) {
-			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(nod_itf->delay+OESR_ITF_DEFAULT_MSG,
+				nof_msg = OESR_ITF_DEFAULT_MSG*nod_itf->delay+2;
+			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(nof_msg,
 					size, nod_itf->delay);
 			if (!rtdal_itf) {
 				OESR_HWERROR("rtdal_itfspscq_new");
@@ -115,6 +117,8 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int siz
 	return (itf_t) nod_itf;
 }
 
+
+
 int oesr_itf_nofinputs(void *context) {
 	oesr_context_t *ctx = context;
 	nod_module_t *module = ctx->module;
@@ -132,6 +136,23 @@ int oesr_itf_nofoutputs(void *context) {
 
 	return module->parent.nof_outputs;
 }
+
+void oesr_itf_delay_add(itf_t itf, int delay) {
+	assert(itf);
+	interface_t *x = (interface_t*) itf;
+	x->delay += delay;
+}
+void oesr_itf_delay_set(itf_t itf, int delay) {
+	assert(itf);
+	interface_t *x = (interface_t*) itf;
+	x->delay = delay;
+}
+int oesr_itf_delay_get(itf_t itf) {
+	assert(itf);
+	interface_t *x = (interface_t*) itf;
+	return x->delay;
+}
+
 
 /**  The oesr_itf_close() function closes an interface previously created by oesr_itf_create().
  * The interface shall not be used again after calling this function.
@@ -161,10 +182,10 @@ int oesr_itf_close(itf_t itf) {
  * \return 1 if all the packet was sent, 0 if the packet was not sent or -1 on error.
  *
  */
-int oesr_itf_write(itf_t itf, void* buffer, int size) {
+int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_send(x->hw_itf,buffer,size);
+	return rtdal_itf_send(x->hw_itf,buffer,size,tstamp);
 }
 
 /**
@@ -179,10 +200,10 @@ int oesr_itf_write(itf_t itf, void* buffer, int size) {
  * \return The number of bytes copied to the buffer (zero or positive number) on succes,
  * or -1 on error
  */
-int oesr_itf_read(itf_t itf, void* buffer, int size) {
+int oesr_itf_read(itf_t itf, void* buffer, int size, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_recv(x->hw_itf,buffer,size);
+	return rtdal_itf_recv(x->hw_itf,buffer,size,tstamp);
 }
 
 /**
