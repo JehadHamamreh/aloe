@@ -56,7 +56,7 @@ int lte_get_tbs(int mcs, int nrb) {
 }
 
 int lte_get_ns(struct lte_symbol *location, struct lte_grid_config *config) {
-	return location->subframe_id*2+(location->symbol_id<config->nof_osymb_x_subf/2?1:0);
+	return location->subframe_id*2+(location->symbol_id<config->nof_osymb_x_subf/2?0:1);
 }
 
 
@@ -272,7 +272,7 @@ void lte_set_refsign_sf(refsignal_t *ref, complex_t *output, int subframe_id, st
 	symbol.subframe_id = subframe_id;
 	for (i=0;i<config->nof_osymb_x_subf;i++) {
 		symbol.symbol_id = i;
-		lte_refsig_put(ref,&output[i*config->fft_size+config->pre_guard],
+		lte_refsig_put(ref,&output[i*config->fft_size],
 				&symbol,config);
 	}
 }
@@ -310,6 +310,7 @@ int lte_grid_init_params(struct lte_grid_config *config) {
 	config->nof_re_symb = config->nof_prb*NOF_RE_X_OSYMB;
 	config->pre_guard = (config->fft_size-config->nof_re_symb)/2;
 	config->post_guard = config->pre_guard;
+	config->nof_rs_x_symb = 2*config->nof_prb;
 
 	if (config->nof_prb<6 || config->nof_prb>110) {
 		printf("Number of PRB must be between 0 and 110 (nof_prb=%d)\n",config->nof_prb);

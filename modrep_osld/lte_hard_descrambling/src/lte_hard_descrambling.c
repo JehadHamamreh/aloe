@@ -27,6 +27,7 @@
 
 pmid_t subframe_id;
 int direct;
+static int subframe = -1;
 
 unsigned input_ints[MAX_c], out_ints[MAX_c]; /* intermediate results */
 unsigned c[MAX_c][10];	/* scrambling sequence for all 10 subframes */
@@ -169,7 +170,6 @@ int initialize() {
 int work(void **inp, void **out) {
 	int i, j, s;
 	int rcv_samples, snd_samples;
-	static int subframe = -1;
 	div_t ints;
 	input_t *input;
 	output_t *output;
@@ -184,17 +184,20 @@ int work(void **inp, void **out) {
 	/* Caution: If passed as parameter, should be passed only once or
 	 * externally incremented accordingly */
 	if (param_get_int(subframe_id, &subframe) != 1) {
-		if (subframe ==9) {
+		if (subframe == 9) {
 			subframe = 0;
 		} else {
 			subframe++;
 		}
 	}
+
+#ifdef _COMPILE_ALOE
+	moddebug("received %d at %d sf=%d\n",rcv_samples,oesr_tstamp(ctx),subframe);
+#endif
+
 	/* Verify parameters */
-	if (subframe < 0 || subframe > 9) {
-		moderror_msg("Invalid subframe number %d. Valid values: 0, 1, "
-			"2, ..., 9\n", subframe);
-		return -1;
+	if (subframe < 0) {
+		return 0;
 	}
 
 	input = inp[0];

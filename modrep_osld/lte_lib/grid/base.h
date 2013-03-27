@@ -100,6 +100,7 @@ struct lte_grid_config {
 	float phich_ngfactor;
 	int phich_ngroups;
 	int nof_control_symbols;
+	int nof_rs_x_symb;
 	int nof_pdcch;
 	int nof_pdsch;
 	int debug;

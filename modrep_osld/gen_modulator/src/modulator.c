@@ -162,6 +162,18 @@ inline void modulate_BPSK(char *bits, output_t *S_out)
 	*S_out = bpsk_table[k];
 }
 
+
+/**
+ * BPSK modulation function
+ * Converts a single bit to a real symbol
+ * @param bits pointer to input bit
+ * @param S_out pointer to complex symbol */
+inline void modulate_BPSK_real(char *bits, float *S_out)
+{
+	*S_out = bits[0] == 1 ? 1 : -1;
+}
+
+
 /**
  * QPSK modulation function
  * Converts bitsequence of 2 bits to complex symbol

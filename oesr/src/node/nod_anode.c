@@ -55,7 +55,7 @@ void nod_anode_initialize_waveforms();
 int nod_anode_initialize(int max_waveforms) {
 	ndebug("max_waveforms=%d\n",max_waveforms);
 	node_packet = &anode.packet;
-	if (packet_init(&anode.packet, 64*1024)) {
+	if (packet_init(&anode.packet, 512*1024)) {
 		aerror("initializing packet\n");
 		return -1;
 	}

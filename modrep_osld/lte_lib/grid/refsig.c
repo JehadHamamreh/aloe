@@ -128,7 +128,11 @@ int lte_refsig_v(int port_id, int ns, int symbol_id, struct lte_grid_config *con
 }
 
 int lte_refsig_k(int m, int v, struct lte_grid_config *config) {
-	return 6*m+(v+(config->cell_id%6));
+	return 6*m+((v+(config->cell_id%6))%6);
+}
+
+inline int lte_refsig_mp(int m, struct lte_grid_config *config) {
+	return m+MAX_NPRB-config->nof_prb;
 }
 
 
@@ -137,7 +141,7 @@ int lte_refsig_k(int m, int v, struct lte_grid_config *config) {
 int lte_refsig_put(refsignal_t *refsignal, complex_t *output,
 		struct lte_symbol *location, struct lte_grid_config *config) {
 
-	int m,v,ns,mp,l,k;
+	int m,ns,l,mp;
 
 	if (!lte_symbol_has_refsig(refsignal->port_id, location,config)) {
 		return 0;
@@ -145,38 +149,55 @@ int lte_refsig_put(refsignal_t *refsignal, complex_t *output,
 
 	l = lte_refsig_l(location->symbol_id,config);
 	ns = lte_get_ns(location,config);
-	v = lte_refsig_v(refsignal->port_id, ns, location->symbol_id,config);
 
 	for (m=0;m<2*config->nof_prb;m++) {
-		k = lte_refsig_k(m,v,config);
-		mp=m+MAX_NPRB-config->nof_prb;
-		output[k] = refsignal->signal[l][ns][mp];
+		mp=lte_refsig_mp(m,config);
+		output[refsignal->k[l][ns][mp]] = refsignal->signal[l][ns][mp];
+	}
+	return m;
+}
+
+int lte_refsig_get(complex_t *input, refsignal_t *refsignal,
+		struct lte_symbol *location, struct lte_grid_config *config) {
+
+	int m,ns,l,mp;
+
+	if (!lte_symbol_has_refsig(refsignal->port_id, location,config)) {
+		return 0;
+	}
+
+	l = lte_refsig_l(location->symbol_id,config);
+	ns = lte_get_ns(location,config);
+
+	for (m=0;m<2*config->nof_prb;m++) {
+		refsignal->signal[l][ns][lte_refsig_mp(m,config)] =
+				input[refsignal->k[l][ns][lte_refsig_mp(m,config)]];
 	}
 	return m;
 }
 
 
+
 /** 36.211 10.3 section 6.10.1.2
  */
-int lte_refsig_get(complex_t *input, refsignal_t *refsignal,
-		struct lte_symbol *location, struct lte_grid_config *config) {
+void generate_cref_k(refsignal_t *refsignal, struct lte_grid_config *config) {
 
-	int m,v,ns,mp,l,k;
+	int m,v,mp,k;
+	int ns,l,lp[REF_L];
 
-	if (!lte_symbol_has_refsig(refsignal->port_id, location,config)) {
-		return 0;
+	lp[0] = 0;
+	lp[1] = config->nof_osymb_x_subf/2-3;
+	lp[2] = 1;
+
+	for (l=0;l<REF_L;l++) {
+		for (ns=0;ns<REF_NS;ns++) {
+			v = lte_refsig_v(refsignal->port_id, ns, lp[l], config);
+			for (m=0;m<2*config->nof_prb;m++) {
+				k = lte_refsig_k(m,v,config)+config->pre_guard;
+				refsignal->k[l][ns][lte_refsig_mp(m,config)] = k;
+			}
+		}
 	}
-
-	l = lte_refsig_l(location->symbol_id,config);
-	ns = lte_get_ns(location,config);
-	v = lte_refsig_v(refsignal->port_id, ns, location->symbol_id,config);
-
-	for (m=0;m<2*config->nof_prb;m++) {
-		k = lte_refsig_k(m,v,config);
-		mp=m+MAX_NPRB-config->nof_prb;
-		refsignal->signal[l][ns][mp] = input[k];
-	}
-	return m;
 }
 
 unsigned int c[2*REF_M];
@@ -184,14 +205,14 @@ unsigned int c[2*REF_M];
 /** 36.211 10.3 section 6.10.1.1
  *
  */
-void generate_cref(refsignal_t *refsignal, struct lte_grid_config *config) {
+void generate_cref_signal(refsignal_t *refsignal, struct lte_grid_config *config) {
 	unsigned int c_init;
 	int ns,l,lp[REF_L];
 	int N_cp;
 	int i;
 
 	lp[0] = 0;
-	lp[1] = config->nof_osymb_x_subf-3;
+	lp[1] = config->nof_osymb_x_subf/2-3;
 	lp[2] = 1;
 
 	if(config->nof_osymb_x_subf == NOF_OSYMB_X_SLOT_NORMAL) {
@@ -199,6 +220,7 @@ void generate_cref(refsignal_t *refsignal, struct lte_grid_config *config) {
 	} else {
 		N_cp=0;
 	}
+
 	for (l=0;l<REF_L;l++) {
 		for (ns=0;ns<REF_NS;ns++) {
 			c_init = 1024*(7*(ns+1)+lp[l]+1)*(2*config->cell_id+1)+2*config->cell_id+N_cp;
@@ -214,4 +236,9 @@ void generate_cref(refsignal_t *refsignal, struct lte_grid_config *config) {
 			}
 		}
 	}
+}
+
+void generate_cref(refsignal_t *refsignal, struct lte_grid_config *config) {
+	generate_cref_signal(refsignal,config);
+	generate_cref_k(refsignal,config);
 }

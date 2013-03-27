@@ -10,7 +10,7 @@
 #define PSSCELLID2 	34.0
 
 
-#define PI		3.1415
+#define PI		3.14159265
 
 #else
 int lte_pss_init(struct lte_phch_config *ch, struct lte_grid_config *config);
@@ -22,6 +22,6 @@ int lte_sss_put(real_t *sss, complex_t *output,
 		struct lte_symbol *location, struct lte_grid_config *config);
 
 void generate_pss(complex_t *signal, int direction, struct lte_grid_config *config);
-void generate_sss(real_t *signal, int direction, struct lte_grid_config *config);
+void generate_sss(real_t *signal, struct lte_grid_config *config);
 
 #endif

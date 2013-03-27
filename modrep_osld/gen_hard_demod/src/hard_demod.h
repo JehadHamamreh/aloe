@@ -29,3 +29,4 @@
 /* Function prototypes */
 int get_bits_per_symbol(int modulation);
 void hard_demod(input_t *in, output_t *out, int N, int modulation);
+void hard_demod_real(float *in, output_t *out, int N, int modulation);

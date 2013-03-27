@@ -26,6 +26,7 @@
 
 pmid_t subframe_id;
 unsigned c[MAX_c][10];	/* scrambling sequence for all 10 subframes */
+static int subframe = -1;
 
 
 /**
@@ -160,7 +161,6 @@ int initialize() {
 int work(void **inp, void **out) {
 	int i, j, s;
 	int rcv_samples, snd_samples;
-	static int subframe = -1;
 	input_t *input;
 	output_t *output;
 
@@ -168,6 +168,7 @@ int work(void **inp, void **out) {
 	if (!rcv_samples) {
 		return 0;
 	}
+
 
 	/* If subframe number is not obtained, increment internally by 1
 	 * at each invocation (assuming a time slot of 1 ms) */
@@ -180,11 +181,14 @@ int work(void **inp, void **out) {
 			subframe++;
 		}
 	}
+
+#ifdef _COMPILE_ALOE
+	moddebug("received %d at %d sf=%d\n",rcv_samples,oesr_tstamp(ctx),subframe);
+#endif
+
 	/* Verify parameters */
-	if (subframe < 0 || subframe > 9) {
-		moderror_msg("Invalid subframe number %d. Valid values: 0, 1, "
-			"2, ..., 9\n", subframe);
-		return -1;
+	if (subframe < 0) {
+		return 0;
 	}
 
 	input = inp[0];

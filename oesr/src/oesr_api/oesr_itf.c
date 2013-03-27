@@ -81,7 +81,7 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int siz
 	} else {
 		/* is internal */
 		if (mode == ITF_WRITE) {
-				nof_msg = OESR_ITF_DEFAULT_MSG*nod_itf->delay+2;
+				nof_msg = OESR_ITF_DEFAULT_MSG*(nod_itf->delay+1)+2;
 			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(nof_msg,
 					size, nod_itf->delay);
 			if (!rtdal_itf) {
@@ -137,20 +137,27 @@ int oesr_itf_nofoutputs(void *context) {
 	return module->parent.nof_outputs;
 }
 
-void oesr_itf_delay_add(itf_t itf, int delay) {
-	assert(itf);
-	interface_t *x = (interface_t*) itf;
-	x->delay += delay;
-}
-void oesr_itf_delay_set(itf_t itf, int delay) {
-	assert(itf);
-	interface_t *x = (interface_t*) itf;
-	x->delay = delay;
-}
-int oesr_itf_delay_get(itf_t itf) {
-	assert(itf);
-	interface_t *x = (interface_t*) itf;
-	return x->delay;
+int oesr_itf_delay_set(void *context, int port_idx, int mode, int delay) {
+
+	oesr_context_t *ctx = context;
+	nod_module_t *module = ctx->module;
+	interface_t *nod_itf;
+
+	if (mode == ITF_WRITE) {
+		if (port_idx >= module->parent.nof_outputs) {
+			OESR_SETERROR(OESR_ERROR_NOTFOUND);
+			return -1;
+		}
+		nod_itf = &module->parent.outputs[port_idx];
+	} else {
+		if (port_idx >= module->parent.nof_inputs) {
+			OESR_SETERROR(OESR_ERROR_NOTFOUND);
+			return -1;
+		}
+		nod_itf = &module->parent.inputs[port_idx];
+	}
+	nod_itf->delay = delay;
+	return 0;
 }
 
 

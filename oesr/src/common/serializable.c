@@ -230,10 +230,10 @@ int module_unserializeTo(packet_t *pkt, module_t *dest, enum variable_serialize_
 	get_i(&nof_outputs);
 	serdebug("module_id=%d, nof_inputs=%d, nof_outputs=%d, nof_variables=%d\n",dest->id,nof_inputs,
 			nof_outputs, nof_variables);
-	if (module_alloc(dest,nof_inputs,nof_outputs,nof_variables)) {
+	if (module_alloc(dest,nof_inputs,nof_outputs,nof_variables+NOF_USER_VARIABLES)) {
 		return -1;
 	}
-	for (i=0;i<dest->nof_variables;i++) {
+	for (i=0;i<nof_variables;i++) {
 		if (variable_unserializeTo(pkt,&dest->variables[i],copy_data,dest->nof_modes)) return -1;
 	}
 	for (i=0;i<dest->nof_inputs;i++) {

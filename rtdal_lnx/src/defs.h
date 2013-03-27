@@ -38,7 +38,7 @@ extern FILE *trace_buffer;
 	do { if (DEBUG_rtdal) fprintf(debug_buffer,"[debug-rtdal]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug rtdal timing*/
-#define DEBUG_TIME 1
+#define DEBUG_TIME 0
 #define tdebug(_fmt, ...) \
 	do { if (DEBUG_TIME) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
 

@@ -27,7 +27,11 @@
 pmid_t modulation_id;
 static int modulation;
 
+extern int output_sample_sz;
+static int out_real=0;
+
 int modulate(input_t *input, output_t *output, int nof_bits);
+int modulate_real(input_t *input, float *output, int nof_bits);
 
 
 /**@ingroup gen_modulator
@@ -42,6 +46,10 @@ int initialize() {
 		modulation = BPSK;
 	}
 
+	param_get_int_name("out_real",&out_real);
+	if (out_real == 1) {
+		output_sample_sz=sizeof(float);
+	}
 	set_BPSKtable();
 	set_QPSKtable();
 	set_16QAMtable();
@@ -55,6 +63,7 @@ int work(void **inp, void **out) {
 	int i, out_len;
 	input_t *input;
 	output_t *output;
+	float *outreal;
 
 	if (!get_input_samples(0)) {
 		return 0;
@@ -65,10 +74,15 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
+		outreal = out[i];
 		moddebug("rcv_len=%d\n",get_input_samples(i));
 
 		if (get_input_samples(i)) {
-			out_len = modulate(input,output,get_input_samples(i));
+			if (out_real) {
+				out_len = modulate_real(input,outreal,get_input_samples(i));
+			} else {
+				out_len = modulate(input,output,get_input_samples(i));
+			}
 			if (out_len == -1) {
 				return -1;
 			}
@@ -80,6 +94,27 @@ int work(void **inp, void **out) {
 
 int stop() {
 	return 0;
+}
+
+int modulate_real(input_t *input, float *output, int nof_bits) {
+	int bits_per_symbol, nof_symbols;
+	int i,j;
+
+	j = 0;
+	bits_per_symbol = get_bits_per_symbol(modulation);
+	nof_symbols = nof_bits/bits_per_symbol;
+
+	switch(modulation) {
+	case BPSK:
+		for (i=0; i<nof_bits; i+=bits_per_symbol) {
+			modulate_BPSK_real(&input[i], &output[j]);
+				j++; // one symbol every bits_per_symbol bits
+		}
+		break;
+	default:
+		return -1;
+	}
+	return nof_symbols;
 }
 
 int modulate(input_t *input, output_t *output, int nof_bits) {

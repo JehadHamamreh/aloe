@@ -23,6 +23,7 @@ struct lte_pdsch {
 #else
 int lte_pdsch_init(struct lte_phch_config *ch, struct lte_grid_config *config);
 void lte_pdsch_setup_rbgmask(struct lte_pdsch *ch,struct lte_grid_config *config);
+int lte_pdsch_fill_rbg(int *rbg_vector, struct lte_pdsch *ch, struct lte_grid_config *config);
 int lte_pdsch_init_params_ch(int ch_id, struct lte_grid_config *config);
 int lte_pdsch_init_sf(int subframe_id, struct lte_phch_config *ch, struct lte_grid_config *config);
 

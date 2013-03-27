@@ -44,7 +44,6 @@ struct lte_grid_config grid;
  *
  *	See lte_ctrl_tx for grid params.
  *
- * \param direction 0 for the transmitter side, 1 for the receiver side
  * \param (optional) subframe_idx, if not provided, subframe_idx is counted automatically starting at zero
  *
  * \returns This function returns 0 on success or -1 on error
@@ -61,6 +60,7 @@ int initialize() {
 	grid.cell_id = 0;
 	grid.cfi = 1;
 	grid.nof_pdcch = 1;
+	grid.pdcch[0].nof_cce = 2;
 	grid.nof_pdsch = 1;
 	grid.pdsch[0].rbg_mask=0xFFFF;
 	grid.verbose = 1;
@@ -104,15 +104,16 @@ int work(void **inp, void **out) {
 	if (subframe_idx_id) {
 		param_get_int(subframe_idx_id, &subframe_idx);
 	}
-
-#ifdef _COMPILE_ALOE
-	moddebug("subframe_idx=%d tstamp=%d last=%d\n",subframe_idx,oesr_tstamp(ctx),last_tslotidx);
-#endif
-
+#ifdef CHECK_RCV_SAMPLES
 	n=check_received_samples_mapper();
 	if (n < 1) {
 		return n;
 	}
+#endif
+
+#ifdef _COMPILE_ALOE
+	moddebug("subframe_idx=%d tstamp=%d rcv=%d\n",subframe_idx,oesr_tstamp(ctx),get_input_samples(0));
+#endif
 
 	if (allocate_all_channels(inp,out[0])) {
 		moderror("Error allocating channels\n");

@@ -31,6 +31,7 @@ typedef enum {
 #define DFT_OUT_DB		4
 #define DFT_MIRROR_POS	8
 #define DFT_NORMALIZE   16
+#define DFT_DC_OFFSET   32
 
 typedef struct {
 	int size;

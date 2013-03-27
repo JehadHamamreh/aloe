@@ -136,12 +136,18 @@ int dft_plan_c2r(const int dft_points, dft_dir_t dir, dft_plan_t *plan) {
 	return 0;
 }
 
-static void copy(char *dst, char *src, int size_d, int len, int mirror) {
+static void copy(char *dst, char *src, int size_d, int len, int mirror, int dc_offset) {
+	int offset=dc_offset?1:0;
 	int hlen;
-	if (mirror) {
+	if (mirror == DFT_MIRROR_PRE) {
 		hlen = div(len,2);
-		memcpy(dst, &src[hlen*size_d], size_d*hlen);
+		memset(dst,0,size_d*offset);
+		memcpy(&dst[offset*size_d], &src[size_d*hlen], size_d*(hlen-offset));
 		memcpy(&dst[hlen*size_d], src, size_d*(len - hlen));
+	} else if (mirror == DFT_MIRROR_POS) {
+		hlen = div(len,2);
+		memcpy(dst, &src[size_d*hlen], size_d*hlen);
+		memcpy(&dst[hlen*size_d], &src[size_d*offset], size_d*(len - hlen));
 	} else {
 		memcpy(dst,src,size_d*len);
 	}
@@ -166,7 +172,8 @@ void dft_run_c2c(dft_plan_t *plan, dft_c_t *in, dft_c_t *out) {
 	int i;
 	fftwf_complex *f_out = plan->out;
 
-	copy((char*) plan->in,(char*) in,sizeof(dft_c_t),plan->size,plan->options & DFT_MIRROR_PRE);
+	copy((char*) plan->in,(char*) in,sizeof(dft_c_t),plan->size,plan->options & DFT_MIRROR_PRE,
+			plan->options & DFT_DC_OFFSET);
 
 	fftwf_execute(plan->p);
 
@@ -181,7 +188,8 @@ void dft_run_c2c(dft_plan_t *plan, dft_c_t *in, dft_c_t *out) {
 			f_out[i] = 10*log10(f_out[i]);
 		}
 	}
-	copy((char*) out,(char*) plan->out,sizeof(dft_c_t),plan->size,plan->options & DFT_MIRROR_POS);
+	copy((char*) out,(char*) plan->out,sizeof(dft_c_t),plan->size,plan->options & DFT_MIRROR_POS,
+			plan->options & DFT_DC_OFFSET);
 }
 
 void dft_run_r2r(dft_plan_t *plan, dft_r_t *in, dft_r_t *out) {
@@ -190,7 +198,8 @@ void dft_run_r2r(dft_plan_t *plan, dft_r_t *in, dft_r_t *out) {
 	int len = plan->size;
 	float *f_out = plan->out;
 
-	copy((char*) plan->in,(char*) in,sizeof(dft_r_t),plan->size,plan->options & DFT_MIRROR_PRE);
+	copy((char*) plan->in,(char*) in,sizeof(dft_r_t),plan->size,plan->options & DFT_MIRROR_PRE,
+			plan->options & DFT_DC_OFFSET);
 
 	fftwf_execute(plan->p);
 
@@ -217,7 +226,8 @@ void dft_run_c2r(dft_plan_t *plan, dft_c_t *in, dft_r_t *out) {
 	float norm;
 	float *f_out = plan->out;
 
-	copy((char*) plan->in,(char*) in,sizeof(dft_r_t),plan->size,plan->options & DFT_MIRROR_PRE);
+	copy((char*) plan->in,(char*) in,sizeof(dft_r_t),plan->size,plan->options & DFT_MIRROR_PRE,
+			plan->options & DFT_DC_OFFSET);
 
 	fftwf_execute(plan->p);
 

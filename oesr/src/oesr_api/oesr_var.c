@@ -158,7 +158,7 @@ int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size) 
 
 	cast(ctx,context);
 
-	sdebug("set_value_idx idx=%d, value 0x%x size=%d\n",idx,value,size);
+	sdebug("%s: set_value_idx idx=%d, value 0x%x size=%d\n",oesr_module_name(ctx),idx,value,size);
 	OESR_ASSERT_PARAM(idx>=0);
 	OESR_ASSERT_PARAM(value);
 	OESR_ASSERT_PARAM(size>0);
@@ -166,7 +166,7 @@ int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size) 
 	nod_module_t *module = (nod_module_t*) ctx->module;
 	variable_t *variable = (variable_t*) &module->parent.variables[idx];
 
-	sdebug("%d:%s: set variable %s value %d\n",oesr_tstamp(context),
+	sdebug("%s: %d:%s: set variable %s value %d\n",oesr_module_name(ctx),oesr_tstamp(context),
 			module->parent.name,variable->name,*((int*) value));
 
 	cpy_sz = (size > variable->size)?variable->size:size;

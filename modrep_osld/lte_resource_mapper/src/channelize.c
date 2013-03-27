@@ -13,7 +13,7 @@ extern struct lte_grid_config grid;
 extern int subframe_idx;
 int nof_channels, nof_pdsch, nof_pdcch, nof_other;
 
-real_t sss_signal[SSS_LEN];
+real_t sss_signal[2*SSS_LEN];
 complex_t pss_signal[PSS_LEN];
 refsignal_t reference_signal;
 
@@ -53,6 +53,7 @@ int check_received_samples_channel(struct channel *ch, int ch_id) {
 		if (!get_input_samples(ch->in_port)) {
 			return 0;
 		}
+		moddebug("ch %s port %d rcv_len=%d\n",ch->name,ch->in_port, get_input_samples(ch->in_port));
 		if (re != get_input_samples(ch->in_port)) {
 			moderror_msg("Received %d samples from channel %s in_port %d, but expected %d "
 					"(subframe_idx=%d)\n",
@@ -101,7 +102,7 @@ int init_refsinc_signals() {
 	generate_pss(pss_signal,0,&grid);
 #endif
 #ifdef ENABLE_SSS
-	generate_sss(sss_signal,0,&grid);
+	generate_sss(sss_signal,&grid);
 #endif
 	return 0;
 }
@@ -116,10 +117,14 @@ int insert_signals(complex_t *output) {
 		lte_pss_put(pss_signal,&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
 #endif
 #ifdef ENABLE_SSS
-		lte_sss_put(sss_signal,&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
+		if (subframe_idx == 0) {
+			lte_sss_put(sss_signal,&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
+		} else if (subframe_idx == 5) {
+			lte_sss_put(&sss_signal[SSS_LEN],&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
+		}
 #endif
 #ifdef ENABLE_REF
-		lte_refsig_put(&reference_signal,&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
+		lte_refsig_put(&reference_signal,&output[i*grid.fft_size],&symbol,&grid);
 #endif
 		}
 }

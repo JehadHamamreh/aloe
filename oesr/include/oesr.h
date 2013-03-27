@@ -113,9 +113,7 @@ typedef enum {
 itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int size);
 int oesr_itf_nofinputs(void *context);
 int oesr_itf_nofoutputs(void *context);
-int oesr_itf_delay_get(itf_t itf);
-void oesr_itf_delay_set(itf_t itf, int delay);
-void oesr_itf_delay_add(itf_t itf, int delay);
+int oesr_itf_delay_set(void *context, int port, int mode, int delay);
 int oesr_itf_close(itf_t itf);
 int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_read(itf_t itf, void* buffer, int size, int tstamp);

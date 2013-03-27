@@ -49,7 +49,7 @@ const int input_max_samples = INPUT_MAX_SAMPLES;
 const int output_max_samples = OUTPUT_MAX_SAMPLES;
 
 /* leave these two lines unmodified */
-const int input_sample_sz = sizeof(input_t);
+int input_sample_sz = sizeof(input_t);
 const int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */

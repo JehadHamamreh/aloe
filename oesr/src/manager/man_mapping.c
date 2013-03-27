@@ -229,7 +229,7 @@ void generate_model_b_matrix(waveform_t *waveform, int multiplicity) {
 
 	for (i=0;i<wave.nof_tasks;i++) {
 		for (j=0;j<wave.nof_tasks;j++) {
-			if (wave.b[i][j]>0.0 && i>=j) {
+			if (wave.b[i][j]>0.0 && i>j) {
 				printf("Caution non-DAG graph: ");
 				printf("b(%d,%d)=%f\n",i,j,wave.b[i][j]);
 			}
@@ -278,18 +278,10 @@ void generate_model_stages(waveform_t *waveform) {
 					if (waveform->modules[i].outputs[j].delay == 1) {
 						waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
 					}
-					if (!waveform->modules[i].outputs[j].delay) {
-						printf("delay %s->%s is %d slots %d,%d\n",waveform->modules[i].name,
-								waveform->modules[k].name,waveform->modules[i].outputs[j].delay,
-								waveform->modules[i].stage,waveform->modules[k].stage);
-					}
-					if (i==0 && k==1) {
-						printf("delay %s->%s is %d slots\n",waveform->modules[i].name,
-								waveform->modules[k].name,waveform->modules[i].outputs[j].delay);
-					}
-/*					mapdebug("delay %s->%s is %d slots\n",waveform->modules[i].name,
-							waveform->modules[k].name,waveform->modules[i].outputs[j].delay);
-*/				}
+					mapdebug("delay %s:%d->%s:%d is %d slots\n",waveform->modules[i].name,
+							j, waveform->modules[k].name,waveform->modules[k].outputs[j].remote_port_idx,
+							waveform->modules[i].outputs[j].delay);
+				}
 			}
         }
 	}

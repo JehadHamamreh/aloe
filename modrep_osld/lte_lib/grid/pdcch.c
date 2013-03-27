@@ -48,17 +48,16 @@ int lte_grid_init_reg_pdcch(struct lte_pdcch *ch, struct lte_grid_config *config
 int lte_pdcch_init_params(struct lte_grid_config *config) {
 	int i;
 	char tmp[64];
+
 	param_get_int_name("nof_pdcch",&config->nof_pdcch);
 	if (config->nof_pdcch>MAX_PDCCH || config->nof_pdcch<0) {
 		printf("Error only %d PDCCH are supported (%d)\n",MAX_PDCCH,config->nof_pdcch);
 		return -1;
 	}
+
 	for (i=0;i<config->nof_pdcch;i++) {
-		snprintf(tmp,64,"pdcch_format_%d",i);
-		if (param_get_int_name(tmp,&config->pdcch[i].format)) {
-			config->pdcch[i].format = 0;
-		}
-		config->pdcch[i].nof_cce = (0x1<<config->pdcch[i].format);
+		snprintf(tmp,64,"pdcch_nofcce_%d",i);
+		param_get_int_name(tmp,&config->pdcch[i].nof_cce);
 		config->pdcch[i].id=i;
 	}
 

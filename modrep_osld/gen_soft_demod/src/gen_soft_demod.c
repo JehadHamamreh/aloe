@@ -120,8 +120,8 @@ int work(void **inp, void **out) {
 
 	/* Verify parameters */
 	if (modulation > 3 || modulation < 0) {
-		moderror_msg("Invalid modulation %d. Specify 0 for BPSK, 1 for QPSK,"
-				"2 for 16QAM, or 3 for 64QAM\n", modulation);
+		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
+				"4 for 16QAM, or 6 for 64QAM\n", modulation);
 		return -1;
 	}
 	if (sigma2 < 0) {

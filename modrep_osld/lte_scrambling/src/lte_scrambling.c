@@ -199,11 +199,14 @@ int work(void **inp, void **out) {
 			subframe++;
 		}
 	}
+
+#ifdef _COMPILE_ALOE
+	moddebug("received %d at %d sf=%d\n",rcv_samples,oesr_tstamp(ctx),subframe);
+#endif
+
 	/* Verify parameters */
-	if (subframe < 0 || subframe > 9) {
-		moderror_msg("Invalid subframe number %d. Valid values: 0, 1, "
-			"2, ..., 9\n", subframe);
-		return -1;
+	if (subframe < 0) {
+		return 0;
 	}
 
 	input = inp[0];

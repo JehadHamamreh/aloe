@@ -93,32 +93,37 @@ int initialize() {
 int work(void **inp, void **out) {
 	int i,j;
 	unsigned int n;
+	int rcv_samples;
 	input_t *input;
 
 	if (poly_id) param_get_int(poly_id,&poly);
 	if (long_crc_id) param_get_int(long_crc_id, &long_crc);
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
-		if (get_input_samples(i)) {
-			moddebug("rcv_len=%d\n",get_input_samples(i));
-			memcpy(out[i],inp[i],sizeof(input_t)*get_input_samples(i));
-			input = out[i];
-			n = icrc(0, input, get_input_samples(i), long_crc, poly, mode == MODE_ADD);
+		rcv_samples = get_input_samples(i);
+		if (rcv_samples) {
+			if (out[i]) {
+				memcpy(out[i],inp[i],sizeof(input_t)*rcv_samples);
+				input = out[i];
+			} else {
+				input = inp[i];
+			}
+			n = icrc(0, input, rcv_samples, long_crc, poly, mode == MODE_ADD);
 
 			if (mode==MODE_CHECK) {
 				if (n) {
 					total_errors++;
-					printf("error at packet %d\n",total_pkts);
+					modinfo_msg("error at packet %d\n",total_pkts);
 				}
 				total_pkts++;
-				set_output_samples(i,get_input_samples(i)-long_crc);
+				set_output_samples(i,rcv_samples-long_crc);
 
 				if (!print_nof_pkts) {
 					tscnt++;
 					if (tscnt==interval_ts) {
 						tscnt=0;
 						#ifdef PRINT_BLER
-						printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+						modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 								total_pkts,total_errors,(float)total_errors/total_pkts);
 						#endif
 					}
@@ -126,7 +131,7 @@ int work(void **inp, void **out) {
 					print_nof_pkts_cnt++;
 					if (print_nof_pkts_cnt == print_nof_pkts) {
 						print_nof_pkts_cnt=0;
-						printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+						modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 								total_pkts,total_errors,(float)total_errors/total_pkts);
 						total_pkts=0;
 						total_errors=0;
@@ -134,7 +139,7 @@ int work(void **inp, void **out) {
 				}
 
 			} else {
-				set_output_samples(i,get_input_samples(i)+long_crc);
+				set_output_samples(i,rcv_samples+long_crc);
 			}
 		}
 	}

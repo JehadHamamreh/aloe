@@ -82,6 +82,9 @@ int work(void **inp, void **out) {
 	}
 	index = cfi_decoding(input, table)+1;
 
+#ifdef _COMPILE_ALOE
+	moddebug("Detected CFI=%d at tstamp=%d\n",index,oesr_tstamp(ctx));
+#endif
 	if (param_remote_set(out, 0, cfi_pm_idx, &index, sizeof(int))) {
 		moderror("Setting parameter\n");
 		return -1;

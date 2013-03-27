@@ -55,7 +55,7 @@ typedef struct {
 
 #define MAX_VARIABLES 200
 
-
+extern void *ctx;
 
 
 /* Info and error messages print */

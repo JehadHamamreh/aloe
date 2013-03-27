@@ -13,7 +13,7 @@ rtdal:
 							   	for best real-time control. 
 							 */
 	
-	time_slot_us=50000; 		/* time slot length, in microseconds
+	time_slot_us=100000; 		/* time slot length, in microseconds
 								IGNORED if use_usrp=true 
 							*/
 	cores="1";				/* Options: 

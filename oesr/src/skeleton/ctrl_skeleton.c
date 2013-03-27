@@ -25,6 +25,7 @@
 #include "ctrl_skeleton.h"
 
 #define MAX_OUTPUTS 100
+#define MAX_INPUT_PACKETS	20
 
 typedef struct {
 	int module_idx;
@@ -39,7 +40,7 @@ typedef struct {
 
 extern const int ctrl_send_always;
 
-void *_ctx;
+void *ctx;
 
 itf_t ctrl_in;
 
@@ -52,7 +53,9 @@ static var_t local_variables[MAX_VARIABLES];
 
 static int nof_remote_variables, nof_local_variables, nof_remote_itf;
 
-static struct ctrl_in_pkt ctrl_in_buffer, ctrl_out_buffer;
+static struct ctrl_in_pkt ctrl_in_buffer[MAX_INPUT_PACKETS], ctrl_out_buffer;
+
+static int nof_output_data_itf;
 
 void init_memory() {
 	memset(outputs,0,MAX_OUTPUTS*sizeof(mod_addr_t));
@@ -67,9 +70,13 @@ int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	if (dest_idx<0 || dest_idx>nof_remote_variables) {
 		return -1;
 	}
+	if (remote_variables[dest_idx].module_idx == 77) {
+		n=0;
+	}
 	ctrl_out_buffer.pm_idx = remote_variables[dest_idx].variable_idx;
 	ctrl_out_buffer.size = size;
 	memcpy(ctrl_out_buffer.value,value,size);
+
 	n=oesr_itf_write(remote_variables[dest_idx].addr->itf,&ctrl_out_buffer,size + CTRL_PKT_HEADER_SZ,tstamp);
 	if (n == -1) {
 		return -1;
@@ -226,7 +233,27 @@ int init_remote_itf(void *ctx, int nof_itf) {
 	char tmp[64];
 
 	for (i=0;i<nof_itf;i++) {
-		port = outputs[i].module_idx-oesr_module_id(ctx);
+		port = outputs[i].module_idx-oesr_module_id(ctx)+nof_output_data_itf;
+
+		/* check if a parameter sets a different delay */
+		for (j=0;j<nof_remote_variables;j++) {
+			if (remote_variables[j].module_idx == outputs[i].module_idx) {
+				break;
+			}
+		}
+		if (j < nof_remote_variables) {
+			snprintf(tmp,64,"delay_%s",remote_params_db[j].module_name);
+			if (!param_get_int_name(tmp,&delay)) {
+				modinfo_msg("Setting a delay of %d slots to port %d, module %s\n",delay,port,
+					remote_params_db[j].module_name);
+				if (oesr_itf_delay_set(ctx,port,ITF_WRITE,delay)) {
+					moderror_msg("Setting delay to port %d\n",port);
+					return -1;
+				}
+			}
+		}
+
+		/* now create the variable */
 		outputs[i].itf = oesr_itf_create(ctx, port,
 				ITF_WRITE, sizeof(struct ctrl_in_pkt));
 		if (outputs[i].itf == NULL) {
@@ -237,19 +264,6 @@ int init_remote_itf(void *ctx, int nof_itf) {
 				oesr_perror("oesr_itf_create\n");
 				return -1;
 			}
-		}
-		snprintf(tmp,64,"itf_%d_delay",port);
-		if (!param_get_int_name(tmp,&delay)) {
-			for (j=0;j<nof_remote_variables;j++) {
-				if (remote_variables[j].module_idx == outputs[i].module_idx) {
-					break;
-				}
-			}
-			if (j < nof_remote_variables) {
-				modinfo_msg("Adding a delay of %d slots to port %d, module %s\n",delay,port,
-						remote_params_db[j].module_name);
-			}
-			oesr_itf_delay_add(outputs[i].itf,delay);
 		}
 	}
 
@@ -272,8 +286,8 @@ int close_remote_itf(void *ctx, int nof_itf) {
 }
 
 
-int Init(void *ctx) {
-	_ctx = ctx;
+int Init(void *_ctx) {
+	ctx = _ctx;
 	init_memory();
 
 	ctrl_init();
@@ -282,6 +296,8 @@ int Init(void *ctx) {
 	if (!init_ctrl_input(ctx)) {
 		return 0;
 	}
+	nof_output_data_itf = 0;
+	param_get_int_name("nof_output_data_itf",&nof_output_data_itf);
 
 	nof_remote_variables = init_remote_variables(ctx);
 	if (nof_remote_variables == -1) {
@@ -319,9 +335,9 @@ int local_parameters_update(void *ctx) {
 	return 0;
 }
 
-int process_ctrl_packet(void *ctx) {
-	if (oesr_var_param_set_value_idx(ctx,ctrl_in_buffer.pm_idx,ctrl_in_buffer.value,
-			ctrl_in_buffer.size) == -1) {
+int process_ctrl_packet(void *ctx, struct ctrl_in_pkt *packet) {
+	if (oesr_var_param_set_value_idx(ctx,packet->pm_idx,packet->value,
+			packet->size) == -1) {
 		oesr_perror("Error setting control parameter\n");
 		return -1;
 	}
@@ -330,17 +346,26 @@ int process_ctrl_packet(void *ctx) {
 }
 
 int process_ctrl_packets(void *ctx) {
-	int n;
+	int n, nof_packets;
+	int i;
 
 	do {
-		n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, sizeof(struct ctrl_in_pkt),oesr_tstamp(ctx));
+		n = oesr_itf_read(ctrl_in, ctrl_in_buffer,
+				sizeof(struct ctrl_in_pkt)*MAX_INPUT_PACKETS,oesr_tstamp(ctx));
 		if (n == -1) {
 			oesr_perror("oesr_itf_read");
 			return -1;
 		} else if (n>0) {
-			if (process_ctrl_packet(ctx)) {
-				moderror("Error processing control packet\n");
-				return -1;
+			if (n % sizeof(struct ctrl_in_pkt)) {
+				moderror_msg("Received %d bytes but packet size is %d\n", n,
+						sizeof(struct ctrl_in_pkt));
+			}
+			nof_packets = n / sizeof(struct ctrl_in_pkt);
+			for (i=0;i<nof_packets;i++) {
+				if (process_ctrl_packet(ctx, &ctrl_in_buffer[i])) {
+					moderror("Error processing control packet\n");
+					return -1;
+				}
 			}
 		}
 	} while(n>0);
@@ -348,9 +373,9 @@ int process_ctrl_packets(void *ctx) {
 }
 
 
-int Run(void *ctx) {
+int Run(void *_ctx) {
 	int tslot;
-	_ctx = ctx;
+	ctx = _ctx;
 
 	tslot = oesr_tstamp(ctx);
 	if (ctrl_in) {
@@ -380,8 +405,8 @@ int Run(void *ctx) {
 /**  Deallocates resources created during initialize().
  * @return 0 on success -1 on error
  */
-int Stop(void *ctx) {
-	_ctx = ctx;
+int Stop(void *_ctx) {
+	ctx = _ctx;
 	close_remote_itf(ctx, nof_remote_itf);
 	return 0;
 }
@@ -389,13 +414,13 @@ int Stop(void *ctx) {
 
 int param_get(pmid_t id, void *ptr, int max_size, param_type_t *type) {
 	if (type) {
-		*type = (param_type_t) oesr_var_param_type(_ctx,(var_t) id);
+		*type = (param_type_t) oesr_var_param_type(ctx,(var_t) id);
 	}
-	int n = oesr_var_param_get_value(_ctx, (var_t) id, ptr, max_size);
+	int n = oesr_var_param_get_value(ctx, (var_t) id, ptr, max_size);
 	return n;
 }
 
 pmid_t param_id(char *name) {
-	return (pmid_t) oesr_var_param_get(_ctx,name);
+	return (pmid_t) oesr_var_param_get(ctx,name);
 }
 

@@ -32,6 +32,7 @@ modules:
 		mopts=11;
 		instances=14;
 		variables=(
+			{name="dc_offset";value=1;},
 			{name="direction";value=0;},{name="mirror";value=2;},{name="normalize";value=1;},
 			{name="dft_size";value=128;},{name="psd";value=0},{name="out_db";value=0}
 		);

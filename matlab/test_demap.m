@@ -6,10 +6,13 @@ sigma2=1.5;
 
 % generates random complex symbols, equally distributed between -sqrt(2)
 % and +sqrt(2)
-x=sqrt(2)*[rand(N,1)-0.5*ones(N,1)] + 1i*sqrt(2)*[rand(N,1)-0.5*ones(N,1)];
-
-out_mex=am_gen_soft_demod(x, {{'soft',int32(1)},{'modulation',int32(modulation)},{'sigma2',sigma2}}); % soft = 0: exact; soft = 1: approx. LLR
-out_matlab=soft_demapper(x, modulation, 0, sigma2); % 2 means approx. LLR, 1 exact
+sig=sqrt(2)*[rand(N,1)-0.5*ones(N,1)] + 1i*sqrt(2)*[rand(N,1)-0.5*ones(N,1)];
+u=load('unlayered.mat');
+u=u.unlayered_pdcch;
+x=sig;
+x=u';
+out_mex=am_gen_soft_demod(x, {{'soft',int32(1)},{'modulation',int32(2)},{'sigma2',1.5}}); % soft = 0: exact; soft = 1: approx. LLR
+out_matlab=soft_demapper(x, 1, 2, 1.5); % 2 means approx. LLR, 1 exact
 
 switch (modulation)
     case 0 % BPSK

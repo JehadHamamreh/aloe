@@ -19,6 +19,8 @@
 #ifndef oesr_man_WAVEFORM_H_
 #define oesr_man_WAVEFORM_H_
 
+#define NOF_USER_VARIABLES 10
+
 #include "rtdal.h"
 #include "str.h"
 #include "objects_max.h"

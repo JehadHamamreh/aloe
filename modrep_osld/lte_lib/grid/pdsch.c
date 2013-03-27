@@ -9,6 +9,17 @@
  * and obtain time-variant RA.
  */
 
+int lte_pdsch_fill_rbg(int *rbg_vector, struct lte_pdsch *ch, struct lte_grid_config *config) {
+	int i;
+	for (i=0;i<config->nof_prb/RBG_SZ(config->nof_prb);i++) {
+		if (ch->rbg_mask & (0x1<<i)) {
+			rbg_vector[i] = 1;
+		} else {
+			rbg_vector[i] = 0;
+		}
+	}
+	return i;
+}
 
 
 /* FIXME: NOF_PRB must be multiple of RBG_SZ */

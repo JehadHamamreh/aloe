@@ -1,19 +1,20 @@
 
 modules:
 {
-	descrambling:
-	{
-		binary="modrep_osld/liblte_descrambling.so";	
-		mopts=11;
-		variables=({name="tslot_idx";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
-	};
 	
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
 		mopts=50;
 		variables=(
-			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=0.1;});
+			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=1.0;});
+	};
+	
+	descrambling:
+	{
+		binary="modrep_osld/liblte_descrambling.so";	
+		mopts=11;
+		variables=({name="subframe";value=-1},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
 	};
 	
 	unratematching:
@@ -47,10 +48,10 @@ modules:
 
 interfaces:
 (
-	{src="_input";dest="descrambling"},	
-	{src="descrambling";dest="demodulator"},	
+	{src="_input";dest="demodulator"},	
+	{src="demodulator";dest="descrambling"},	
 	
-	{src="demodulator";dest="unratematching"},	
+	{src="descrambling";dest="unratematching"},	
 	{src="unratematching";dest="decoder"},	
 	{src="decoder";dest="uncrc_tb"},	
 	{src="uncrc_tb";dest="_output"}

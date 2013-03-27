@@ -11,7 +11,6 @@ struct lte_pdcch_cce {
 
 struct lte_pdcch {
 	int id;
-	int format;
 	int nof_cce;
 	int nof_regs;
 	int nof_re;

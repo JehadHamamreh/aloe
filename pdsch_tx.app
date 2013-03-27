@@ -29,14 +29,14 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=11;
-		variables=({name="tslot_idx";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
+		variables=({name="subframe";value=-1},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0});
 	};
 
 	modulator:
 	{
 		binary="modrep_osld/libgen_modulator.so";	
 		mopts=11;
-		variables=({name="modulation";value=1;});
+		variables=({name="modulation";value=2;});
 	};
 
 	

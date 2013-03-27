@@ -144,8 +144,10 @@ int init_pdsch(int ch_id) {
 		return -1;
 	}
 
-	if (grid.cfi == -1) {
-		moderror("CFI not yet initialized\n");
+	if (grid.cfi < 1) {
+#ifdef _COMPILE_ALOE
+		moderror_msg("CFI not yet initialized at ts=%d, rcv_data=%d\n",oesr_tstamp(ctx),get_input_samples(0));
+#endif
 		return -1;
 	}
 	if (lte_pdsch_init_params_ch(ch_id, &grid)) {
@@ -217,6 +219,7 @@ int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 	if (n>0) {
 		set_output_samples(ch->out_port,n);
 	}
+	moddebug("ch %s deallocated %d RE. pdcch=%d, cce=%d\n",ch->name,n,grid.nof_pdcch,grid.pdcch[0].nof_cce);
 
 	return n;
 }

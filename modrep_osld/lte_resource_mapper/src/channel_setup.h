@@ -1,8 +1,9 @@
-
 #define ENABLE_PSS
 #define ENABLE_SSS
+
 #define ENABLE_REF
 
+#define CHECK_RCV_SAMPLES
 
 #define EXTRACT_REF_PORT	-1
 
@@ -15,7 +16,7 @@ struct channel pdsch[] = {
 };
 
 struct channel pdcch[] = {
-		{"PDCCH_0", CH_PDCCH, -5},
+		{"PDCCH_0", CH_PDCCH, 2},
 		{"PDCCH_1", CH_PDCCH, -6},
 		{NULL,-1, -1}
 };

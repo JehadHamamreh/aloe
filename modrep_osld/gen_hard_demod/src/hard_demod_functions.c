@@ -30,6 +30,7 @@
 /* input_t: _Complex float
  * output_t: char */
 void hard_bpsk_demod(input_t *in, output_t *out, int N);
+void hard_bpsk_demod_real(float *in, output_t *out, int N);
 void hard_qpsk_demod(input_t *in, output_t *out, int N);
 void hard_qam16_demod(input_t *in, output_t *out, int N);
 void hard_qam64_demod(input_t *in, output_t *out, int N);
@@ -88,6 +89,13 @@ inline void hard_bpsk_demod(input_t *in, output_t *out, int N)
 				out[s] = 0x0;
 			}
 		}
+	}
+}
+
+inline void hard_bpsk_demod_real(float *in, output_t *out, int N) {
+	int s;
+	for (s=0;s<N;s++) {
+		out[s] = in[s] > 0 ? 1: 0;
 	}
 }
 
@@ -244,4 +252,11 @@ inline void hard_demod(input_t *in, output_t *out, int N, int modulation) {
 		case QAM16: hard_qam16_demod(in, out, N); break;
 		case QAM64: hard_qam64_demod(in, out, N); break;
 	}
+}
+
+inline void hard_demod_real(float *in, output_t *out, int N, int modulation) {
+	if (modulation != BPSK) {
+		return;
+	}
+	hard_bpsk_demod_real(in, out, N);
 }

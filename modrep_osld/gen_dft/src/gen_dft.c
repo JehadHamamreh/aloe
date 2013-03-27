@@ -42,6 +42,7 @@ static int options;
  * \param direction Direction of the dft: 0 computes a dft and 1 computes an idft (default is 0)
  * \param mirror 0 computes a normal dft, 1 swaps the two halfes of the input signal before computing
  * the dft (used in LTE) (default is 0)
+ * \param dc_offset Set a null to the 0 subcarrier
  * \param psd Set to 1 to compute the power spectral density (untested) (default is 0)
  * \param out_db Set to 1 to produce the output results in dB (untested) (default is 0)
  * \param dft_size Number of DFT points. This parameter is mandatory.
@@ -77,6 +78,11 @@ int initialize() {
 		modinfo("Parameter out_db not defined. Disabling. \n");
 	} else {
 		if (tmp) options |= DFT_OUT_DB;
+	}
+	if (param_get_int(param_id("dc_offset"),&tmp) != 1) {
+		modinfo("Parameter dc_offset not defined. Disabling. \n");
+	} else {
+		if (tmp) options |= DFT_DC_OFFSET;
 	}
 	if (param_get_int(param_id("normalize"),&tmp) != 1) {
 		modinfo("Parameter normalize not defined. Disabling. \n");

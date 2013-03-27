@@ -17,7 +17,7 @@ modules:
 		binary="modrep_osld/liblte_hard_descrambling.so";	
 		mopts=8;
 		variables=(
-			{name="subframe";value=0},{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1},
+			{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1},
 			{name="direct";value=1}
 		);
 	};

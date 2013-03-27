@@ -26,6 +26,8 @@
 
 pmid_t modulation_id;
 
+extern int input_sample_sz;
+static int in_real=0;
 
 
 /**
@@ -43,6 +45,11 @@ int initialize() {
 
 	/* obtains a handler for fast access to the parameter */
 	modulation_id = param_id("modulation");
+
+	param_get_int_name("in_real",&in_real);
+	if (in_real == 1) {
+		input_sample_sz=sizeof(float);
+	}
 
 	return 0;
 }
@@ -77,6 +84,7 @@ int work(void **inp, void **out) {
 	int bits_per_symbol;
 	input_t *input;
 	output_t *output;
+	float *inreal;
 
 	if (!get_input_samples(0)) {
 		return 0;
@@ -99,7 +107,11 @@ int work(void **inp, void **out) {
 	output = out[0];
 	rcv_samples = get_input_samples(0); /* number of input samples */
 	bits_per_symbol = get_bits_per_symbol(modulation);
-	hard_demod(input, output, rcv_samples, modulation);
+	if (in_real) {
+		hard_demod_real(inreal, output, rcv_samples, modulation);
+	} else {
+		hard_demod(input, output, rcv_samples, modulation);
+	}
 	snd_samples = rcv_samples*bits_per_symbol;
 
 	return snd_samples;

@@ -242,15 +242,8 @@ variable_t* nod_module_variable_create(nod_module_t *module, string name, int si
 	while(i < module->parent.nof_variables && module->parent.variables[i].id)
 		i++;
 	if (i == module->parent.nof_variables) {
-		ndebug("calling realloc for %d more variables\n",5);
-		/**@FIXME: Preallocated more variables */
-		module->parent.variables=pool_realloc(module->parent.variables,
-				module->parent.nof_variables+5, sizeof(variable_t));
-		if (!module->parent.variables) return NULL;
-		memset(&module->parent.variables[module->parent.nof_variables],0,
-				5*sizeof(variable_t));
-		module->parent.nof_variables+=5;
-		ndebug("nof_variables=%d\n",module->parent.nof_variables);
+		aerror("Can't create more variables. Increase NOF_USER_VARIABLES in oesr/common/waveform.h\n");
+		return NULL;
 	}
 
 	if (size) {

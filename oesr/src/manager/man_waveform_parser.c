@@ -370,7 +370,7 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		dest_itf = &dest_module->inputs[dest_port];
 	}
 
-	if (dest_module && !strcmp(dest_module->name,"fft_tx_ifft_2")) {
+	if (dest_module && !strcmp(dest_module->name,"ctrl_mux")) {
 		tmp=0;
 	}
 
