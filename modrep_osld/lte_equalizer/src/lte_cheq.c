@@ -107,11 +107,7 @@ int work(void **inp, void **out) {
 	rcv_samples = get_input_samples(0);
 
 	if (!rcv_samples) {
-		return -1;
-	}
-
-	if (subframe_idx_id) {
-		param_get_int(subframe_idx_id, &subframe_idx);
+		return 0;
 	}
 
 	if (rcv_samples != grid.nof_osymb_x_subf*grid.fft_size) {
@@ -124,11 +120,11 @@ int work(void **inp, void **out) {
 
 	equalizer (&refsignal, subframe_idx,input, output, &filter,&grid);
 
-	subframe_idx++;
+/*	subframe_idx++;
 	if (subframe_idx==NOF_SUBFRAMES_X_FRAME) {
 		subframe_idx=0;
 	}
-
+*/
 	return snd_samples;
 }
 

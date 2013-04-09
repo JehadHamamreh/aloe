@@ -1,4 +1,6 @@
 
+#define SUBFRAME_DELAY 3
+
 /** Set to non-zero to send all remote parameters values each time slot automatically.
  * Otherwise, the user shall use ctrl_skeleton_send_idx() or ctrl_skeleton_send_name()
  * to manually send the parameter values
@@ -14,7 +16,7 @@ struct remote_parameters {
 	int modulation;
 	int long_crc;
 	int bits_x_slot;
-	int tslot_idx;
+	int tslot_idx[SUBFRAME_DELAY];
 	int cfi;
 	int nof_pdsch;
 	int pdsch_mask[MAX_PDSCH];
@@ -42,7 +44,7 @@ remote_params_db_t remote_params_db[] = {
 		{"source","block_length",&tx_params.tbs,sizeof(int)},
 
 		{"pcfich_tx_coder","cfi",&tx_params.cfi,sizeof(int)},
-		{"pcfich_tx_scrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
+		{"pcfich_tx_scrambling","subframe",&tx_params.tslot_idx[0],sizeof(int)},
 
 		{"pdcch_tx_ratematching","E",&tx_params.pdcch_E[0],sizeof(int)},
 
@@ -60,24 +62,24 @@ remote_params_db_t remote_params_db[] = {
 /* Receiver */
 
 		/* PCFICH */
-		{"pcfich_rx_descrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
+		{"pcfich_rx_descrambling","subframe",&rx_params.tslot_idx[0],sizeof(int)},
 
 		/* PDCCH */
-		{"resdemapp_pdcch","subframe_idx",&rx_params.tslot_idx,sizeof(int)},
+		{"resdemapp_pdcch","subframe_idx",&rx_params.tslot_idx[1],sizeof(int)},
 		{"resdemapp_pdcch","cfi",&rx_params.cfi,sizeof(int)},
-		/* this is one of the branches for blind decoding, trying to decodify cce number 0 */
+		/* this is one of the branches for blind decoding, trying to decode cce number 0 */
 		{"resdemapp_pdcch","pdcch_nofcce_0",&rx_params.pdcch_cce[0],sizeof(int)},
 		{"resdemapp_pdcch","nof_pdcch",&rx_params.nof_pdcch,sizeof(int)},
 		{"pdcch_rx_unratematching","S",&rx_params.pdcch_S[0],sizeof(int)},
 
 		/* PDSCH */
-		{"resdemapp_pdsch","subframe_idx",&rx_params.tslot_idx,sizeof(int)},
+		{"resdemapp_pdsch","subframe_idx",&rx_params.tslot_idx[2],sizeof(int)},
 		{"resdemapp_pdsch","cfi",&rx_params.cfi,sizeof(int)},
 		{"resdemapp_pdsch","nof_pdsch",&rx_params.nof_pdsch,sizeof(int)},
 		{"resdemapp_pdsch","pdsch_rbgmask_0",&rx_params.pdsch_mask[0],sizeof(int)},
 		{"pdsch_rx_demodulator","modulation",&rx_params.modulation,sizeof(int)},
-		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx,sizeof(int)},
-		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx,sizeof(int)},
+		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
+		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
 		{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
 
 

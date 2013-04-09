@@ -78,14 +78,17 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 
 	if (!strcmp(mode,"tx") || grid->subframe_idx != -1) {
 		grid->subframe_idx++;
-		if (grid->subframe_idx == NOF_SUBFRAMES_X_FRAME) {
+		/*if (grid->subframe_idx == NOF_SUBFRAMES_X_FRAME) {
 			grid->subframe_idx = 0;
 		}
+		*/
 	}
 	if (!strcmp(mode,"rx")) {
 		if (grid->subframe_idx == -1) {
 			_get_param("subframe",&subframe_tmp,mode);
-			printf("ts=%d subframe %s = %d\n",oesr_tstamp(ctx), mode, subframe_tmp);
+			if (grid->verbose) {
+				printf("ts=%d subframe %s = %d\n",oesr_tstamp(ctx), mode, subframe_tmp);
+			}
 			if (subframe_tmp != -1) {
 				grid->subframe_idx = subframe_tmp;
 			}
@@ -93,7 +96,7 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 			subframe_tmp = -1;
 			_get_param("subframe",&subframe_tmp,mode);
 			if (subframe_tmp != -1) {
-				if (subframe_tmp != grid->subframe_idx) {
+				if (subframe_tmp != grid->subframe_idx % NOF_SUBFRAMES_X_FRAME) {
 					moderror_msg("Synchronization lost! Expected subframe %d but got %d\n",
 							grid->subframe_idx,subframe_tmp);
 				}
@@ -102,7 +105,7 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	}
 
 	if (lte_grid_init(grid)) {
-		printf("Error initiating grid\n");
+		moderror("Error initiating grid\n");
 		return -1;
 	}
 	params->cfi = grid->cfi;
@@ -112,13 +115,18 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	params->modulation = lte_get_modulation_format(local_params.mcs);
 
 	/* allocate all prb to one user */
-	params->bits_x_slot = lte_pdsch_get_re(0,grid->subframe_idx,grid)*params->modulation;
+	params->bits_x_slot = lte_pdsch_get_re(0,grid->subframe_idx%NOF_SUBFRAMES_X_FRAME,grid)*
+			params->modulation;
 
-	params->tslot_idx = grid->subframe_idx;
+	for (i=0;i<SUBFRAME_DELAY;i++) {
+		params->tslot_idx[i] = (grid->subframe_idx-i)%NOF_SUBFRAMES_X_FRAME;
+	}
 
+	if (grid->verbose) {
 		printf("mode=%s cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
 				mode, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
 				params->modulation,params->bits_x_slot);
+	}
 	return 0;
 }
 

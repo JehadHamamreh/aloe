@@ -281,7 +281,7 @@ int work(void **inp, void **out) {
 				if (detect_SSS (FFTsize, aux, subfrmCtrl.PSSseq, m0s, m1s, (synchctrl2_t *) &subfrmCtrl) == 1) {
 #ifdef SETPARAM
 				#ifdef _COMPILE_ALOE
-					modinfo_msg("ts: %d. Detected SSS subframe %d\n", oesr_tstamp(ctx),
+					moddebug("ts: %d. Detected SSS subframe %d\n", oesr_tstamp(ctx),
 							subfrmCtrl.nofsubframe);
 					if (sf_pm_idx >= 0) {
 						if (param_remote_set(out, 1, sf_pm_idx, &subfrmCtrl.nofsubframe,

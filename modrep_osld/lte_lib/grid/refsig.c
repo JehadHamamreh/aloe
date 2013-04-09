@@ -52,9 +52,9 @@ int lte_symbol_has_refsig_or_resv(struct lte_symbol *symbol, struct lte_grid_con
 }
 
 /* reference at a given port*/
-int lte_symbol_has_refsig(int port_id, struct lte_symbol *symbol, struct lte_grid_config *config) {
+int lte_symbol_has_refsig(int port_id, int symbol_id, struct lte_grid_config *config) {
 
-	return (lte_refsig_symbolmask(port_id,config) & (0x1<<symbol->symbol_id));
+	return (lte_refsig_symbolmask(port_id,config) & (0x1<<symbol_id));
 }
 
 /* reference or reserved for any port */
@@ -143,7 +143,7 @@ int lte_refsig_put(refsignal_t *refsignal, complex_t *output,
 
 	int m,ns,l,mp;
 
-	if (!lte_symbol_has_refsig(refsignal->port_id, location,config)) {
+	if (!lte_symbol_has_refsig(refsignal->port_id, location->symbol_id,config)) {
 		return 0;
 	}
 
@@ -162,7 +162,7 @@ int lte_refsig_get(complex_t *input, refsignal_t *refsignal,
 
 	int m,ns,l,mp;
 
-	if (!lte_symbol_has_refsig(refsignal->port_id, location,config)) {
+	if (!lte_symbol_has_refsig(refsignal->port_id, location->symbol_id,config)) {
 		return 0;
 	}
 

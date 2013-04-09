@@ -35,14 +35,14 @@ modules:
 			{name="nof_prb";value=6;},
 			{name="cell_id";value=0},{name="nof_osymb_x_subf";value=14},
 
-/*			{name="delay_pcfich_rx_descrambling";value=0},
-*/
+			{name="delay_pcfich_rx_descrambling";value=0},
+
 			{name="delay_resdemapp_pdcch";value=0},
 			
-			{name="delay_pdsch_rx_demodulator";value=1},
-			{name="delay_pdsch_rx_descrambling";value=1},
-			{name="delay_pdsch_rx_unratematching";value=1},
-			{name="delay_resdemapp_pdsch";value=1}
+			{name="delay_pdsch_rx_demodulator";value=0},
+			{name="delay_pdsch_rx_descrambling";value=0},
+			{name="delay_pdsch_rx_unratematching";value=0},
+			{name="delay_resdemapp_pdsch";value=0}
 			
 		);
 	};
@@ -248,7 +248,7 @@ interfaces:
 	{src="synchro";dest="symb_rx"},
 
 	/* loop back to control */
-	{src=("synchro",1);dest=("ctrl_mux",0);mbpts=0.0;delay=4},
+	{src=("synchro",1);dest=("ctrl_mux",0);mbpts=0.0;delay=3},
 	
 	{src=("symb_rx",0);dest=("mux_rx",0)},
 	{src=("symb_rx",1);dest=("mux_rx",1)},

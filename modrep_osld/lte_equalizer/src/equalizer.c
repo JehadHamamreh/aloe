@@ -119,7 +119,7 @@ void equalizer (refsignal_t *refsignal,
 		)
 {
 	int k, mp, m, l, lp, ns;
-	
+
 	struct lte_symbol lte_symbol;
 
 	complex_t h;	// It is for the channel correction
@@ -130,12 +130,13 @@ void equalizer (refsignal_t *refsignal,
 	printf("a=[");
 	/* Estimate the channel */
 	for (l=0;l<config->nof_osymb_x_subf;l++) {
-		lte_symbol.subframe_id = subframe_idx;
-		lte_symbol.symbol_id = l;
 
-		if (lte_symbol_has_refsig(refsignal->port_id, &lte_symbol, config)) {
+		if (lte_symbol_has_refsig(refsignal->port_id, l, config)) {
+			lte_symbol.subframe_id = subframe_idx;
+			lte_symbol.symbol_id = l;
+
 			ns = lte_get_ns(&lte_symbol,config);
-			lp = lte_refsig_l(lte_symbol.symbol_id,config);
+			lp = lte_refsig_l(l,config);
 			for (m=0;m<config->nof_rs_x_symb;m++) {
 				mp=lte_refsig_mp(m,config);
 				k = refsignal->k[lp][ns][mp];

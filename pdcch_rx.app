@@ -53,6 +53,7 @@ interfaces:
 	{src="demodulator";dest="descrambling"},
 	{src="descrambling";dest="unratematching"},
 	{src="unratematching";dest="decoder"},
-	{src="decoder";dest="crc_check"}	
+	{src="decoder";dest="crc_check"}/*,
+	{src="crc_check";dest="_output"}*/
 );
 
