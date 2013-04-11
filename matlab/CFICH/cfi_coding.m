@@ -21,16 +21,11 @@
 
 %% Parameters
 % Inputs:
-% in            - input samples: bit-sequence
+% cfi           - Control Format Indicator (CFI): 1, 2, or 3
 %
-% cell_gr       - % Physical-layer cell-identity group, range: integer in
-%               [0, 167]
-%
-% cell_sec      - % Physical-layer identity within the physical-layer
-%               identity group, range: integer in [0, 2]
 %
 % Outputs:
-% out           - output samples: scrambled input bit-sequence
+% out           - Coded CFI (32-bit sequence)
 %
 
 % Spec:         3GPP TS 36.212, v10.6.0 section 5.3.4.1
@@ -39,25 +34,26 @@
 % Last Revision:18.2.2013
 % 
 
-function out = dci_scrambling(in, cell_gr, cell_sec, ns, desc)
+function out = cfi_coding(cfi)
 
-    addpath('../common functions');
-    channel = 2; % PDCCH
-    M = length(in);
-    out = zeros(1,M);
-    
-    c = scrambling_sequence_gen(0, M, cell_gr, cell_sec, 0, 0, ns, channel);
-
-    if (desc)   % descrambling of soft bits
-       for i=1:M
-           if (((in(i) > 0) && (c(i) == 1)) || ((in(i) < 0) && (c(i) == 1)))
-                out(i) = -in(i);
-            else
-                out(i) = in(i);
-            end
-       end     
-    else    % scrambling
-        out = mod(in+c,2);
+    switch (cfi)
+        case 1
+            aux = [0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1];
+        case 2 
+            aux = [1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0];
+        case 3
+            aux = [1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1];
+        case 4 % reserved
+            out = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        otherwise
+            fprintf('\nError: Wrong CFI. Please specify a valid value (1, 2 or 3).\n');
+            return;
     end
- 
+    
+    % make it logical
+    for i=1:32
+        out(i) = aux(i)==1;
+    end
+    
 end
+

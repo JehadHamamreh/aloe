@@ -39,25 +39,29 @@
 % Last Revision:18.2.2013
 % 
 
-function out = dci_scrambling(in, cell_gr, cell_sec, ns, desc)
+function out = pbch_scrambling(in, frame, sample, rx)
 
     addpath('../common functions');
-    channel = 2; % PDCCH
+    channel = 3; % PBCH
     M = length(in);
     out = zeros(1,M);
+    Mmax = 1920;    % scrambling sequence for all samples to be processed in 40 ms
     
-    c = scrambling_sequence_gen(0, M, cell_gr, cell_sec, 0, 0, ns, channel);
+    c = scrambling_sequence_gen(0, Mmax, 0, 0, 0, 0, 0, channel);
 
-    if (desc)   % descrambling of soft bits
+    if (mod(frame,4)==0)
+        sample = 1;
+    end
+    if (rx)   % descrambling of soft bits
        for i=1:M
-           if (((in(i) > 0) && (c(i) == 1)) || ((in(i) < 0) && (c(i) == 1)))
+           if (((in(i) > 0) && (c(i+sample-1) == 1)) || ((in(i) < 0) && (c(i+sample-1) == 1)))
                 out(i) = -in(i);
             else
                 out(i) = in(i);
             end
        end     
     else    % scrambling
-        out = mod(in+c,2);
+        out = mod(in+c(sample:sample+M-1),2);
     end
  
 end

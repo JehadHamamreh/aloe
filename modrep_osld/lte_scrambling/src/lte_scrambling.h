@@ -18,15 +18,15 @@
 
 
 /**
- * @defgroup lte_scrambling lte_scrambling
+ * @defgroup template template
  * Document here your module
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef char input_t;
-typedef char output_t;
+typedef float input_t;
+typedef float output_t;
 
 #define OUTPUT_MAX_SAMPLES 	14*2048
 #define INPUT_MAX_SAMPLES 	14*2048
@@ -49,8 +49,8 @@ const int input_max_samples = INPUT_MAX_SAMPLES;
 const int output_max_samples = OUTPUT_MAX_SAMPLES;
 
 /* leave these two lines unmodified */
-const int input_sample_sz = sizeof(input_t);
-const int output_sample_sz = sizeof(output_t);
+int input_sample_sz = sizeof(input_t);
+int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */
 const int nof_input_itf = NOF_INPUT_ITF;

@@ -35,28 +35,29 @@
 
 
 %% Paths to m and MEX files
-    % m-files:
-addpath('layer mapper');          % contains layer mapper/demapper and precoder/un-precoder
-addpath('../PCFICH/CFICH');                 % contains QPSK modem
-%addpath('modulation demapping');  % contains Soft Demapper
-addpath('../')
+% m-files:
+addpath('../common functions');
+
 % MEX-files:
 addpath('/usr/local/mex');
-
-%addpath('/home/vuk/DATOS/workspace/lte_scrambling');        % Scrambling
-%addpath('/home/vuk/DATOS/workspace/lte_descrambling');      % Descrambling of soft bits
-
-%addpath('/home/vuk/DATOS/workspace/lte_modem');             % Modulator
-%addpath('/home/vuk/DATOS/workspace/gen_soft_demod')         % Soft Demodulator
-
+addpath('/home/vuk/DATOS/workspace/lte_ctrl_ratematching'); % Rate Matching (Tx & Rx)
+addpath('/home/vuk/DATOS/workspace/lte_crc_scrambling');    % CRC Scrambling/Descrambling
+addpath('/home/vuk/DATOS/workspace/lte_scrambling');        % Scrambling/Descrambling
 
 %% Parameters
+% Symbolic constants
+TX = 0;     % transmission mode (forward processing)
+RX = 1;     % reception mode (reverse processing)
+QPSK = 1;   % QPSK modulation
+ZERO = 0;   % hard demodulation mapping '0'
+ONE = 1;    % hard demodulation mapping '1'
+
 % CRC parameters
 L = 16;
 
 % CRC scrambling
-antenna_selection = 0;  % 0: UE transmit antenna selection is not configured or applicable, >0 if configured and applicable
-dci_format = 0; 
+antenna_selection = 1;  % 0: UE transmit antenna selection is not configured or applicable, >0 if configured and applicable
+dci_format = 1; 
 rnti = 4327;    
 ue_port=1;      % 0 or 1
 
@@ -66,16 +67,14 @@ q = 0;              % must be 0 or not specified
 ns = 0;             % slot index
 cell_gr =   101;    % Physical-layer cell-identity group, range: integer in [0, 167], default: 0
 cell_sec =  2;      % Physical-layer identity within the physical-layer identity group, range: integer in [0, 2], default: 0
-direct = 0;         % implementation parameter, set if processing short bit-sequences
+direct = 1;         % implementation parameter, set if processing short bit-sequences
 
 % Modulation parameters
-QPSK = 1;           % symbolc symbol for qpsk modulation
-sigma2 = 1;         % noise variance
-LLR_approx = 2;     % 1: exact; 2: approximate LLR
-LLR_approx_mex = LLR_approx-1;     % 0: exact; 1: approx. LLR
+sigma2 = 2;         % noise variance
+soft = 1;           % 0: exact; 1: approx. LLR
 
 % Layer mapping and Precoding configuration
-style = 1;  % only possible modes: single antenna port (0) or tx diversity (1)
+style = 0;  % only possible modes: single antenna port (0) or tx diversity (1)
 nof_q = 1;  % number of codewords only one codeword for PDCCH
 v = 2;      % v = 2 or 4 if style = 1
 if (style == 0)
@@ -90,13 +89,13 @@ else
 end
 
 % Conv. Coding parameters and output
-D = 180; % # bits of each conv. enconder stream (total of 3*M bits per PDCCH and subframe)
+D = 50; % # bits of each conv. enconder stream (total of 3*M bits per PDCCH and subframe)
 repetition = 3; % code rate = 1/repetition
 %d = [(randi(2,1,D)==1); (randi(2,1,D)==1); (randi(2,1,D)==1)];   % the three output bits streams of the conv. enconder
 
 % Rate Matching (RM) parameters
 turbo = 0;      % convolucional coding
-pdcch_format = 2;     % valid formats: 0, 1, or 2
+pdcch_format = 0;     % valid formats: 0, 1, or 2
 switch (pdcch_format)
     case 0
         E = 144;
@@ -132,13 +131,12 @@ input = (randi(2,1,D)==1);
 
 % CRC attachment
 % The matlab model simply adds L zeros
-crc_out = [input, zeros(1,L)];
+crc_out = [input, zeros(1,L)==ones(1,L)];
 %crc_out = am_gen_crc(input, {{'direction',int32(0)}, {'poly',int32(11021)}}); % 0x11021 es el polynomio que toca para PDCCH
 
 % CRC Scrambling
-scrambled_crc = crc_scrambling(crc_out, antenna_selection, dci_format, rnti, ue_port);
-scrambled_crcx = crc_scrambling(crc_out, antenna_selection, dci_format, rnti, ue_port); % SUBSTITUTE WITH MEX when ready!
-%unscrambled_crcx = am_lte_crc_scrambling(uncoded_pdcchx, {{'direction',int32(0)}, {'selection', int32(antenna_selection)}, {'format',int32(dci_format)}, {'rnti',int32(rnti)}, {'port',int32(ue_port}});
+scrambled_crc = crc_scrambling(crc_out, antenna_selection, dci_format, rnti, ue_port, 0, 0);
+scrambled_crcx = am_lte_crc_scrambling(crc_out, {{'direction',int32(TX)},{'antenna_selection',int32(antenna_selection)},{'dci_format',int32(dci_format)},{'rnti',int32(rnti)},{'ue_port',int32(ue_port)}});
 
 % Coding
 % The model assumes repetition coding, should be Convolutional Coding
@@ -147,8 +145,8 @@ coded_pdcchx = repetition_coding(scrambled_crcx, repetition);
 coded_pdcchx = coded_pdcchx == ones(1,length(coded_pdcch)); % tranform to logical signal
 
 % Rate Matching
-rmatched_pddch = pdcch_rm(coded_pdcch, turbo, E);
-rmatched_pddchx = am_lte_ctrl_ratematching(coded_pdcchx', {{'direction',int32(0)},{'E',int32(E)}});
+rmatched_pddch = ctrl_ratematching(coded_pdcch, turbo, E);
+rmatched_pddchx = am_lte_ctrl_ratematching(coded_pdcchx, {{'direction',int32(TX)},{'E',int32(E)}});
 
 % PDCCH multiplexing: joins several PDCCHs
 % ONLY MATLAB MODEL AVAILABLE
@@ -158,11 +156,11 @@ multiplexed_pdcchx = multiplexed_pdcchx == ones(1,length(multiplexed_pdcchx)); %
 
 % Scrambling
 scrambled_pdcch = dci_scrambling(multiplexed_pdcch, cell_gr, cell_sec, ns, 0);
-scrambled_pdcchx = am_lte_scrambling(multiplexed_pdcchx', {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(direct)}});
+scrambled_pdcchx = am_lte_scrambling(multiplexed_pdcchx, {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(direct)}});
 
 % Modulation
 modulated_pdcch = qpsk_modulation(scrambled_pdcch);
-modulated_pdcchx = am_gen_modulator(scrambled_pdcchx', {{'modulation',int32(2)}});
+modulated_pdcchx = am_gen_modulator(scrambled_pdcchx, {{'modulation',int32(QPSK)}});
 
 % Layer Mapping (MIMO)
 layered_pdcch = lte_PDSCH_layer_mapper(modulated_pdcch, 0, v, nof_q, style);
@@ -186,39 +184,30 @@ unlayered_pdcch = lte_PDSCH_layer_demapper(unprecoded_pdcch, v, nof_q, style);
 unlayered_pdcchx = lte_PDSCH_layer_demapper(unprecoded_pdcchx, v, nof_q, style);
 
 % Soft Demodulation
-demodulated_pdcch = soft_demapper(unlayered_pdcch, QPSK, LLR_approx, sigma2);
-demodulated_pdcchx = am_gen_soft_demod(unlayered_pdcchx', {{'soft',int32(LLR_approx_mex)},{'modulation',int32(2)},{'sigma2',sigma2}});
-
-u=load('unlayered.mat');
-u=u.unlayered_pdcch;
-x=u';
-out_mex=am_gen_soft_demod(unlayered_pdcch', {{'soft',int32(1)},{'modulation',int32(2)},{'sigma2',1.5}}); % soft = 0: exact; soft = 1: approx. LLR
-out_matlab=soft_demapper(unlayered_pdcch, 1, 2, 1.5); % 2 means approx. LLR, 1 exact
-
-subplot(1,1,1)
-N=10;
-plot(1:bits_per_symbol*N,out_matlab(1:bits_per_symbol*N),'b-',1:bits_per_symbol*N,out_mex(1:bits_per_symbol*N),'r--');
+demodulated_pdcch = soft_demapper(unlayered_pdcch, QPSK, soft+1, ZERO, ONE, sigma2, 0);
+demodulated_pdcchx = am_gen_soft_demod(unlayered_pdcchx, {{'soft',int32(soft)},{'modulation',int32(QPSK)},{'sigma2',sigma2}});
 
 % PDCCH Demultiplexing?
 % missing
 
 % Descrambling
 descrambled_pdcch = dci_scrambling(demodulated_pdcch, cell_gr, cell_sec, ns, 1);
-descrambled_pdcchx = am_lte_descrambling(demodulated_pdcchx', {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(direct)}});
+%descrambled_pdcchx = am_lte_descrambling(demodulated_pdcchx, {{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(direct)}});
+descrambled_pdcchx = am_lte_scrambling(demodulated_pdcchx, {{'hard',int32(0)},{'subframe',int32(floor(ns/2))},{'cell_gr',int32(cell_gr)},{'cell_sec',int32(cell_sec)},{'channel',int32(channel)},{'direct',int32(direct)}});
 
 % Rate Matching @Rx
-unrmatched_pdcch = pdcch_unrm(descrambled_pdcch, turbo, S);
-unrmatched_pdcchx = am_lte_ctrl_ratematching(descrambled_pdcchx', {{'direction',int32(1)},{'S',int32(S)}});
+unrmatched_pdcch = ctrl_unratematching(descrambled_pdcch, turbo, S);
+unrmatched_pdcchx = am_lte_ctrl_ratematching(descrambled_pdcchx, {{'direction',int32(RX)},{'S',int32(S)}});
 
 % Decoding
 % The model assumes repetition decoding, should be convolutional decoding
 uncoded_pdcch = repetition_decoding(unrmatched_pdcch, repetition, 1);
 uncoded_pdcchx = repetition_decoding(unrmatched_pdcchx, repetition, 1);
+uncoded_pdcchx = uncoded_pdcchx==ones(1,length(uncoded_pdcchx)); % tranform to logical signal
 
 % CRC Descrambling
-unscrambled_crc = crc_scrambling(uncoded_pdcch, antenna_selection, dci_format, rnti, ue_port);
-unscrambled_crcx = crc_scrambling(uncoded_pdcchx, antenna_selection, dci_format, rnti, ue_port); %SUBSTITUTE WITH MEX when ready!
-%unscrambled_crcx = am_lte_crc_scrambling(uncoded_pdcchx, {{'direction',int32(1)}, {'selection', int32(antenna_selection)}, {'format',int32(dci_format)}, {'rnti',int32(rnti)}, {'ue_port',int32(ue_port}});
+unscrambled_crc = crc_scrambling(uncoded_pdcch, antenna_selection, dci_format, rnti, ue_port, 0, 0);
+unscrambled_crcx = am_lte_crc_scrambling(uncoded_pdcchx, {{'direction',int32(RX)},{'antenna_selection',int32(antenna_selection)},{'dci_format',int32(dci_format)},{'rnti',int32(rnti)},{'ue_port',int32(ue_port)}});
 
 % CRC detachment: removes the last L samples
 uncrc_out = unscrambled_crc(1:length(unscrambled_crc)-L);
@@ -229,9 +218,9 @@ in_out_diff = uncrc_out - input;
 in_out_diffx = uncrc_outx - input;
 
 % Visualize results
-% X = length(uncrc_out);
-% XX = length(uncrc_outx);
-% subplot(2,1,1), plot(1:X, in_out_diff);
-% title('Input-output difference of Tx-Rx-model based on m files');
-% subplot(2,1,2), plot(1:XX, in_out_diffx);
-% title('Input-output difference of Tx-Rx-model based on MEX files');
+X = length(uncrc_out);
+XX = length(uncrc_outx);
+subplot(2,1,1), plot(1:X, in_out_diff);
+title('Input-output difference of Tx-Rx-model based on m files');
+subplot(2,1,2), plot(1:XX, in_out_diffx);
+title('Input-output difference of Tx-Rx-model based on MEX files');

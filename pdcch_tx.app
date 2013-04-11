@@ -40,7 +40,8 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=11;
-		variables=({name="subframe";value=0},{name="cell_gr";value=2},{name="cell_sec";value=0},{name="channel";value=2},{name="direct";value=0});
+		variables=({name="subframe";value=0},{name="cell_gr";value=2},{name="cell_sec";value=0},
+		{name="channel";value=2},{name="direct";value=0},{name="hard";value=1});
 	};
 
 	modulator:

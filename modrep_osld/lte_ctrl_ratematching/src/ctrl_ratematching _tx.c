@@ -98,7 +98,7 @@ inline int subblock_interleaver(char *in_out, int in_l)
 		}
 	} else {
 		for (i=0; i<rows; i++) {
-			memcpy(m[i], in_out, COLS);
+			memcpy(m[i], &in_out[i*COLS], COLS);
 		}
 	}
 

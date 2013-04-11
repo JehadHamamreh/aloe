@@ -25,13 +25,16 @@
 #include "lte_scrambling.h"
 #include "scrambling.h"
 
-pmid_t subframe_id;
-unsigned input_ints[MAX_c], out_ints[MAX_c]; /* intermediate results */
-unsigned c[MAX_c][10];	/* scrambling sequence for all 10 subframes */
-int direct; /* if set directly scrambles the input (chars) */
-int ul; /* if set, searches for ACK/NACK or Rank Indication repetition
+pmid_t subframe_id, sample_id;
+unsigned c[NOF_SUBFRAMES][MAX_c]; /* scrambling sequence for all subframes */
+int direct; 	/* if set directly scrambles the input (chars) */
+int ul; 	/* if set, searches for ACK/NACK or Rank Indication repetition
 placeholder bits processed in the LTE UL */
+int pbch;
+int hard;
 
+extern int input_sample_sz;
+extern int output_sample_sz;
 
 /**
  * @ingroup Verify initialization parameters
@@ -69,17 +72,18 @@ int verify_params(struct scrambling_params params) {
 		return -1;
 	}
 	if (params.channel == 3) {
-		moderror_msg("Scrambling for PBCH (%d) not yet implemented.\n",
-		  params.channel);
-		return -1;
+		pbch = 1;
+		direct = 1;
 	} else {
-		return 0;
+		pbch = 0;
 	}
+
+	return 0;
 }
 
 
 /**
- * @ingroup lte_scrambling
+ * @ingroup template
  * Initializes the scrambling sequence based on the parameters:
  * - Codeword index 'q' (0, 1). In case of single codeword: q=0
  * - Cell ID group index 'cell_gr' (0, 1, 2)
@@ -94,6 +98,11 @@ int initialize() {
 	struct scrambling_params params;
 
 	/* get parameters and assign defaults if not (correctly) recevied */
+	if (param_get_int_name("hard", &hard)) {
+		moderror_msg("Scrambling type not specified. Assuming "
+		  "bit-scrambling: hard = %d.\n",1);
+		hard = 1;
+	}
 	if (param_get_int_name("q", &params.q)) {
 		moderror_msg("Codeword index not specified. Assuming default "
 			"value %d.\n",q_default);
@@ -144,8 +153,18 @@ int initialize() {
 	if (verify_params(params))
 		return -1;
 
+	if (hard) { /* bit scrambling */
+		input_sample_sz=sizeof(char);
+		output_sample_sz=sizeof(char);
+	} else { /* soft-bit scrambling */
+		input_sample_sz=sizeof(float);
+		output_sample_sz=sizeof(float);
+	}
+
 	/* Obtain a handler for fast access to the parameter */
 	subframe_id = param_id("subframe");
+	sample_id = param_id("sample");
+
 
 	/* Generate scrambling sequence based on above parameters, assuming
 	 * that they do not change during runtime. */
@@ -155,7 +174,7 @@ int initialize() {
 
 
 /**
- * @ingroup lte_scrambling
+ * @ingroup template
  *
  * Main DSP function
  *
@@ -177,9 +196,11 @@ int work(void **inp, void **out) {
 	int i, j, s;
 	int rcv_samples, snd_samples;
 	static int subframe = -1;
-	div_t ints;
-	input_t *input;
-	output_t *output;
+	int sample;
+	char *input_b;
+	char *output_b;
+	float *input_f;
+	float *output_f;
 
 	struct ul_params uparams;
 
@@ -188,70 +209,57 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 
-	/* If subframe number is not obtained, increment internally by 1
-	 * at each invocation (assuming a time slot of 1 ms) */
-	/* Caution: If passed as parameter, should be passed only once or
-	 * externally incremented accordingly */
-	if (param_get_int(subframe_id, &subframe) != 1) {
-		if (subframe ==9) {
-			subframe = 0;
-		} else {
-			subframe++;
+	input_b = inp[0];
+	input_f = inp[0];
+	output_b = out[0];
+	output_f = out[0];
+
+	if (pbch) {
+		subframe = 0;
+		/* Frame number needed for PBCH. If not obtained externally,
+		 * increments by one on each invocation (with data), assuming
+		 * one invocatione each radio frame */
+		if (param_get_int(sample_id, &sample) != 1) {
+			sample = 0;
 		}
-	}
-
-#ifdef _COMPILE_ALOE
-	moddebug("received %d at %d sf=%d\n",rcv_samples,oesr_tstamp(ctx),subframe);
-#endif
-
-	/* Verify parameters */
-	if (subframe < 0) {
-		return 0;
-	}
-
-	input = inp[0];
-	output = out[0];
-
-	if (ul) {
-		/* Check for placeholder bits */
-		identify_xy(input, rcv_samples, &uparams);
-	}
-
-	if (direct) {
-		/* scramble with c */
-		j = 1;
-		s = 0;
-		for (i=0; i<rcv_samples; i++) {
-			if (i == j*32) {
-				s = 0;
-				j++;
-			}
-			if (input[i] == ((c[j-1][subframe]>>s)&1)) {
-		                output[i] = 0x0;
-			} else {
-				output[i] = 0x1;
-			}
-			s++;
+		/* verify parameter */
+		if ((sample < 0) || (sample > 32*MAX_c-rcv_samples)) {
+			moderror_msg("Invalid sample value %d. "
+			"Valid values: 0, 1, 2, ...%d\n", sample, MAX_c-rcv_samples);
+			return -1;
 		}
 	} else {
-		ints = div(rcv_samples,32);
-		ints.quot += 1;
-
-		/* conversion of input sequence from chars to integers */
-		char2int(input, input_ints, rcv_samples);
-
-		/* scramble with c */
-		for (i=0; i<ints.quot; i++) {
-			out_ints[i] = input_ints[i] ^ c[i][subframe];
+		sample = 0;
+		/* If subframe number is not obtained, increment internally by 1
+		 * at each invocation (assuming a time slot of 1 ms) */
+		/* Caution: If passed as parameter, should be passed only once or
+		 * externally incremented accordingly */
+		if (param_get_int(subframe_id, &subframe) != 1) {
+			if (subframe == 9) {
+				subframe = 0;
+			} else {
+				subframe++;
+			}
 		}
-
-		/* conversion of scrambled sequence from integers to chars */
-		int2char(out_ints, output, rcv_samples, ints.rem);
+		/* verify parameter */
+		if (subframe < 0 || subframe > 9) {
+			moderror_msg("Invalid subframe number %d. "
+			"Valid values: 0, 1, 2, ..., 9\n", subframe);
+			return -1;
+		}
+	}
+	if (hard) { /* bits (scrambling, hard descrambling) */
+		if (ul) { /* Check for placeholder bits */
+			identify_xy(input_b, rcv_samples, &uparams);
+		}
+		scramble(input_b, output_b, rcv_samples, c[subframe], direct, sample);
+	} else { /* soft bits, i.e., floats (descrambling) */
+		soft_scrambling(input_f, output_f, rcv_samples, c[subframe], sample);
 	}
 
 	if (ul) {
 		/* Set placeholder bits to values indicated by 3GPP */
-		set_xy(output, uparams);
+		set_xy(output_b, uparams);
 	}
 
 	snd_samples = rcv_samples;

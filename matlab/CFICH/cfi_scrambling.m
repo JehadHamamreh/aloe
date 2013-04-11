@@ -39,25 +39,13 @@
 % Last Revision:18.2.2013
 % 
 
-function out = dci_scrambling(in, cell_gr, cell_sec, ns, desc)
+function out = cfi_scrambling(in, cell_gr, cell_sec, ns)
 
-    addpath('../common functions');
-    channel = 2; % PDCCH
+    addpath('/home/vuk/DATOS/work/OSLD/scrambling');
+    channel = 1; % PCFICH
     M = length(in);
-    out = zeros(1,M);
-    
     c = scrambling_sequence_gen(0, M, cell_gr, cell_sec, 0, 0, ns, channel);
 
-    if (desc)   % descrambling of soft bits
-       for i=1:M
-           if (((in(i) > 0) && (c(i) == 1)) || ((in(i) < 0) && (c(i) == 1)))
-                out(i) = -in(i);
-            else
-                out(i) = in(i);
-            end
-       end     
-    else    % scrambling
-        out = mod(in+c,2);
-    end
+    out = mod(in+c,2);
  
 end

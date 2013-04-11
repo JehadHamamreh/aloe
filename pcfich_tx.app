@@ -16,7 +16,8 @@ modules:
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=8;
 		variables=(
-			{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1}
+			{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1},{name="hard";value=1},
+			{name="direct";value=0}
 		);
 	};
 

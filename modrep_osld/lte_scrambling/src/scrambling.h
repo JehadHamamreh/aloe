@@ -21,6 +21,10 @@
 #define MAX_c			896 /* INPUT_MAX_SAMPLES/32 */
 #define MAX_x			946 /* (INPUT_MAX_SAMPLES+Nc_default)/32 */
 
+#define BIT_PER_INT		32
+
+#define NOF_SUBFRAMES		10 /* Number of subframes */
+
 /* UL parameters */
 #define MAX_X_SIZE		100 /* assuming 100 placeholder bits or less then per subframe */
 #define MAX_Y_SIZE		100
@@ -67,7 +71,11 @@ void identify_xy(char *in, int M, struct ul_params *uparams);
 void set_xy(char *out, struct ul_params uparams);
 void char2int(char *input, unsigned *output, int N);
 void int2char(unsigned *input, char *output, int N, int rem_bits);
-void sequence_generation(unsigned (*c)[10], struct scrambling_params params);
+void sequence_generation(unsigned (*c)[MAX_c], struct scrambling_params params);
 void compute_x1(void);
 void compute_x2(unsigned *c_init);
 void x2init(unsigned *c_init, struct scrambling_params params);
+void scramble(char *input, char *output, int N, unsigned *c, int direct, int sample);
+void direct_scrambling(char *input, char *output, int N, unsigned *c, int j, int s);
+void int_scrambling(char *input, char *output, int N, unsigned *c);
+void soft_scrambling(float *input, float *output, int N, unsigned *c, int sample);

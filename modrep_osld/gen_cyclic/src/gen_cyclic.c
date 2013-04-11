@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <oesr.h>
 #include <params.h>
@@ -73,7 +74,10 @@ int work(void **inp, void **out) {
 	int i, j;
 	int nof_ofdm_symb;
 	int ofdm_symbol_sz, cyclic_prefix_sz, first_cyclic_prefix_sz;
+	int k, nof_ofdm_symbols_per_slot;
+	int cnt;
 	int cpy;
+	div_t symbols;
 	input_t *input;
 	output_t *output;
 
@@ -99,34 +103,46 @@ int work(void **inp, void **out) {
 		return -1;
 	}
 
+	if (first_cyclic_prefix_sz == cyclic_prefix_sz) {
+		nof_ofdm_symbols_per_slot = 6;
+	} else {
+		nof_ofdm_symbols_per_slot = 7;
+	}
+
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
 		moddebug("rcv_len=%d\n",get_input_samples(i));
 
-		if (get_input_samples(i) % ofdm_symbol_sz) {
-			moderror_msg("Number of input samples (%d) must be multiple of ofdm_symbol_sz (%d), in "
-					"interface %d\n",get_input_samples(i),ofdm_symbol_sz,i);
+		symbols = div(get_input_samples(i),ofdm_symbol_sz);
+
+		if (symbols.rem) {
+			moderror_msg("Number of input samples (%d) must be "
+			"integer multiple of ofdm_symbol_sz (%d) on interface "
+			"%d\n",get_input_samples(i),ofdm_symbol_sz,i);
 			return -1;
 		}
 
-		nof_ofdm_symb = get_input_samples(i) / ofdm_symbol_sz;
+		nof_ofdm_symb = symbols.quot;
 
 		if (nof_ofdm_symb) {
+			k = 0;
+			cnt = 0;
 			for (j=0;j<nof_ofdm_symb;j++) {
-				if (!j) {
+				if (j == k*nof_ofdm_symbols_per_slot) {
 					cpy = first_cyclic_prefix_sz;
+					k++;
 				} else {
 					cpy = cyclic_prefix_sz;
 				}
-				memcpy(output,&input[ofdm_symbol_sz-cpy],sizeof(input_t)*cpy);
-				memcpy(&output[cpy],input,sizeof(input_t)*ofdm_symbol_sz);
+				memcpy(output, &input[ofdm_symbol_sz-cpy], sizeof(input_t)*cpy);
+				memcpy(&output[cpy], input, sizeof(input_t)*ofdm_symbol_sz);
 				input += ofdm_symbol_sz;
 				output += ofdm_symbol_sz+cpy;
+				cnt += ofdm_symbol_sz+cpy;
 			}
 
-			set_output_samples(i, ofdm_symbol_sz + first_cyclic_prefix_sz +
-								 (ofdm_symbol_sz + cyclic_prefix_sz) * (nof_ofdm_symb - 1));
+			set_output_samples(i, cnt);
 		}
 	}
 	return 0;

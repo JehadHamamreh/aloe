@@ -17,6 +17,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <oesr.h>
 #include <params.h>
 #include <skeleton.h>
@@ -26,8 +28,10 @@
 #include "scrambling.h"
 
 unsigned x1[MAX_x];
-unsigned x2[MAX_x][10];
+unsigned x2[NOF_SUBFRAMES][MAX_x];
+unsigned input_ints[MAX_c], out_ints[MAX_c]; /* intermediate results */
 
+//extern int pbch;
 
 /**
  * @ingroup Identify placeholder (x) and repetition (y) bits
@@ -91,15 +95,14 @@ inline void set_xy(char *out, struct ul_params uparams) {
 inline void char2int(char *input, unsigned *output, int N)
 {
 	int i, j, s;
-	int bits_per_int = 32;
 
 	j = 1;
 	s = 0;
-	for (i=0; i<N/bits_per_int+1; i++) {
+	for (i=0; i<N/BIT_PER_INT+1; i++) {
 		output[i] = 0;
 	}
 	for (i=0; i<N; i++) {	/* input bits */
-		if (i==j*bits_per_int) {
+		if (i==j*BIT_PER_INT) {
 			s = 0;
 			j++;
 		}
@@ -186,51 +189,51 @@ inline void compute_x2(unsigned *c_init)
 	int i, j, s, n;
 
 	/* initialize first 32 bits of {x2} */
-	for (n=0; n<10; n++) {
-		x2[0][n] = c_init[n]; /* first 31 bits: 0..30 */
+	for (n=0; n<NOF_SUBFRAMES; n++) {
+		x2[n][0] = c_init[n]; /* first 31 bits: 0..30 */
 		/* initialize bit position 31: */
-		x2[0][n] += ((((x2[0][n]>>3)&1)
-			+ ((x2[0][n]>>2)&1)
-			+ ((x2[0][n]>>1)&1)
-			+ (x2[0][n]&1))%2)<<31;
+		x2[n][0] += ((((x2[n][0]>>3)&1)
+			+ ((x2[n][0]>>2)&1)
+			+ ((x2[n][0]>>1)&1)
+			+ (x2[n][0]&1))%2)<<31;
 	}
 
 	/* compute remaining bits of {x2} */
-	for (n=0; n<10; n++) {
+	for (n=0; n<NOF_SUBFRAMES; n++) {
 		j = 1;
 		s = 0;
-		x2[j][n] = 0;
+		x2[n][j] = 0;
 		for (i=0; i<(MAX_x-1)*32; i++) {
 			if (i == j*32) {
 				j++;
 				s = 0;
-				x2[j][n] = 0;
+				x2[n][j] = 0;
 			}
 			if (s<28) {
-				x2[j][n] += ((((x2[j-1][n]>>(s+4))&1)
-					+ ((x2[j-1][n]>>(s+3))&1)
-					+ ((x2[j-1][n]>>(s+2))&1)
-					+ ((x2[j-1][n]>>(s+1))&1))%2)<<s;
+				x2[n][j] += ((((x2[n][j-1]>>(s+4))&1)
+					+ ((x2[n][j-1]>>(s+3))&1)
+					+ ((x2[n][j-1]>>(s+2))&1)
+					+ ((x2[n][j-1]>>(s+1))&1))%2)<<s;
 			} else if (s==28) {
-				x2[j][n] += (((x2[j][n]&1)
-					+ ((x2[j-1][n]>>(s+3))&1)
-					+ ((x2[j-1][n]>>(s+2))&1)
-					+ ((x2[j-1][n]>>(s+1))&1))%2)<<s;
+				x2[n][j] += (((x2[n][j]&1)
+					+ ((x2[n][j-1]>>(s+3))&1)
+					+ ((x2[n][j-1]>>(s+2))&1)
+					+ ((x2[n][j-1]>>(s+1))&1))%2)<<s;
 			} else if (s==29) {
-				x2[j][n] += ((((x2[j][n]>>1)&1)
-					+ (x2[j][n]&1)
-					+ ((x2[j-1][n]>>(s+2))&1)
-					+ ((x2[j-1][n]>>(s+1))&1))%2)<<s;
+				x2[n][j] += ((((x2[n][j]>>1)&1)
+					+ (x2[n][j]&1)
+					+ ((x2[n][j-1]>>(s+2))&1)
+					+ ((x2[n][j-1]>>(s+1))&1))%2)<<s;
 			} else if (s==30) {
-				x2[j][n] += (((((x2[j][n])>>2)&1)
-					+ ((x2[j][n]>>1)&1)
-					+ (x2[j][n]&1)
-					+ ((x2[j-1][n]>>(s+1))&1))%2)<<s;
+				x2[n][j] += (((((x2[n][j])>>2)&1)
+					+ ((x2[n][j]>>1)&1)
+					+ (x2[n][j]&1)
+					+ ((x2[n][j-1]>>(s+1))&1))%2)<<s;
 			} else {
-				x2[j][n] += (((((x2[j][n])>>3)&1)
-					+ ((x2[j][n]>>2)&1)
-					+ ((x2[j][n]>>1)&1)
-					+ (x2[j][n]&1))%2)<<s;
+				x2[n][j] += (((((x2[n][j])>>3)&1)
+					+ ((x2[n][j]>>2)&1)
+					+ ((x2[n][j]>>1)&1)
+					+ (x2[n][j]&1))%2)<<s;
 			}
 			s++;
 		}
@@ -253,40 +256,42 @@ inline void x2init(unsigned *c_init, struct scrambling_params params)
 
 	N_cell = 3*params.cell_gr + params.cell_sec;
 
+	memset(c_init,0,NOF_SUBFRAMES*sizeof(int));
+
 	if (params.channel == PDSCH) { /* also PUSCH */
-		for (n=0; n<10; n++) {
+		for (n=0; n<NOF_SUBFRAMES; n++) {
 			c_init[n] = (params.nrnti<<14)
 				+ (params.q<<13)
 				+ (n<<9)
 				+ N_cell;
 		}
 	} else if (params.channel == PCFICH) {
-		for (n=0; n<10; n++) {
+		for (n=0; n<NOF_SUBFRAMES; n++) {
 			c_init[n] = (((n+1) * (2*N_cell+1))<<9) + N_cell;
 		}
 	} else if (params.channel == PDCCH) {
-		for (n=0; n<10; n++) {
+		for (n=0; n<NOF_SUBFRAMES; n++) {
 			c_init[n] = (n<<9) + N_cell;
 		}
 	} else if (params.channel == PBCH) {
 		/* Caution: The scrambling sequence generator for the PBCH is
 		 * not initialized on subframe basis */
-		for (n=0; n<10; n++) {
-			c_init[n] = N_cell;
-		}
+		//for (n=0; n<NOF_SUBFRAMES; n++) {
+			c_init[0] = N_cell;
+		//}
 	} else if (params.channel == PMCH) {
-		for (n=0; n<10; n++) {
+		for (n=0; n<NOF_SUBFRAMES; n++) {
 			c_init[n] = (n<<9) + params.nMBSFN;
 		}
 	} else if (params.channel == PUCCH) {
-		for (n=0; n<10; n++) {
+		for (n=0; n<NOF_SUBFRAMES; n++) {
 			c_init[n] = ((n+1) * (2*N_cell+1)<<16) + params.nrnti;
 		}
 	}
 }
 
 /**
- * @ingroup LTE Scrambling Sequence generator
+ * @ingroup LTE Scrambling Sequence Generator
  * Generates the scrambling sequence based on the 3GPP specifications.
  * For the maximum input size (max number of input samples) it generates
  * all bits of the scrambling sequence for all 10 subframes.
@@ -294,10 +299,10 @@ inline void x2init(unsigned *c_init, struct scrambling_params params)
  * \param c Scrambling sequences for all 10 subframes and maximum input sample length
  * \param params Parameters that initialize the scrambling sequeznce generator
  */
-inline void sequence_generation(unsigned (*c)[10], struct scrambling_params params)
+inline void sequence_generation(unsigned (*c)[MAX_c], struct scrambling_params params)
 {
 	int i, n;
-	unsigned c_init[10];
+	unsigned c_init[NOF_SUBFRAMES];
 
 	/* compute m-sequence {x1} */
 	compute_x1();
@@ -307,9 +312,157 @@ inline void sequence_generation(unsigned (*c)[10], struct scrambling_params para
 	compute_x2(c_init);
 
 	/* compute scrambling sequence {c} */
-	for (n=0; n<10; n++) {
+	for (n=0; n<NOF_SUBFRAMES; n++) {
 		for (i=0; i<MAX_c; i++) {
-			c[i][n] = x1[i+(params.Nc/32)] ^ x2[i+(params.Nc/32)][n];
+			c[n][i] = x1[i+(params.Nc/32)] ^ x2[n][i+(params.Nc/32)];
 		}
+	}
+}
+
+/**
+ * @ingroup Char-Integer Scrambling Function Call
+ *
+ * \param input Pointer to input data, input bit-sequence (char)
+ * \param output Pointer to output data, scrambled bit-sequence (char)
+ * \param N Number of input samples
+ * \param c Pointer to scrambling sequence for a given subframe
+ * \param direct Direct scrambling indicator
+ */
+inline void scramble(char *input, char *output, int N, unsigned *c, int direct, int sample)
+{
+	div_t js;
+
+//	if (pbch) {
+//		/* processing each radio frame */
+//		if (sample == 0) {	/* new packet */
+//			js.quot = 0;	/* quotient of integer division */
+//			js.rem = 0;	/* remainder of integer division */
+//		} else {
+//			js = div(*sample,BIT_PER_INT);
+//			direct = 1; /* necessary because 1st sample index may not be
+//			multiple of 32 (bits per integer)*/
+//		}
+//	} else {
+//		/* all other channels process samples each subframe and
+//		 * scrambling sequence is reset each subframe */
+//		js.quot = 0;
+//		js.rem = 0;
+//	}
+	js = div(sample,BIT_PER_INT);
+	if (direct) {
+		direct_scrambling(input, output, N, c, js.quot, js.rem);
+	} else {
+		int_scrambling(input, output, N, c);
+	}
+}
+
+/**
+ * @ingroup Char-Integer Scrambling
+ * Directly scrambles the input bit-sequence (char) with the scrambling
+ * sequence (32-bit integers).
+ *
+ * \param input Pointer to input data, input bit-sequence (char)
+ * \param output Pointer to output data, scrambled bit-sequence (char)
+ * \param N Number of input samples
+ * \param c Pointer to scrambling sequence for a given subframe
+ */
+inline void direct_scrambling(char *input, char *output, int N, unsigned *c, int j, int s)
+{
+	int i;
+	int J = j;
+
+	for (i=0; i<N; i++) {
+		if (i == (j-J+1)*32) {
+			s = 0;
+			j++;
+		}
+		if (input[i] == ((c[j]>>s)&1)) {
+	                output[i] = 0x0;
+		} else {
+			output[i] = 0x1;
+		}
+		s++;
+	}
+}
+
+/**
+ * @ingroup Integer Scrambling
+ * Scrambles the input bit-sequence, transformed to integers with the scrambling
+ * sequence (32-bit integers).
+ * Assumes that sequence starts at sample 0
+ *
+ * \param input Pointer to input data, input bit-sequence (char)
+ * \param output Pointer to output data, scrambled bit-sequence (char)
+ * \param N Number of input samples
+ * \param c Pointer to scrambling sequence for a given subframe
+ */
+inline void int_scrambling(char *input, char *output, int N, unsigned *c)
+{
+	int i;
+	div_t ints;
+
+	ints = div(N,BIT_PER_INT);
+	ints.quot += 1;
+
+	/* conversion of input sequence from chars to integers */
+	char2int(input, input_ints, N);
+
+	/* scramble with c */
+	for (i=0; i<ints.quot; i++) {
+		out_ints[i] = input_ints[i] ^ c[i];
+	}
+
+	/* conversion of scrambled sequence from integers to chars */
+	int2char(out_ints, output, N, ints.rem);
+}
+
+/**
+ * @ingroup Soft-bit Scrambling
+ * Scrambles the input softbit-sequence (floats) with the scrambling
+ * sequence (32-bit integers).
+ *
+ * \param input Pointer to input data, input sequence (float)
+ * \param output Pointer to output data, scrambled sequence (float)
+ * \param N Number of input samples
+ * \param c Pointer to scrambling sequence for a given subframe
+ * \param pbch PBCH indicator
+ * \param frame Radio frame number (used for PBCH)
+ * \param sample Initial sample (used for PBCH)
+ */
+inline void soft_scrambling(float *input, float *output, int N, unsigned *c, int sample)
+{
+	int i, j, s;
+	div_t js;
+
+//	if (pbch) {
+//		/* processing each radio frame */
+//		if (sample == 0) {	/* new packet */
+//			js.quot = 0;	/* quotient of integer division */
+//			js.rem = 0;	/* remainder of integer division */
+//		} else {
+//			js = div(*sample,BIT_PER_INT);
+//		}
+//	} else {
+//		js.quot = 0;
+//		js.rem = 0;
+//	}
+//	j = js.quot;
+//	s = js.rem;
+
+	js = div(sample,BIT_PER_INT);
+	j = js.quot;
+	s = js.rem;
+	for (i=0; i<N; i++) {
+		if (i == (j-js.quot+1)*32) {
+			s = 0;
+			j++;
+		}
+		if ((((input[i] > 0) && ((c[j]>>s)&1))
+		|| ((input[i] <= 0) && ((c[j]>>s)&1)))) {
+			output[i] = -input[i];
+		} else {
+			output[i] = input[i];
+		}
+		s++;
 	}
 }

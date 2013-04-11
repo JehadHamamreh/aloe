@@ -57,8 +57,8 @@ remote_params_db_t remote_params_db[] = {
 		{"pdcch_tx_ratematching","E",&tx_params.pdcch_E[0],sizeof(int)},
 
 		{"pdsch_tx_ratematching","out_len",&tx_params.bits_x_slot,sizeof(int)},
-		{"pdsch_tx_scrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
-		{"pdsch_tx_modulator","modulation",&tx_params.modulation,sizeof(int)},
+		/*{"pdsch_tx_scrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
+		*/{"pdsch_tx_modulator","modulation",&tx_params.modulation,sizeof(int)},
 
 		{"resmapp","subframe_idx",&tx_params.tslot_idx,sizeof(int)},
 
@@ -86,9 +86,8 @@ remote_params_db_t remote_params_db[] = {
 		{"resdemapp_pdsch","nof_pdsch",&rx_params.nof_pdsch,sizeof(int)},
 		{"resdemapp_pdsch","pdsch_rbgmask_0",&rx_params.pdsch_mask[0],sizeof(int)},
 		{"pdsch_rx_demodulator","modulation",&rx_params.modulation,sizeof(int)},
-		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
-		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
-		{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
+		/*{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
+		*/{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
 
 
 		{NULL,NULL,NULL,0}}; /* etc */

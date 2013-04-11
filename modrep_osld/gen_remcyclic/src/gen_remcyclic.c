@@ -73,6 +73,7 @@ int work(void **inp, void **out) {
 	int i, j;
 	int nof_ofdm_symb;
 	int ofdm_symbol_sz, cyclic_prefix_sz, first_cyclic_prefix_sz;
+	int k, nof_ofdm_symbols_per_slot;
 	int cpy;
 	int cnt;
 	input_t *input;
@@ -100,18 +101,25 @@ int work(void **inp, void **out) {
 		return -1;
 	}
 
-	cnt=0;
+	if (first_cyclic_prefix_sz == cyclic_prefix_sz) {
+		nof_ofdm_symbols_per_slot = 6;
+	} else {
+		nof_ofdm_symbols_per_slot = 7;
+	}
+
 	for (i=0;i<NOF_INPUT_ITF;i++) {
+		cnt=0;
 		input = inp[i];
 		output = out[i];
 		moddebug("rcv_len=%d\n",get_input_samples(i));
 
-		nof_ofdm_symb = get_input_samples(i) / ofdm_symbol_sz;
-
-		if (nof_ofdm_symb) {
-			for (j=0;j<nof_ofdm_symb;j++) {
-				if (!j) {
+		if (get_input_samples(i) > 0) {
+			j = 0;
+			k = 0;
+			while (cnt < get_input_samples(i)) {
+				if (j == k*nof_ofdm_symbols_per_slot) {
 					cpy = first_cyclic_prefix_sz;
+					k++;
 				} else {
 					cpy = cyclic_prefix_sz;
 				}
@@ -119,13 +127,14 @@ int work(void **inp, void **out) {
 				input += ofdm_symbol_sz+cpy;
 				output += ofdm_symbol_sz;
 				cnt += ofdm_symbol_sz+cpy;
+				j++;
 			}
 			if (get_input_samples(i) != cnt) {
-				moderror_msg("Number of input samples (%d) should be equal to %d, in "
-						"interface %d\n",get_input_samples(i),cnt,i);
+				moderror_msg("Number of input samples (%d) should be "
+				"equal to %d on interface %d\n",get_input_samples(i),cnt,i);
 				return -1;
 			}
-			set_output_samples(i, ofdm_symbol_sz * nof_ofdm_symb );
+			set_output_samples(i, j*ofdm_symbol_sz);
 		}
 	}
 	return 0;

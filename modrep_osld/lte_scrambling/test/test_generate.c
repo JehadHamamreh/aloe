@@ -38,7 +38,7 @@
 int generate_input_signal(void *in, int *lengths)
 {
 	int i;
-	input_t *input = in;
+	float *input = in;
 	int block_length;
 	pmid_t blen_id;
 	int size;
@@ -60,14 +60,14 @@ int generate_input_signal(void *in, int *lengths)
 	lengths[0] = block_length;
 
 	for (i=0;i<block_length;i++) {
-		input[i] = 0x1;
+		input[i] = (float) i;
 	}
 	/* UL: test*/
-	input[10] = 'x';
+/*	input[10] = 'x';
 	input[11] = 'x';
 	input[12] = 'x';
 	input[13] = 'x';
 	input[14] = 'y';
-
+*/
 	return 0;
 }
