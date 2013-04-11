@@ -288,14 +288,21 @@ int close_remote_itf(void *ctx, int nof_itf) {
 
 int Init(void *_ctx) {
 	ctx = _ctx;
-	init_memory();
 
-	ctrl_init();
+	switch(ctrl_init()) {
+	case -1:
+		return -1;
+	case 0:
+		return 0;
+	}
+
+	init_memory();
 
 	ctrl_in = NULL;
 	if (!init_ctrl_input(ctx)) {
 		return 0;
 	}
+
 	nof_output_data_itf = 0;
 	param_get_int_name("nof_output_data_itf",&nof_output_data_itf);
 

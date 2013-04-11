@@ -40,9 +40,16 @@ modules:
 		binary="modrep_osld/libgen_crc.so";
 		mopts=5;
 		variables=({name="direction";value=1},{name="long_crc";value=16;}
-				/*	,{name="print_nof_pkts";value=10000} */
 			); 
 	};	
+	
+	unpack:
+	{
+		binary="modrep_osld/liblte_dci_pack.so";
+		mopts=6;
+		variables=({name="direction";value=1},{name="nof_rbg";value=6});
+	};	
+	
 	
 };
 
@@ -53,7 +60,8 @@ interfaces:
 	{src="demodulator";dest="descrambling"},
 	{src="descrambling";dest="unratematching"},
 	{src="unratematching";dest="decoder"},
-	{src="decoder";dest="crc_check"}/*,
-	{src="crc_check";dest="_output"}*/
+	{src="decoder";dest="crc_check"},
+	{src="crc_check";dest="unpack"},
+	{src="unpack";dest="_output"}
 );
 

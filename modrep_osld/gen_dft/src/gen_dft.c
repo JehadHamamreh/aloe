@@ -26,8 +26,8 @@
 #include "gen_dft.h"
 
 /** List of dft lengths (dft points) for which dft plans are precomputed during init */
-const int precomputed_dft_len[] = {128,256,512};
-#define NOF_PRECOMPUTED_DFT 3
+const int precomputed_dft_len[] = {128};
+#define NOF_PRECOMPUTED_DFT 1
 
 #define MAX_EXTRA_PLANS	5
 

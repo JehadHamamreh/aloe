@@ -278,8 +278,9 @@ void generate_model_stages(waveform_t *waveform) {
 					if (waveform->modules[i].outputs[j].delay == 1) {
 						waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
 					}
-					mapdebug("delay %s:%d->%s:%d is %d slots\n",waveform->modules[i].name,
-							j, waveform->modules[k].name,waveform->modules[k].outputs[j].remote_port_idx,
+					mapdebug("delay %s:%d->%s(%d):%d is %d slots\n",waveform->modules[i].name,
+							j, waveform->modules[k].name,waveform->modules[k].id,
+							waveform->modules[i].outputs[j].remote_port_idx,
 							waveform->modules[i].outputs[j].delay);
 				}
 			}

@@ -16,7 +16,7 @@ modules:
 		binary="modrep_osld/libgen_mux.so";	
 		mopts=12;
 		variables=(
-			{name="nof_inputs";value=2;},{name="data_type";value=0;});
+			{name="nof_inputs";value=3;},{name="data_type";value=0;});
 	};
 	
 	ctrl:
@@ -26,10 +26,16 @@ modules:
 		variables=(
 			{name="nof_output_data_itf";value=1},
 			{name="mode";value=2}, /* 0 tx, 1 rx, 2 both */
-			{name="mcs";value=0},{name="nrb";value=4},{name="fft_size";value=128},
+			{name="mcs_tx";value=0},{name="nof_rbg_tx";value=6},{name="rbg_mask_tx";value=0x3f},
+			{name="fft_size";value=128},
 			
-			{name="cfi_tx";value=1},{name="cfi_rx";value=-1},
+			{name="cfi_tx";value=1},
+			
+			{name="cfi_rx";value=-1},
 			{name="subframe_rx";value=-1},
+			{name="mcs_rx";value=-1},
+			{name="nof_rbg_rx";value=-1},
+			{name="rbg_mask_rx";value=0},
 			
 			{name="nof_ports";value=1},
 			{name="nof_prb";value=6;},
@@ -176,7 +182,7 @@ modules:
 
 join_stages=
 (
-	("ctrl_mux","ctrl","source","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
+	("ctrl_mux","ctrl","source","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_pack","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
 	("symb_tx_ifft_0","symb_tx_cyclic_first_0"),
 	("symb_tx_ifft_1","symb_tx_cyclic_0"),
 	("symb_tx_ifft_2","symb_tx_cyclic_1"),
@@ -210,7 +216,7 @@ join_stages=
 	("symb_rx_remcyclic_11","symb_rx_fft_13"),
 
 	("mux_rx","resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
-	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check"),
+	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check","pdcch_rx_unpack"),
 	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink")
 );
 
@@ -270,13 +276,16 @@ interfaces:
 	{src=("resdemapp_pcfich",0);dest="pcfich_rx"},	
 	{src=("resdemapp_pcfich",1);dest="resdemapp_pdcch"},
 
+	/* loop back to control */
+	{src="pcfich_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=0},
+
 	{src=("resdemapp_pdcch",0);dest="pdcch_rx"},	
 	{src=("resdemapp_pdcch",1);dest="resdemapp_pdsch"},
 
-	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
-
 	/* loop back to control */
-	{src="pcfich_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=0},
+	{src="pdcch_rx";dest=("ctrl_mux",2);mbpts=0.0;delay=0},
+	
+	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
 	
 	{src="pdsch_rx";dest="sink"}
 );

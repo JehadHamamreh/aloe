@@ -108,6 +108,11 @@ int work(void **inp, void **out) {
 	input_t *input;
 	output_t *output;
 
+	rcv_samples = get_input_samples(0); /* number of input samples */
+	if (!rcv_samples) {
+		return 0;
+	}
+
 	/* Dynamically obtain demodulation parameters */
 	if (param_get_int(modulation_id, &modulation) != 1) {
 		moderror("Error getting 'modulation' parameter\n");
@@ -131,7 +136,6 @@ int work(void **inp, void **out) {
 
 	input = inp[0];
 	output = out[0];
-	rcv_samples = get_input_samples(0); /* number of input samples */
 	bits_per_symbol = get_bits_per_symbol(modulation);
 	if (soft == 0) {
 		switch (modulation) {

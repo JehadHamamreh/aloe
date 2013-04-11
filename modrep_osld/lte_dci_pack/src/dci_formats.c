@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "dci_formats.h"
 
@@ -24,6 +25,7 @@ unsigned int unpack_bits(char **bits, int nof_bits)
     	value |= (*bits)[i] << (nof_bits-i-1);
     }
     *bits += nof_bits;
+    return value;
 }
 
 int check_ambiguous_size(char **bits, int nof_bits) {
@@ -89,7 +91,7 @@ int dci_format1_pack(char *packet, struct dci_format1 *data) {
 }
 
 int dci_packet_space(char *packet, char *buffer, int packet_len) {
-	return ((int) (buffer-packet) - packet_len);
+	return abs(((int) (buffer-packet) - packet_len));
 }
 
 int dci_format1_unpack(char *packet, int packet_len, struct dci_format1 *data) {

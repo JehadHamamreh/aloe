@@ -72,6 +72,12 @@ pmid_t param_id(char *name);
  */
 int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value, int value_sz);
 
+
+/** Like param_remote_set() but receives a pointer where control packet will be saved. Does not call
+ * set_output_samples(). Returns the number of bytes copied to out_ptr.
+ */
+int param_remote_set_ptr(void *out_ptr, int param_idx, void *value, int value_sz);
+
 /**
  * @returns -1 on error, 0 if parameter found but not integer, 1 on success
  */

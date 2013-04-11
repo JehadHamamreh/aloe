@@ -167,7 +167,7 @@ int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size) 
 	variable_t *variable = (variable_t*) &module->parent.variables[idx];
 
 	sdebug("%s: %d:%s: set variable %s value %d\n",oesr_module_name(ctx),oesr_tstamp(context),
-			module->parent.name,variable->name,*((int*) value));
+				module->parent.name,variable->name,*((int*) value));
 
 	cpy_sz = (size > variable->size)?variable->size:size;
 

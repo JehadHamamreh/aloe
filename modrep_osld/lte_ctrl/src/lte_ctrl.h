@@ -13,15 +13,18 @@ int ctrl_send_always=1;
 struct remote_parameters {
 	int tbs;
 	int cbs;
+	int mcs;
 	int modulation;
 	int long_crc;
 	int bits_x_slot;
 	int tslot_idx[SUBFRAME_DELAY];
 	int cfi;
 	int nof_pdsch;
+	int nof_rbg[MAX_PDSCH];
 	int pdsch_mask[MAX_PDSCH];
 	int nof_pdcch;
 	int pdcch_cce[MAX_PDCCH];
+	int pdcch_en[MAX_PDCCH];
 	int pdcch_E[MAX_PDCCH];
 	int pdcch_S[MAX_PDCCH];
 };
@@ -45,6 +48,11 @@ remote_params_db_t remote_params_db[] = {
 
 		{"pcfich_tx_coder","cfi",&tx_params.cfi,sizeof(int)},
 		{"pcfich_tx_scrambling","subframe",&tx_params.tslot_idx[0],sizeof(int)},
+
+		{"pdcch_tx_pack","enable",&tx_params.pdcch_en[0],sizeof(int)},
+		{"pdcch_tx_pack","mcs",&tx_params.mcs,sizeof(int)},
+		{"pdcch_tx_pack","nof_rbg",&tx_params.nof_rbg[0],sizeof(int)},
+		{"pdcch_tx_pack","rbg_mask",&tx_params.pdsch_mask[0],sizeof(int)},
 
 		{"pdcch_tx_ratematching","E",&tx_params.pdcch_E[0],sizeof(int)},
 
@@ -87,8 +95,6 @@ remote_params_db_t remote_params_db[] = {
 
 
 my_params_db_t local_params_db[] = {
-	{"mcs",&local_params.mcs,sizeof(int)},
-	{"nrb",&local_params.nrb,sizeof(int)},
 	{NULL,NULL,0}
 };
 

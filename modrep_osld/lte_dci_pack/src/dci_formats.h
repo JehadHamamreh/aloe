@@ -19,3 +19,4 @@ struct dci_format1 {
 };
 
 int dci_format1_pack(char *buffer, struct dci_format1 *data);
+int dci_format1_unpack(char *packet, int packet_len, struct dci_format1 *data);

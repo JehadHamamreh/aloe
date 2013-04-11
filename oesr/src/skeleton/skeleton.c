@@ -456,26 +456,36 @@ pmid_t param_id(char *name) {
 	return (pmid_t) oesr_var_param_get(ctx,name);
 }
 
-int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value, int value_sz) {
+
+
+int param_remote_set_ptr(void *out_ptr, int param_idx, void *value, int value_sz) {
 	struct ctrl_in_pkt *pkt;
 
-	if (module_idx<0 || module_idx > nof_output_itf) {
-		return -1;
-	}
-	pkt = out_ptr[module_idx];
+	pkt = out_ptr;
 	if (value_sz > CTRL_PKT_VALUE_SZ) {
 		return -1;
 	}
 	if (!pkt) {
-		printf("output packet not ready, remote parameter %d:%d won't be sent\n",module_idx,param_idx);
-		return 0;
+		printf("output packet not ready, remote parameter %d won't be sent\n",param_idx);
+		return -1;
 	}
 	pkt->pm_idx = param_idx;
 	pkt->size = value_sz;
 	memcpy(pkt->value,value,value_sz);
-	set_output_samples(module_idx,sizeof(struct ctrl_in_pkt)/output_sample_sz);
-	return 0;
+	return sizeof(struct ctrl_in_pkt);
 }
 
+int param_remote_set(void **out_ptr, int module_idx, int param_idx, void *value, int value_sz) {
+	int n;
+	if (module_idx < 0 || module_idx > nof_output_itf) {
+		return -1;
+	}
+	n = param_remote_set_ptr(out_ptr[module_idx], param_idx,value,value_sz);
+	if (n == -1) {
+		return -1;
+	}
+	set_output_samples(module_idx,n/output_sample_sz);
+	return 0;
+}
 
 

@@ -1,5 +1,13 @@
 modules:
 {
+
+	pack:
+	{
+		binary="modrep_osld/liblte_dci_pack.so";
+		mopts=6;
+		variables=({name="direction";value=0},{name="enable";value=0},{name="mcs";value=-1;},
+		{name="nof_rbg";value=0;},{name="rbg_mask";value=-1;});
+	};	
 	
 	crc:
 	{
@@ -48,7 +56,8 @@ modules:
 
 interfaces:
 (
-	{src="_input";dest="crc"},
+	{src="_input";dest="pack"},
+	{src="pack";dest="crc"},
 	{src="crc";dest="coder"},
 	{src="coder";dest="ratematching"},
 	{src="ratematching";dest="scrambling"},	

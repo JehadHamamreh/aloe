@@ -32,14 +32,6 @@
 static int waveform_id=1;
 strdef(tmp_string);
 
-/**@TODO: Generate waveform model
- *
- */
-/*static void generate_model_from_waveform(waveform_t *w) {
-	aerror("Not yet implemented\n");
-}
-*/
-
 static int find_mode(waveform_t *w, const char *name) {
 	int i;
 	for (i=0;i<w->nof_modes;i++) {
@@ -370,10 +362,6 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		dest_itf = &dest_module->inputs[dest_port];
 	}
 
-	if (dest_module && !strcmp(dest_module->name,"ctrl_mux")) {
-		tmp=0;
-	}
-
 	if (dest_module && dest_itf && dest_itf->remote_module_id >= 0) {
 		dest_module->nof_inputs++;
 	}
@@ -390,7 +378,11 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 		}
 		src_itf->remote_port_idx = dest_port;
 	}
-
+/*
+	if (dest_module && !strcmp(dest_module->name,"ctrl")) {
+		printf("dest_id=%d, dest_port=%d\n",src_itf->remote_module_id,src_itf->remote_port_idx);
+	}
+*/
 	if (dest_module && dest_itf && dest_itf->remote_module_id>0) {
 		aerror_msg("input port %d in module %s already connected\n",
 				dest_port,dest_module->name);
