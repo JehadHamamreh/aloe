@@ -113,7 +113,9 @@ int work(void **inp, void **out) {
 			if (mode==MODE_CHECK) {
 				if (n) {
 					total_errors++;
-					modinfo_msg("error at packet %d\n",total_pkts);
+#ifdef _COMPILE_ALOE
+					modinfo_msg("error at packet %d ts=%d\n",total_pkts,oesr_tstamp(ctx));
+#endif
 				}
 				total_pkts++;
 				set_output_samples(i,rcv_samples-long_crc);
@@ -133,8 +135,6 @@ int work(void **inp, void **out) {
 						print_nof_pkts_cnt=0;
 						modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 								total_pkts,total_errors,(float)total_errors/total_pkts);
-						total_pkts=0;
-						total_errors=0;
 					}
 				}
 

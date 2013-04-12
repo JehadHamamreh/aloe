@@ -101,6 +101,10 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	}
 
 
+	if (_get_param("nof_prb",&grid->nof_prb,mode)) {
+		return -1;
+	}
+	_get_param("sfn",&params->sfn,mode);
 	if (_get_param("mcs",&params->mcs,mode)) {
 		return -1;
 	}
@@ -111,7 +115,7 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 		return -1;
 	}
 
-	if (lte_grid_init(grid)) {
+	if (lte_grid_init(grid)==-1) {
 		moderror("Error initiating grid\n");
 		return -1;
 	}
@@ -131,11 +135,10 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 		params->tslot_idx[i] = (grid->subframe_idx-i)%NOF_SUBFRAMES_X_FRAME;
 	}
 
-	/*
-	printf("mode=%s mcs=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
-				mode, params->mcs, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
+/*	printf("mode=%s fft_size=%d mcs=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
+				mode, grid->fft_size, params->mcs, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
 				params->modulation,params->bits_x_slot);
-	*/
+*/
 	return 0;
 }
 
@@ -164,6 +167,7 @@ int ctrl_work(int tslot) {
 	int i;
 
 	if (mode_is_tx()) {
+
 		ctrl_work_(tslot,&grid_tx,&tx_params, "tx");
 		if (pdcch_tx(tslot,&grid_tx,&tx_params)) {
 			return -1;
@@ -171,6 +175,9 @@ int ctrl_work(int tslot) {
 		tx_params.nof_pdsch = 1;
 		tx_params.pdsch_mask[0] = grid_tx.pdsch[0].rbg_mask;
 		tx_params.nof_rbg[0] = grid_tx.pdsch[0].nof_rbg;
+		tx_params.nof_prb = grid_tx.nof_prb;
+		tx_params.bch_enable = !(grid_tx.subframe_idx % 40);
+		tx_params.sfn = grid_tx.subframe_idx/10;
 	}
 	if (mode_is_rx()) {
 		ctrl_work_(tslot,&grid_rx,&rx_params, "rx");

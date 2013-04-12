@@ -26,8 +26,14 @@
 %   scrambling with rnti & antenna selection mask
 function out = crc_scrambling(in, antenna_selection, dci_format, rnti, ue_port, nof_ports, channel)
     
-    L = 16;
+    
     B = length(in);
+    if (B == 0)
+        out = {};
+        return;
+    end
+    
+    L = 16;
     crc_scrambling = 0;
     
     if (channel == 0) % PDCCH

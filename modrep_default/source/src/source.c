@@ -29,7 +29,7 @@ pmid_t blen_id, gen_id;
 int cnt=0;
 static int last_type;
 static int last_block_length;
-
+static int period,period_cnt;
 
 /**@ingroup source
  *
@@ -53,6 +53,10 @@ int initialize() {
 		return -1;
 	}
 
+	period=1;
+	param_get_int_name("period",&period);
+	period_cnt=period;
+
 	generator_init_random();
 
 	modinfo_msg("Parameter block_length is %d\n",block_length);
@@ -72,6 +76,14 @@ int work(void **inp, void **out) {
 	int block_length, type;
 	int i,j;
 	int snd_samples;
+
+	period_cnt++;
+	if (period_cnt>=period) {
+		period_cnt=0;
+	}
+	if (period_cnt) {
+		return 0;
+	}
 
 	block_length = 0;
 	if (param_get_int(blen_id,&block_length) != 1) {
@@ -113,6 +125,9 @@ int work(void **inp, void **out) {
 
 	snd_samples = generators[i].work(out[0],block_length);
 
+#ifdef _COMPILE_ALOE
+	moddebug("Sent %d samples at ts=%d\n",snd_samples,oesr_tstamp(ctx));
+#endif
 	return snd_samples;
 }
 

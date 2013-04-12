@@ -151,9 +151,7 @@ int work(void **inp, void **out) {
 	int nof_ports;
 
 	rcv_samples = get_input_samples(0);
-	if ((!rcv_samples) || (rcv_samples>INPUT_MAX_SAMPLES)) {
-		moderror_msg("%d data samples. Should be lager than 0 and less "
-		  "than or equal to %d.\n",rcv_samples, INPUT_MAX_SAMPLES);
+	if (!rcv_samples) {
 		return 0;
 	}
 	snd_samples = rcv_samples;

@@ -101,10 +101,10 @@ int get_vector_len(const mxArray *in) {
 	int m,n;
 	n = mxGetN(in);
 	m = mxGetM(in);
-	if (n > 1) {
+	if (m > 1) {
 		help();
 	}
-	return m;
+	return n;
 }
 
 int fill_input_lengths(const mxArray *in) {

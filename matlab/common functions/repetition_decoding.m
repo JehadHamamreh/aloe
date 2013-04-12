@@ -22,6 +22,13 @@
 function out = repetition_decoding(input, rep, soft)
 
     S = length(input);
+	
+    if (S == 0)
+        % Return empty array (cell array of size 0x0)
+        out = {};
+        return;
+    end
+    
     D = floor(S/3);
  
     if (soft)

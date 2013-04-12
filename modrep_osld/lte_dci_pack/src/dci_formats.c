@@ -1,32 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "base/pack.h"
 #include "dci_formats.h"
 
 const int ambiguous_sizes[] = {12,14,16,20,24,26,32,40,44,56};
 #define NOF_AMBIGUOUS_SIZES 10
-
-void pack_bits(unsigned int value, char **bits, int nof_bits)
-{
-    int i;
-
-    for(i=0; i<nof_bits; i++) {
-        (*bits)[i] = (value >> (nof_bits-i-1)) & 0x1;
-    }
-    *bits += nof_bits;
-}
-
-unsigned int unpack_bits(char **bits, int nof_bits)
-{
-    int i;
-    unsigned int value=0;
-
-    for(i=0; i<nof_bits; i++) {
-    	value |= (*bits)[i] << (nof_bits-i-1);
-    }
-    *bits += nof_bits;
-    return value;
-}
 
 int check_ambiguous_size(char **bits, int nof_bits) {
 	int i;

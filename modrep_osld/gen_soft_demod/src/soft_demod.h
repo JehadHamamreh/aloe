@@ -23,7 +23,7 @@ void set_QPSKtable(_Complex float *qpsk_table, int (*S)[6][32]);
 void set_16QAMtable(_Complex float *qam16_table, int (*S)[6][32]);
 void set_64QAMtable(_Complex float *qam64_table, int (*S)[6][32]);
 int get_bits_per_symbol(int modulation);
-void llr_approx(input_t *in, output_t *out, int N, int M, int B,
+void llr_approx(_Complex float *in, output_t *out, int N, int M, int B,
 	_Complex float *symbols, int (*S)[6][32], float sigma2);
-void llr_exact(input_t *in, output_t *out, int N, int M, int B,
+void llr_exact(_Complex float *in, output_t *out, int N, int M, int B,
 	_Complex float *symbols, int (*S)[6][32], float sigma2);

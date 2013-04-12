@@ -82,9 +82,16 @@ function out = lte_PDSCH_unprecoding(in, v, style)
 
 %     in
 %     p
-    out = 0;
+
     [ap, Ma] = size(in); % v_max may be 8 or the actual number of layers (v),
     % depending on the implementation of the Layer Mapper processing block
+
+    if (Ma == 0)
+        out = [];
+        return;
+    end
+    
+    out = 0;
     
     % initialize()
     % out = zeros(8,4*Ml);  % up to 8 antenna ports and 4 times the number of

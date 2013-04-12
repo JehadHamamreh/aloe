@@ -86,6 +86,11 @@ function out = lte_PDSCH_layer_mapper(in0, in1, v, q, style)
     Ms0 = length(in0);
     Ms1 = length(in1);
     
+    if (Ms0 == 0)
+        out = [];
+        return;
+    end
+        
     % initialize()
     % out = zeros(8,Ms0);    % allocated maximum size, impractical
     % esto es cutre porque en ningún caso se usarán 8xMs0

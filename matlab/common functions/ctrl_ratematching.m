@@ -40,6 +40,10 @@ function out = ctrl_ratematching(input, turbo, E)
 	addpath('../common functions/rate matching');
 
         S = length(input);
+        if (S == 0)
+            out = {};
+            return;
+        end
 
         if (mod(S,3) > 0)
             fprintf('\nError: Input streams should be integer dividible by 3, being the output of a 1/3 code rate convolutional or turbo encoder.n');

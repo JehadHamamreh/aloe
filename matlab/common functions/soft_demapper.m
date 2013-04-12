@@ -39,7 +39,11 @@
 
 function output = soft_demapper(in, modulation, soft, zero, one, sigma2, debug)
 
-addpath('../common functions/modulation');
+M = length(in);
+if (M == 0)
+    output = [];
+    return;
+end
 
 % Configuration
 % indicates the hard decision values for a '0' and '1', which could be 0 and 1 or -100 and 100, for instance

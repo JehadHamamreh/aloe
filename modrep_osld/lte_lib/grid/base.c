@@ -140,6 +140,7 @@ int lte_ch_get_re(int ch_id, int ch_type, int subframe_idx, struct lte_grid_conf
 		return config->phch[ch_type].nof_re_x_sf[subframe_idx];
 		break;
 	}
+	return 0;
 }
 
 int lte_ch_put_symbol(complex_t *input, complex_t *out_symbol, int ch_type, int channel_idx,
@@ -278,14 +279,34 @@ void lte_set_refsign_sf(refsignal_t *ref, complex_t *output, int subframe_id, st
 }
 
 
+int fft_size(int nof_prb) {
+	if (nof_prb<=0) {
+		return -1;
+	}
+	if (nof_prb<=6) {
+		return 128;
+	} else if (nof_prb<=15) {
+		return 256;
+	} else if (nof_prb<=25) {
+		return 512;
+	} else if (nof_prb<=50) {
+		return 1024;
+	} else if (nof_prb<=75) {
+		return 1536;
+	} else if (nof_prb<=100) {
+		return 2048;
+	}
+}
+
 int lte_grid_init_params(struct lte_grid_config *config) {
 	int n=0;
 	int i,j;
-	if (!param_get_int_name("fft_size",&config->fft_size)) {
-		n++;
-	}
 	if (!param_get_int_name("nof_prb",&config->nof_prb)) {
 		n++;
+	}
+	config->fft_size = fft_size(config->nof_prb);
+	if (config->fft_size==-1) {
+		return 0;
 	}
 	if (!param_get_int_name("debug",&config->debug)) {
 		n++;
@@ -325,7 +346,7 @@ int lte_grid_init_params(struct lte_grid_config *config) {
 			config->nof_control_symbols = config->cfi;
 		}
 	}
-	return n;
+	return n+1;
 }
 
 int lte_grid_init_channels(struct lte_grid_config *config) {
@@ -345,8 +366,11 @@ int lte_grid_init_channels(struct lte_grid_config *config) {
 int lte_grid_init(struct lte_grid_config *config) {
 	int nof_ctrl_symb;
 
-	if (lte_grid_init_params(config)==-1) {
+	switch (lte_grid_init_params(config)) {
+	case -1:
 		return -1;
+	case 0:
+		return 0;
 	}
 	if (config->cfi == -1) {
 		nof_ctrl_symb = 1;

@@ -16,7 +16,7 @@ modules:
 		binary="modrep_osld/libgen_mux.so";	
 		mopts=12;
 		variables=(
-			{name="nof_inputs";value=3;},{name="data_type";value=0;});
+			{name="nof_inputs";value=4;},{name="data_type";value=0;});
 	};
 	
 	ctrl:
@@ -27,7 +27,7 @@ modules:
 			{name="nof_output_data_itf";value=1},
 			{name="mode";value=2}, /* 0 tx, 1 rx, 2 both */
 			{name="mcs_tx";value=0},{name="nof_rbg_tx";value=6},{name="rbg_mask_tx";value=0x3f},
-			{name="fft_size";value=128},
+			{name="nof_prb_tx";value=6},
 			
 			{name="cfi_tx";value=1},
 			
@@ -35,16 +35,16 @@ modules:
 			{name="subframe_rx";value=-1},
 			{name="mcs_rx";value=-1},
 			{name="nof_rbg_rx";value=-1},
+			{name="nof_prb_rx";value=-1},
+			{name="sfn_rx";value=-1},
 			{name="rbg_mask_rx";value=0},
 			
 			{name="nof_ports";value=1},
-			{name="nof_prb";value=6;},
 			{name="cell_id";value=0},{name="nof_osymb_x_subf";value=14},
 
+			{name="delay_resdemapp_pbch";value=0},			
 			{name="delay_pcfich_rx_descrambling";value=0},
-
-			{name="delay_resdemapp_pdcch";value=0},
-			
+			{name="delay_resdemapp_pdcch";value=0},			
 			{name="delay_pdsch_rx_demodulator";value=0},
 			{name="delay_pdsch_rx_descrambling";value=0},
 			{name="delay_pdsch_rx_unratematching";value=0},
@@ -60,6 +60,11 @@ modules:
 		variables=(
 			{name="block_length";value=120},{name="generator";value=0}
 		);
+	};
+
+	pbch_tx:
+	{
+		include="../aloe_git/pbch_tx.app";	
 	};
 	
 	pcfich_tx:
@@ -131,7 +136,23 @@ modules:
 		mopts=11;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
+
+	resdemapp_pbch:
+	{
+		binary="modrep_osld/liblte_resource_demapper.so";	
+		mopts=12;
+		variables=(
+			{name="channel_id_0";value=6},
+			{name="nof_prb";value=6},{name="fft_size";value=128}, /* initially sample at 1.9 MHz, then whatever */
+			{name="nof_osymb_x_subf";value=14}, /* should be received from synch */
+			{name="subframe_idx";value=-1},{name="cfi";value=-1});
+	};
 	
+	pbch_rx:
+	{
+		include="../aloe_git/pbch_rx.app";	
+	};
+
 	resdemapp_pcfich:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
@@ -178,11 +199,12 @@ modules:
 		variables=({name="is_complex";value=1},{name="mode";value=0});
 	};	
 	
+	
 };
 
 join_stages=
 (
-	("ctrl_mux","ctrl","source","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_pack","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
+	("ctrl_mux","ctrl","source","pbch_tx_pack","pbch_tx_crc","pbch_tx_pack","pbch_tx_crc_scramble","pbch_tx_coder","pbch_tx_ratematching","pbch_tx_demux","pbch_tx_scrambling","pbch_tx_modulator","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_pack","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
 	("symb_tx_ifft_0","symb_tx_cyclic_first_0"),
 	("symb_tx_ifft_1","symb_tx_cyclic_0"),
 	("symb_tx_ifft_2","symb_tx_cyclic_1"),
@@ -215,7 +237,8 @@ join_stages=
 	("symb_rx_remcyclic_10","symb_rx_fft_12"),
 	("symb_rx_remcyclic_11","symb_rx_fft_13"),
 
-	("mux_rx","resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
+	("mux_rx","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
+	("resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
 	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check","pdcch_rx_unpack"),
 	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink")
 );
@@ -230,6 +253,7 @@ interfaces:
 	{src="pdsch_tx";dest=("resmapp",0)},
 	{src="pcfich_tx";dest=("resmapp",1)},
 	{src="pdcch_tx";dest=("resmapp",2)},
+	{src="pbch_tx";dest=("resmapp",3)},
 		
 	{src="resmapp";dest="demux_tx"},
 	
@@ -271,19 +295,25 @@ interfaces:
 	{src=("symb_rx",12);dest=("mux_rx",12)},
 	{src=("symb_rx",13);dest=("mux_rx",13)},
 	
-	{src="mux_rx";dest="resdemapp_pcfich"},	
-	
+	{src="mux_rx";dest="resdemapp_pbch"},	
+
+	{src=("resdemapp_pbch",0);dest="pbch_rx"},
+	{src=("resdemapp_pbch",1);dest="resdemapp_pcfich"},
+
+	/* loop back to control */
+	{src="pbch_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=0},
+
 	{src=("resdemapp_pcfich",0);dest="pcfich_rx"},	
 	{src=("resdemapp_pcfich",1);dest="resdemapp_pdcch"},
 
 	/* loop back to control */
-	{src="pcfich_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=0},
+	{src="pcfich_rx";dest=("ctrl_mux",2);mbpts=0.0;delay=0},
 
 	{src=("resdemapp_pdcch",0);dest="pdcch_rx"},	
 	{src=("resdemapp_pdcch",1);dest="resdemapp_pdsch"},
 
 	/* loop back to control */
-	{src="pdcch_rx";dest=("ctrl_mux",2);mbpts=0.0;delay=0},
+	{src="pdcch_rx";dest=("ctrl_mux",3);mbpts=0.0;delay=0},
 	
 	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
 	

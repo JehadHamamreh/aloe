@@ -22,6 +22,12 @@
 function out = repetition_coding(input, rep)
 
     D = length(input);
+    
+    if (D == 0)
+        out = {};
+        return;
+    end
+    
     S = rep*D;
     out = zeros(1,S);
     

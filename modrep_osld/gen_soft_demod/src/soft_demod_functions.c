@@ -43,7 +43,7 @@
  * \param S Soft demapping auxiliary matrix
  * \param sigma2 Noise vatiance
  */
-void llr_approx(input_t *in, output_t *out, int N, int M, int B,
+void llr_approx(_Complex float *in, output_t *out, int N, int M, int B,
 		_Complex float *symbols, int (*S)[6][32], float sigma2) {
 	int i, s, b;
 	float num, den;

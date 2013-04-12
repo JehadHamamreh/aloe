@@ -126,6 +126,16 @@ int init_other(struct channel *ch) {
 			moderror("Initiating PCFICH grid\n");
 		}
 		return 0;
+	} else if (!strcmp(ch->name,"PBCH")) {
+
+		if (lte_grid_init_params(&grid)==-1) {
+			moderror("Initiating grid params\n");
+			return -1;
+		}
+		if (lte_pbch_init(&grid.phch[CH_PBCH],&grid)) {
+			moderror("Initiating PBCH grid\n");
+		}
+		return 0;
 	} else {
 		modinfo_msg("Channel %s not yet supported. Full grid init\n",ch->name);
 
@@ -207,7 +217,9 @@ int channels_init_grid(int *channel_ids, int nof_channels) {
 }
 
 int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
-	int n;
+	int n,i;
+	_Complex float *x;
+
 	if (!out[ch->out_port]) {
 		return -1;
 	}
@@ -217,6 +229,17 @@ int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 		return -1;
 	}
 	if (n>0) {
+		/*
+		if (!strcmp(ch->name,"PBCH")) {
+			x = input;
+			printf("dest=[");
+			for (i=0;i<128*14;i++) {
+				printf("%g, ",__real__ x[i]);
+			}
+			printf("];\n");
+			printf("here input=0x%x\n",input);
+		}
+		*/
 		set_output_samples(ch->out_port,n);
 	}
 	moddebug("ch %s deallocated %d RE. pdcch=%d, cce=%d\n",ch->name,n,grid.nof_pdcch,grid.pdcch[0].nof_cce);

@@ -118,6 +118,10 @@ int work(void **inp, void **out) {
 		param_get_int(subframe_idx_id, &subframe_idx);
 	}
 
+#ifdef _COMPILE_ALOE
+	moddebug("subframe_idx=%d tstamp=%d rcv_len=%d cfi=%d\n",subframe_idx,oesr_tstamp(ctx),
+		get_input_samples(0),grid.cfi);
+#endif
 
 	n=check_received_samples_demapper();
 	if (n < 1) {
@@ -128,11 +132,6 @@ int work(void **inp, void **out) {
 		moderror("Initiating resource grid\n");
 		return -1;
 	}
-
-	#ifdef _COMPILE_ALOE
-	moddebug("subframe_idx=%d tstamp=%d rcv_len=%d cfi=%d\n",subframe_idx,oesr_tstamp(ctx),
-			get_input_samples(0),grid.cfi);
-#endif
 
 	if (deallocate_all_channels(channel_ids, nof_channels, inp[0],out)) {
 		return -1;

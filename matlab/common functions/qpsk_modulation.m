@@ -35,6 +35,11 @@
 function out = qpsk_modulation(in)
     
     M = length(in);
+    if (M == 0)
+        out = [];
+        return;
+    end
+    
     N = floor(M/2);
 
     if (mod(M,2) > 0)

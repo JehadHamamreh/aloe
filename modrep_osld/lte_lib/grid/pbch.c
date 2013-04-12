@@ -16,6 +16,8 @@ int lte_pbch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 int lte_pbch_put(complex_t *pbch, complex_t *output,
 		struct lte_symbol *location, struct lte_grid_config *config) {
 	int k,nof_ref_x_rb;
+	int len;
+
 	if (!lte_symbol_has_ch(location,&config->phch[CH_PBCH])) {
 		return 0;
 	}
@@ -25,11 +27,12 @@ int lte_pbch_put(complex_t *pbch, complex_t *output,
 		lte_ch_put_ref(pbch,&output[k],6,
 				lte_refsig_or_resv_voffset(location->symbol_id,config),
 				NOF_RE_X_OSYMB/nof_ref_x_rb);
-		return 6*NOF_RE_X_OSYMB-nof_ref_x_rb*6;
+		len=6*NOF_RE_X_OSYMB-nof_ref_x_rb*6;
 	} else {
 		lte_ch_cp_noref(pbch,&output[k],6);
-		return 6*NOF_RE_X_OSYMB;
+		len=6*NOF_RE_X_OSYMB;
 	}
+	return len;
 }
 
 
@@ -38,18 +41,23 @@ int lte_pbch_put(complex_t *pbch, complex_t *output,
 int lte_pbch_get(complex_t *input, complex_t *pbch,
 		struct lte_symbol *location, struct lte_grid_config *config) {
 	int k,nof_ref_x_rb;
+	int len;
+
 	if (!lte_symbol_has_ch(location,&config->phch[CH_PBCH])) {
 		return 0;
 	}
+
 	k=config->nof_prb*NOF_RE_X_OSYMB/2-36;
 	nof_ref_x_rb = lte_symbol_has_refsig_or_resv(location,config);
 	if (nof_ref_x_rb) {
 		lte_ch_get_ref(&input[k],pbch,6,
 				lte_refsig_or_resv_voffset(location->symbol_id,config),
 				NOF_RE_X_OSYMB/nof_ref_x_rb);
-		return 6*NOF_RE_X_OSYMB-nof_ref_x_rb*6;
+		len = 6*NOF_RE_X_OSYMB-nof_ref_x_rb*6;
 	} else {
 		lte_ch_cp_noref(&input[k],pbch,6);
-		return 6*NOF_RE_X_OSYMB;
+		len = 6*NOF_RE_X_OSYMB;
 	}
+
+	return len;
 }

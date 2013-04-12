@@ -1,7 +1,7 @@
 # This configuration is for the aloe++ skeleton
 
 # set-up the program libraries here
-set(LIBRARIES m rt gen_libs_base)
+set(LIBRARIES m rt)
 
 # set-up program includes here
 include_directories(/usr/local/include/)
@@ -27,7 +27,7 @@ endif()
 file(GLOB_RECURSE SOURCES "src/*.c")
 file(GLOB_RECURSE TEST_SOURCES "test/*.c")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/modrep_default/gen_libs)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # aloe module
 add_library(${module}-aloe SHARED ${SOURCES})

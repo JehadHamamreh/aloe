@@ -24,7 +24,7 @@ struct channel pdcch[] = {
 struct channel other[] = {
 		{"PCFICH", CH_PCFICH, 1},
 		{"PHICH", CH_PHICH, -1},
-		{"PBCH", CH_PBCH, -10},
+		{"PBCH", CH_PBCH, 3},
 		{NULL,-1, -1}
 };
 

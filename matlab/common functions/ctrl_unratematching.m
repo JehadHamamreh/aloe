@@ -41,6 +41,14 @@
 
 function out = ctrl_unratematching(e, turbo, S)
 
+    addpath('../common functions/rate matching');
+
+        E = length(e);
+        if (E == 0)
+            out = [];
+            return;
+        end
+        
         if (mod(S,3) > 0)
             fprintf('\nError: Input streams should be integer dividible by 3.n');
             return;

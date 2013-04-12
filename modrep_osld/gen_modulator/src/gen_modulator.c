@@ -87,6 +87,9 @@ int work(void **inp, void **out) {
 				return -1;
 			}
 			set_output_samples(i,out_len);
+#ifdef _COMPILE_ALOE
+			moddebug("ts=%d, snd=%d\n",oesr_tstamp(ctx),out_len);
+#endif
 		}
 	}
 	return 0;

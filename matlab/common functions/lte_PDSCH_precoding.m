@@ -90,8 +90,14 @@ function out = lte_PDSCH_precoding(in, p, style)
 
 %     in
 %     p
-    out = 0;
+    
     [v, Ml] = size(in);
+    if (Ml == 0)
+        out = [];
+        return;
+    end
+    
+    out = 0;
     
     % Precoding matrix for transmit diversity and 2 antenna ports
     W_td_2 = 1/sqrt(2)*[1 0 j 0;

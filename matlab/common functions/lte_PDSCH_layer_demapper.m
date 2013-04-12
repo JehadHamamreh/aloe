@@ -83,6 +83,13 @@ function [out0, out1] = lte_PDSCH_layer_demapper(in, v, q, style)
     % check/obtain parameters
     [vx, Ml] = size(in);
     
+    if (Ml == 0)
+        % Return empty cell arrays (cell array of 0x0)
+        out0 = {};
+        out1 = {};
+        return;
+    end
+    
     if (vx ~= v)
         fprintf('\nERROR: Number of rows of input array does not coincide with the specified number of layers.\n');
         return;
