@@ -77,10 +77,10 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int i;
+
 	int rcv_samples, snd_samples;
 	int modulation;
-	float sigma2;
+
 	int bits_per_symbol;
 	input_t *input;
 	output_t *output;
@@ -108,6 +108,7 @@ int work(void **inp, void **out) {
 	rcv_samples = get_input_samples(0); /* number of input samples */
 	bits_per_symbol = get_bits_per_symbol(modulation);
 	if (in_real) {
+		inreal = inp[0];
 		hard_demod_real(inreal, output, rcv_samples, modulation);
 	} else {
 		hard_demod(input, output, rcv_samples, modulation);

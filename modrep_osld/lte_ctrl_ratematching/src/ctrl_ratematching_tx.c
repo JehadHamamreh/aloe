@@ -124,7 +124,7 @@ inline int subblock_interleaver(char *in_out, int in_l)
  */
 inline void bit_selection(char *input, char *output, int in_l, int out_l)
 {
-	int i, j;
+	int i;
 	int k = 0;
 
 	while (k < out_l) {

@@ -3,7 +3,7 @@
 
 /**
  * This function is taken from:
- * Author: Ben Wojtowicz (http:/*openlte.sourceforge.net/)
+ * Author: Ben Wojtowicz (http://openlte.sourceforge.net/)
  * License: GNU Affero General Public License
  */
 
@@ -106,7 +106,7 @@ void viterbi_decode(struct viterbi *viterbi,
             for(k=0; k<2; k++)
             {
                 prev_state                    = ((j<<1)+k) % N_states;
-                viterbi->vd_p_metric[j][k] = viterbi->vd_path_metric[prev_state][i];
+                viterbi->vd_p_metric[j][k] = viterbi->vd_path_metric[(int)prev_state][i];
                 for(o=0; o<rate; o++)
                 {
                     if(d_bits[i*rate + o] <= 0)
@@ -152,7 +152,7 @@ void viterbi_decode(struct viterbi *viterbi,
         prev_state_1 = ((((uint8)viterbi->vd_tb_state[idx-1])<<1) + 1) % N_states;
 
         /* Keep the smallest state */
-        if(viterbi->vd_path_metric[prev_state_0][i] > viterbi->vd_path_metric[prev_state_1][i])
+        if(viterbi->vd_path_metric[(int)prev_state_0][i] > viterbi->vd_path_metric[(int)prev_state_1][i])
         {
             viterbi->vd_tb_state[idx++] = prev_state_1;
         }else{

@@ -193,7 +193,7 @@ int initialize() {
  * On error returns -1.
  */
 int work(void **inp, void **out) {
-	int i, j, s;
+
 	int rcv_samples, snd_samples;
 	static int subframe = -1;
 	int sample;

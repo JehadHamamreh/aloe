@@ -81,7 +81,6 @@ int recv_dci(char *input, char *output, int len) {
 	struct dci_format1 dci; /* Only format1 is currently supported */
 	int rbg_mask = 0;
 	int i;
-	int n;
 
 	memset(&dci,0,sizeof(struct dci_format1));
 	dci.harq_pnum_len = 3;
@@ -99,6 +98,7 @@ int recv_dci(char *input, char *output, int len) {
 
 #ifdef _COMPILE_ALOE
 	len = 0;
+	int n;
 	n = param_remote_set_ptr(&output[len], mcs_rx, &dci.mcs, sizeof(int));
 	if (n == -1) {
 		moderror("Setting parameter mcs\n");

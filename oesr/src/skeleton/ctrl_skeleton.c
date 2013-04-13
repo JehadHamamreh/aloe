@@ -345,6 +345,7 @@ int local_parameters_update(void *ctx) {
 int process_ctrl_packet(void *ctx, struct ctrl_in_pkt *packet) {
 	if (oesr_var_param_set_value_idx(ctx,packet->pm_idx,packet->value,
 			packet->size) == -1) {
+		moderror_msg("pm_idx=%d, value=0x%x, size=%d\n",packet->pm_idx,packet->value,packet->size);
 		oesr_perror("Error setting control parameter\n");
 		return -1;
 	}
@@ -370,7 +371,7 @@ int process_ctrl_packets(void *ctx) {
 			nof_packets = n / sizeof(struct ctrl_in_pkt);
 			for (i=0;i<nof_packets;i++) {
 				if (process_ctrl_packet(ctx, &ctrl_in_buffer[i])) {
-					moderror("Error processing control packet\n");
+					moderror_msg("Error processing control packet %d/%d\n",i,nof_packets);
 					return -1;
 				}
 			}

@@ -66,7 +66,7 @@ int lte_pdcch_init_params(struct lte_grid_config *config) {
 
 int lte_pdcch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 	int i,j;
-	int nregs;
+
 	strcpy(ch->name,"PDCCH");
 
 	if (lte_pdcch_init_params(config)) {

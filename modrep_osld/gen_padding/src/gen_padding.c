@@ -36,6 +36,7 @@ int get_input_sample_sz(int data_type) {
 	case DATA_TYPE_BITS:
 		return sizeof(char);
 	}
+	return -1;
 }
 
 int initialize() {

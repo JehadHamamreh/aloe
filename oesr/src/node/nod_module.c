@@ -258,7 +258,7 @@ variable_t* nod_module_variable_create(nod_module_t *module, string name, int si
 }
 
 
-int nod_module_execinfo_add_sample(execinfo_t *obj) {
+int nod_module_execinfo_add_sample(execinfo_t *obj, int ctx_tstamp) {
 	int tstamp = rtdal_time_slot();
 	int cpu = obj->t_exec[0].tv_usec;
 	int relinquish = obj->t_exec[2].tv_usec;
@@ -274,7 +274,10 @@ int nod_module_execinfo_add_sample(execinfo_t *obj) {
 	if (!obj->start_ts) {
 		obj->start_ts = tstamp;
 	}
-	obj->max_exec_us = cpu > obj->max_exec_us ? cpu : obj->max_exec_us;
+	if (cpu > obj->max_exec_us) {
+		obj->max_exec_us = cpu;
+		obj->max_exec_ts = ctx_tstamp;
+	}
 	obj->module_ts = tstamp;
 	obj->max_rel_us = relinquish > obj->max_rel_us ? relinquish : obj->max_rel_us;
 	obj->max_start_us = start > obj->max_start_us ? start : obj->max_start_us;

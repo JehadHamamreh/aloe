@@ -32,6 +32,13 @@ float vv[(int)OUTPUT_MAX_SAMPLES/3+31];
 float w_f[OUTPUT_MAX_SAMPLES];
 float m_f[(int)OUTPUT_MAX_SAMPLES/COLS+1][COLS];
 
+/* Dummy bit insertion pattern for corresponding deinterleaver */
+const int Pd[32] = {16, 0, 24, 8, 20, 4, 28, 12, 18,
+		2, 26, 10, 22, 6, 30, 14, 17,
+		1, 25, 9, 21, 5, 29, 13, 19,
+		3, 27, 11, 23, 7, 31, 15};
+
+
 int float_wrap(float *in0, float *in1, float *in2, float *out, int insize);
 void subblock_deinterleaver(float *in, int in_l);
 //void bit_collection(input_t *input, output_t *output, int in_l, int out_l);
@@ -129,10 +136,7 @@ inline void subblock_deinterleaver(float *in_out, int in_l)
 inline int rate_unmatching(float *input, float *output, int in_l, int S)
 {
 	int i;
-	int k = 1;
-	int X;
 	int Kw = S/3;
-	int interleaver_out_l;
 	int out_l;
 
 	memcpy(w_f, input, in_l*sizeof(float));

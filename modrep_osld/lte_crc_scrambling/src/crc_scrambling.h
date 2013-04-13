@@ -28,7 +28,7 @@
 #define channel_default		0
 
 struct pdcch_params {
-	unsigned rnti;
+	int rnti;
 	int antenna_selection;
 	int ue_port;
 	int dci_format;

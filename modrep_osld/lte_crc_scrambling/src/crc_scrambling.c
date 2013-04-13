@@ -49,7 +49,7 @@ inline void pdcch_sequence_gen(char *c, struct pdcch_params params)
 	}
 	if ((params.antenna_selection > 0) &&  (params.dci_format == 0)) {
 	        /* antenna selection configured and applicable && dci format 0 */
-		if (c[L-1] == params.ue_port&1) {
+		if (c[L-1] == (params.ue_port & 1)) {
 			c[L-1] = 0x0;
 		} else {
 			c[L-1] = 0x1;

@@ -69,16 +69,13 @@ Press ENTER to continue...
  */
 int generate_input_signal(void *in, int *lengths)
 {
-	int ofdm, k, subc, pos;
-	float arg;
-	complex_t sym;
+	int k;
 	complex_t realchannel [2048];
 	input_t *input = in;
 	int block_length;
-	int size, err, i, j;
+	int err, i, j;
 	int nofdm;
 	int	Ndlrb;		// Number of PRBs in a downlink ofdm symbol
-	int nrs;		// Number of reference symbols per processing time slot
 	int Ncp;		// Cyclic prefix type (1 for normal CP, 0 for extended CP)
 
 	/* Obtain the configuration parameters */
@@ -109,7 +106,7 @@ int generate_input_signal(void *in, int *lengths)
 	} else if (fftsize == 2048){
 		Ndlrb = 100;
 	} else {
-		moderror_msg("The fft size exceeds the maximum (2048)\n", err);
+		moderror("The fft size exceeds the maximum (2048)\n");
 	}
 
 	// Number of OFDM symbols per processing TS
@@ -143,15 +140,15 @@ int generate_input_signal(void *in, int *lengths)
 				);
 	if (err<0) {	// Check if any error occur
 		moderror_msg("Bad parameters input in RS initialization (error %d)\n", err);
-	} else {
-		nrs = err/fseg;	// Get the number of RS per processing TS
-	}
+	} /*else {
+		nrs = err/fseg;
+	}*/
 #define GUARD	((fftsize-12*Ndlrb)/2)
 
 	/* Generate testing channel */
 	for (i=0; i<fftsize; i++){
-			arg = 2*PI*((float)(i%fftsize)/(float)fftsize);
-			realchannel [i] = i;/*cosf(arg)+I*sinf(arg);*/
+			/*arg = 2*PI*((float)(i%fftsize)/(float)fftsize);
+			*/realchannel [i] = i;/*cosf(arg)+I*sinf(arg);*/
 	}
 	modinfo_msg("Test: testing channel has been generated.\n", NULL);
 

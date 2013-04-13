@@ -64,7 +64,7 @@ int generate_input_signal(void *in, int *lengths)
 			printf("Error only %d interfaces configured\n",nof_input_itf);
 			return -1;
 		}
-		lengths[nof_ch] = lte_ch_get_re(n,CH_PBCH,subframe_idx,&grid);
+		lengths[nof_ch] = lte_ch_get_re(0,CH_PBCH,subframe_idx,&grid);
 		printf("Generating PBCH with %d RE\n",lengths[nof_ch]);
 		for (i=0;i<PBCH_RE;i++) {
 			__real__ input[nof_ch*INPUT_MAX_SAMPLES+i] = (float) en_pbch;

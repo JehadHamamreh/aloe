@@ -3,7 +3,7 @@
 #include "base.h"
 
 int lte_pbch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
-	int i;
+
 	strcpy(ch->name,"PBCH");
 	ch->symbol_mask[0] = 0xF<<config->nof_osymb_x_subf/2;
 	ch->nof_re_x_sf[0] = PBCH_RE;

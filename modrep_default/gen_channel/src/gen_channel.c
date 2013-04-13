@@ -124,7 +124,9 @@ int work(void **inp, void **out) {
 		} else {
 			memcpy(output,input,rcv_samples*sizeof(input_t));
 		}
-		vec_mult_c(output,gain_c,rcv_samples);
+		if (gain_re != 1.0 && gain_im != 0.0) {
+			vec_mult_c(output,gain_c,rcv_samples);
+		}
 
 	}
 	return rcv_samples;

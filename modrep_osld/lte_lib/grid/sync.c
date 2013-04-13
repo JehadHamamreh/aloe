@@ -5,7 +5,7 @@
 #include "base.h"
 
 int lte_pss_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
-	int i;
+
 	strcpy(ch->name,"PSS");
 	ch->symbol_mask[0] = 0x1<<(config->nof_osymb_x_subf/2-1);
 	ch->symbol_mask[5] = ch->symbol_mask[0];
@@ -15,7 +15,7 @@ int lte_pss_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 }
 
 int lte_sss_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
-	int i;
+
 	strcpy(ch->name,"SSS");
 	ch->symbol_mask[0] = 0x1<<(config->nof_osymb_x_subf/2-2);
 	ch->symbol_mask[5] = ch->symbol_mask[0];
@@ -71,7 +71,7 @@ void generate_pss(complex_t *signal, int direction, struct lte_grid_config *conf
 	int i;
 	float arg;
 	int root_idx;
-	int phylayerID;
+
 	int sign=direction?1:-1;
 
 	root_idx = config->cell_id%3;
@@ -180,22 +180,3 @@ void generate_sss(real_t *signal, struct lte_grid_config *config)
 }
 
 
-
-/**
- *
- * Algorithm taken from  3GPP TS 36.211 version 10.5.0 Release 10 Section 6.11.2
- *
- * @params int cellid:Physical Layer Cell-Identity (0-503)
- * @params float *SSSseq: SSS sequence.
- * @params int *m0s: mo index.
- * @params int *m1s: m1 index.
- *
- * @return On success returns 1.
- * On error returns -1.
- */
-
-int setSSS(int cellid, float *SSSseq, int *m0s, int *m1s)
-{
-
-
-}

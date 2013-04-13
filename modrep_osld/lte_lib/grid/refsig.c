@@ -101,7 +101,7 @@ int lte_refsig_l(int symbol_id, struct lte_grid_config *config) {
 }
 
 int lte_refsig_v(int port_id, int ns, int symbol_id, struct lte_grid_config *config) {
-	int v;
+	int v=-1;
 	switch(port_id) {
 	case 0:
 		if (symbol_id == 0 || symbol_id == config->nof_osymb_x_subf/2) {
@@ -160,7 +160,7 @@ int lte_refsig_put(refsignal_t *refsignal, complex_t *output,
 int lte_refsig_get(complex_t *input, refsignal_t *refsignal,
 		struct lte_symbol *location, struct lte_grid_config *config) {
 
-	int m,ns,l,mp;
+	int m,ns,l;
 
 	if (!lte_symbol_has_refsig(refsignal->port_id, location->symbol_id,config)) {
 		return 0;
@@ -182,7 +182,7 @@ int lte_refsig_get(complex_t *input, refsignal_t *refsignal,
  */
 void generate_cref_k(refsignal_t *refsignal, struct lte_grid_config *config) {
 
-	int m,v,mp,k;
+	int m,v,k;
 	int ns,l,lp[REF_L];
 
 	lp[0] = 0;

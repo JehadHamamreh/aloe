@@ -88,18 +88,18 @@ int _run_cycle(void* context) {
 				}
 			}
 		}
-		ctx->tstamp++;
 
 		/* save end time */
 #ifdef OESR_API_GETTIME
 		rtdal_time_get(&module->parent.execinfo.t_exec[2]);
 		rtdal_time_interval(module->parent.execinfo.t_exec);
-		nod_module_execinfo_add_sample(&module->parent.execinfo);
+		nod_module_execinfo_add_sample(&module->parent.execinfo,ctx->tstamp);
 		if (DEBUG_TIMEMOD_ID == module->parent.id || DEBUG_TIMEMOD_ID == -1) {
 			tmdebug("%d,%d\n",module->parent.id,
 				module->parent.execinfo.t_exec[0].tv_usec);
 		}
 #endif
+		ctx->tstamp++;
 
 		/* compute execution time, exponential average, max, etc. and save data to mymodule.execinfo */
 #ifdef kk

@@ -20,13 +20,7 @@
 
 /**
  * @defgroup file_sink file_sink
- * This module sends through each DA converter channel the samples received from each input interface
- *
- * Supported converter types:
- *   - complex float
- *
- * Supported module types:
- *   - complex float
+ * This module writes the received samples to a file.
  *
  * @{
  */

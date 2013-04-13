@@ -54,7 +54,6 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int i;
 	int rcv_samples, snd_samples;
 	input_t *input;
 	output_t *output;

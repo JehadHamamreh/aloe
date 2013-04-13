@@ -24,6 +24,7 @@
 #include <skeleton.h>
 
 #include "lte_ctrl_ratematching.h"
+#define INCLUDE_FUNCTIONS
 #include "ctrl_ratematching.h"
 
 pmid_t E_id, S_id;
@@ -98,7 +99,6 @@ int initialize() {
  * On error returns -1.
  */
 int work(void **inp, void **out) {
-	int i, j, s;
 	int S, E;
 	int rcv_samples, snd_samples;
 	char *input_b;

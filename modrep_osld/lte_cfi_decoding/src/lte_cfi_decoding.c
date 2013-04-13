@@ -60,16 +60,12 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int i;
-	int rcv_samples, snd_samples;
+	int rcv_samples;
 	int index;
 	input_t *input;
-	output_t *output;
 
 	input = inp[0];
-	output = out[0];
 	rcv_samples = get_input_samples(0);
-	snd_samples = 1;
 
 	if (!rcv_samples) {
 		return 0;

@@ -300,7 +300,7 @@ int nod_waveform_precach_pipeline(nod_waveform_t *waveform) {
 	rtdal_timeslot_set(10);
 	waveform->status.next_timeslot = rtdal_time_slot();
 	waveform->status.cur_status = RUN;
-	ts.tv_sec = 2;
+	ts.tv_sec = 3;
 	ts.tv_usec = 0;
 	rtdal_sleep(&ts);
 	variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");

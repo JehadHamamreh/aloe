@@ -11,7 +11,7 @@ static int x2 [GOLDMAXLEN];
  * It follows the 3GPP Release 8 (LTE) 36.211
  * Section 7.2
  */
-void generate_prs_c (unsigned int seed,	int len, int* c) {
+void generate_prs_c (unsigned int seed,	int len, unsigned int* c) {
 	int n;
 
 	for(n = 0; n < 31; n++) {

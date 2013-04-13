@@ -27,7 +27,7 @@ unsigned int icrc1(unsigned int crc, unsigned short onech,int long_crc,
   
   for (i=0;i<left_shift;i++) { 
     if (tmp & (0x1<<(long_crc-1)))
-      tmp=(tmp<<=1)^poly;
+      tmp=(tmp<<1)^poly;
     else
       tmp <<= 1;
   }

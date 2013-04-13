@@ -4,7 +4,7 @@ modules:
 	ifft:
 	{
 		binary="modrep_osld/libgen_dft.so";
-		mopts=11;
+		mopts=16;
 		instances=14
 		variables=(
 			{name="dc_offset";value=1;}, 
@@ -16,7 +16,7 @@ modules:
 	cyclic_first:
 	{
 		binary="modrep_osld/libgen_cyclic.so";	
-		mopts=4;
+		mopts=3;
 		instances=2
 		variables=( {name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=10});
 	};
@@ -24,7 +24,7 @@ modules:
 	cyclic:
 	{
 		binary="modrep_osld/libgen_cyclic.so";	
-		mopts=4;
+		mopts=3;
 		instances=12
 		variables=({name="ofdm_symbol_sz";value=128}, {name="cyclic_prefix_sz";value=9}	);
 	};

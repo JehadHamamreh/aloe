@@ -62,9 +62,9 @@ typedef float real_t;
 #define CH_PHICH	4
 #define CH_PDCCH	5
 #define CH_PDSCH	6
-#define NOF_PHCH	8
+#define NOF_PHCH	7
 
-#define CH_REF		9
+#define CH_REF		8
 
 
 

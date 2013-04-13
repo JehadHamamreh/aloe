@@ -111,6 +111,7 @@ struct lte_reg *lte_reg_get_k(int k, int l, struct lte_grid_config *config) {
 			return &config->control.regs[prb][l][i];
 		}
 	}
+	return NULL;
 }
 
 int lte_reg_put_sf_pos(int k, int l,struct lte_grid_config *config) {
@@ -119,7 +120,7 @@ int lte_reg_put_sf_pos(int k, int l,struct lte_grid_config *config) {
 
 /* Puts a zero in the reference signal */
 int lte_reg_put(complex_t *input, complex_t *output, struct lte_reg *reg,struct lte_grid_config *config) {
-	int i,k;
+	int i;
 	for (i=0;i<NOF_RE_X_REG;i++) {
 		output[lte_reg_put_sf_pos(reg->k[i],reg->symbol,config)] = input[i];
 	}
@@ -132,7 +133,7 @@ int lte_reg_put(complex_t *input, complex_t *output, struct lte_reg *reg,struct 
 }
 
 int lte_reg_get(complex_t *input, complex_t *output, struct lte_reg *reg,struct lte_grid_config *config) {
-	int i,k;
+	int i;
 	for (i=0;i<NOF_RE_X_REG;i++) {
 		output[i] = input[lte_reg_put_sf_pos(reg->k[i],reg->symbol,config)];
 	}

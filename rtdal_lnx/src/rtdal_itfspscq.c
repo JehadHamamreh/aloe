@@ -212,7 +212,7 @@ int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len, int tstamp) {
 	RTDAL_ASSERT_PARAM(len>=0);
 
 	int n, plen;
-	void *ptr;
+	void *ptr=NULL;
 
 	qdebug("popping obj=0x%x, rcv pkt=0x%x\n",obj,ptr);
 

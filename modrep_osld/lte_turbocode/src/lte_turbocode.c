@@ -85,7 +85,7 @@ int work(void **inp, void **out) {
 
 				ccfg.Long_CodeBlock=out_len;
 				ccfg.Turbo_Dt=100000;
-				ccfg.Turbo_iteracions=6;
+				ccfg.Turbo_iteracions=1;
 				ccfg.haltMethod=HALT_METHOD_NONE;
 
 				if (turbo_decoder(input_llr,output,&ccfg, NULL)<0) {

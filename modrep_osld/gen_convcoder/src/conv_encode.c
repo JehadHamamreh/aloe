@@ -3,7 +3,7 @@
 
 /**
  * This function is taken from:
- * Author: Ben Wojtowicz (http:/*openlte.sourceforge.net/)
+ * Author: Ben Wojtowicz (http://openlte.sourceforge.net/)
  * License: GNU Affero General Public License
  */
 

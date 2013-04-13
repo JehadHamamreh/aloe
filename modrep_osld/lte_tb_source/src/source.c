@@ -38,9 +38,7 @@ int last_block_length;
  *
  */
 int initialize() {
-	int size;
 	int i;
-	int block_length;
 
 	last_block_length = 0;
 
@@ -75,7 +73,6 @@ int initialize() {
 int work(void **inp, void **out) {
 	int mcs,nrb;
 	int block_length;
-	int i,j;
 	int snd_samples, en;
 
 	if (en_id) {

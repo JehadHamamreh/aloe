@@ -85,7 +85,7 @@ int lte_symbol_has_ch(struct lte_symbol *symbol, struct lte_phch_config *ch) {
 }
 
 int lte_ch_init(struct lte_phch_config *ch, int code, struct lte_grid_config *config) {
-	int n;
+	int n=-1;
 	memset(ch->symbol_mask,0,sizeof(int)*NOF_SUBFRAMES_X_FRAME);
 	memset(ch->nof_re_x_sf,0,sizeof(int)*NOF_SUBFRAMES_X_FRAME);
 	switch(code) {
@@ -145,7 +145,7 @@ int lte_ch_get_re(int ch_id, int ch_type, int subframe_idx, struct lte_grid_conf
 
 int lte_ch_put_symbol(complex_t *input, complex_t *out_symbol, int ch_type, int channel_idx,
 		struct lte_symbol *location, struct lte_grid_config *config) {
-	int n;
+	int n=-1;
 	if (ch_type<0 || ch_type > NOF_PHCH) {
 		return -1;
 	}
@@ -201,7 +201,7 @@ int lte_ch_put_sf(complex_t *input, complex_t *out_symbol, int ch_type, int chan
 
 int lte_ch_get_symbol(complex_t *in_symbol, complex_t *output, int ch_type, int channel_idx,
 		struct lte_symbol *location, struct lte_grid_config *config) {
-	int n;
+	int n=-1;
 	if (ch_type<0 || ch_type > NOF_PHCH) {
 		return -1;
 	}
@@ -296,11 +296,12 @@ int fft_size(int nof_prb) {
 	} else if (nof_prb<=100) {
 		return 2048;
 	}
+	return -1;
 }
 
 int lte_grid_init_params(struct lte_grid_config *config) {
 	int n=0;
-	int i,j;
+
 	if (!param_get_int_name("nof_prb",&config->nof_prb)) {
 		n++;
 	}

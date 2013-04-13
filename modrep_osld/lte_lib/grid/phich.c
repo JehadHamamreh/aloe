@@ -60,7 +60,7 @@ struct lte_reg *lte_grid_init_reg_phich_ni(int symbol_id, int ni, struct lte_gri
  *
  */
 int lte_grid_init_reg_phich(struct lte_grid_config *config) {
-	int i,ni,li,n[3],p,r,nip,nreg,mi;
+	int i,ni,li,n[3],nreg,mi;
 
 	if (config->phich_ngroups) {
 		memset(n,0,sizeof(int)*3);

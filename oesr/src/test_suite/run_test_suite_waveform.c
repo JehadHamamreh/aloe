@@ -24,22 +24,26 @@ int print_execinfo(waveform_t *waveform, int tslot_us) {
 	int i;
 	const char *t;
 	int total_cpu=0, total_max_cpu=0;
-	printf("\t========================= Execinfo: %s ==============\n\n",waveform->name);
-	printf("\tName\t\t  Mean Exec (us)   Max Exec (us) Mean Ini -> End (us)  Processor Id:Pos\n");
+	printf(" ========================= Execinfo: %s ==============\n\n",waveform->name);
+	printf(" Name\t\t\t\t  Mean Exec (us)   Max Exec (us)   Max Exec (ts) Processor Id:Pos\n");
 	for (i=0;i<waveform->nof_modules;i++) {
-		if (strlen(waveform->modules[i].name)>=8) {
-			t="\t";
-		} else {
+		if (strlen(waveform->modules[i].name)<7) {
+			t="\t\t\t\t";
+		} else if (strlen(waveform->modules[i].name)<15) {
+			t="\t\t\t";
+		} else if (strlen(waveform->modules[i].name)<23) {
 			t="\t\t";
+		} else {
+			t="\t";
 		}
-		printf("\t%s%s%16.2f%16d%8.2f -> %8.2f  %13d:%d\n",waveform->modules[i].name,t,
-				waveform->modules[i].execinfo.mean_exec_us,waveform->modules[i].execinfo.max_exec_us,
-				waveform->modules[i].execinfo.mean_start_us,waveform->modules[i].execinfo.mean_rel_us,
+		printf(" %s%s%16.2f%16d%16d%18d:%d\n",waveform->modules[i].name,t,
+				waveform->modules[i].execinfo.mean_exec_us,
+				waveform->modules[i].execinfo.max_exec_us,waveform->modules[i].execinfo.max_exec_ts,
 				waveform->modules[i].processor_idx,waveform->modules[i].exec_position);
 		total_cpu += waveform->modules[i].execinfo.t_exec[0].tv_usec;
 		total_max_cpu += waveform->modules[i].execinfo.max_exec_us;
 	}
-	printf("\tTotal\t\t%11d (%.2f%%)\t Max: %d (%.2f%%)\n",total_cpu, (float) 100*total_cpu/tslot_us,
+	printf(" Total\t\t\t%11d (%.2f%%)\t Max: %d (%.2f%%)\n",total_cpu, (float) 100*total_cpu/tslot_us,
 			total_max_cpu, (float) 100*total_max_cpu/tslot_us);
 	return 0;
 }

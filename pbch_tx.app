@@ -4,7 +4,7 @@ modules:
 	pack:
 	{
 		binary="modrep_osld/liblte_bch_pack.so";	
-		mopts=8;
+		mopts=4;
 		variables=(
 			{name="direction";value=0},
 			{name="enable";value=0},
@@ -16,21 +16,21 @@ modules:
 	crc:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=6;
+		mopts=3;
 		variables=({name="long_crc";value=16;});
 	};	
 	
 	crc_scramble:
 	{
 		binary="modrep_osld/liblte_crc_scrambling.so";
-		mopts=6;
+		mopts=2;
 		variables=({name="direction";value=0;},{name="channel";value=1;},{name="nof_ports";value=1;});
 	};	
 	
 	coder:
 	{
 		binary="modrep_osld/libgen_convcoder.so";	
-		mopts=8;
+		mopts=3;
 		variables=(
 			{name="constraint_length";value=7},{name="rate";value=3},{name="tail_bit";value=1},
 			{name="generator_0";value=91},{name="generator_1";value=127},{name="generator_2";value=117}
@@ -41,7 +41,7 @@ modules:
 	ratematching:
 	{
 		binary="modrep_osld/liblte_ctrl_ratematching.so";	
-		mopts=8;
+		mopts=3;
 		variables=(
 			{name="direction";value=0},{name="E";value=1920}
 		);
@@ -50,13 +50,13 @@ modules:
 	demux:
 	{
 		binary="modrep_osld/liblte_bch_demux.so";	
-		mopts=8;
+		mopts=2;
 	};
 
 	scrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=11;
+		mopts=3;
 		variables=({name="subframe";value=0},{name="cell_gr";value=2},{name="cell_sec";value=0},
 		{name="channel";value=3},{name="hard";value=1});
 	};
@@ -64,7 +64,7 @@ modules:
 	modulator:
 	{
 		binary="modrep_osld/libgen_modulator.so";	
-		mopts=11;
+		mopts=3;
 		variables=({name="modulation";value=2;});
 	};
 		

@@ -137,7 +137,7 @@ int lte_pdsch_init_sf(int subframe_id, struct lte_phch_config *ch, struct lte_gr
 
 int lte_pdsch_init(struct lte_phch_config *ch, struct lte_grid_config *config) {
 	int i,j;
-	struct lte_symbol symbol;
+
 	strcpy(ch->name,"PDSCH");
 
 	if (lte_pdsch_init_params(config)) {

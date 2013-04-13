@@ -94,6 +94,7 @@ int get_bw(char *input) {
 		input[2]==1) {
 		return 100;
 	}
+	return -1;
 }
 
 int send_bch(char *output) {
@@ -128,8 +129,8 @@ int send_bch(char *output) {
 }
 
 int recv_bch(char *input, char *output, int len) {
-	int n;
-	int nof_prb,sfn;
+#ifdef _COMPILE_ALOE
+	int nof_prb,sfn,n;
 	char *buffer;
 
 	if (len < 24) {
@@ -142,11 +143,8 @@ int recv_bch(char *input, char *output, int len) {
 	/* get phich setup */
 	sfn = unpack_bits(&buffer,8);
 
-#ifdef _COMPILE_ALOE
 	moddebug("ts=%d received nof_prb=%d, sfn=%d\n",oesr_tstamp(ctx),nof_prb,sfn);
-#endif
 
-#ifdef _COMPILE_ALOE
 	len = 0;
 	n = param_remote_set_ptr(&output[len], nof_prb_rx, &nof_prb, sizeof(int));
 	if (n == -1) {

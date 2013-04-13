@@ -40,7 +40,7 @@
 int cfi_decoding(char *in, char (*table)[NOF_BITS]) {
 
 	int i, j;
-	int count_i, index;
+	int count_i, index=-1;
 	int min = 32;
 
 	for (i=0;i<4;i++) {

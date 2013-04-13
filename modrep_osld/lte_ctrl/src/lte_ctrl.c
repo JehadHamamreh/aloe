@@ -40,6 +40,7 @@ int ctrl_init() {
 		printf("mode undefined\n");
 		return -1;
 	}
+
 	grid_tx.verbose = 0;
 	grid_tx.subframe_idx = -1;
 	grid_tx.nof_pdcch = 1;
@@ -53,6 +54,7 @@ int ctrl_init() {
 	grid_rx.cfi = -1;
 	grid_rx.nof_pdcch = 0;
 	grid_rx.nof_pdsch = 0;
+	rx_params.synchro_bypass = 0;
 
 	return 1;
 }
@@ -93,8 +95,9 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 			_get_param("subframe",&subframe_tmp,mode);
 			if (subframe_tmp != -1) {
 				if (subframe_tmp != grid->subframe_idx % NOF_SUBFRAMES_X_FRAME) {
-					moderror_msg("Synchronization lost! Expected subframe %d but got %d\n",
+					/*moderror_msg("Synchronization lost! Expected subframe %d but got %d\n",
 							grid->subframe_idx,subframe_tmp);
+					*/
 				}
 			}
 		}
@@ -146,17 +149,14 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 int pdcch_tx(int tslot,
 		struct lte_grid_config *grid, struct remote_parameters *params) {
 	int i;
-	int dci_len;
 	for (i=0;i<grid->nof_pdcch;i++) {
 		params->pdcch_E[i] = grid->pdcch[i].nof_bits;
 	}
-	params->pdcch_S[0] = 3*(dci_len+16);
 	return 0;
 }
 
 int pdcch_rx(int tslot,
 		struct lte_grid_config *grid, struct remote_parameters *params) {
-	int i;
 	int dci_len;
 	dci_len = 21; /* TODO: Implement blind decoding. We know it's dci format 1A */
 	params->pdcch_S[0] = 3*(dci_len+16);
@@ -164,7 +164,6 @@ int pdcch_rx(int tslot,
 }
 
 int ctrl_work(int tslot) {
-	int i;
 
 	if (mode_is_tx()) {
 

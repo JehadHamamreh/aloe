@@ -22,6 +22,7 @@ struct remote_parameters {
 	int bits_x_slot;
 	int tslot_idx[SUBFRAME_DELAY];
 	int cfi;
+	int synchro_bypass;
 	int nof_pdsch;
 	int nof_rbg[MAX_PDSCH];
 	int pdsch_mask[MAX_PDSCH];
@@ -76,6 +77,8 @@ remote_params_db_t remote_params_db[] = {
 
 /* Receiver */
 
+/*		{"synchro","bypass",&rx_params.synchro_bypass,sizeof(int)},
+*/
 		/* PBCH */
 		{"resdemapp_pbch","subframe_idx",&rx_params.tslot_idx[0],sizeof(int)},
 

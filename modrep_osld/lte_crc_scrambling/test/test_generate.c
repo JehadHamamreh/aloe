@@ -41,7 +41,6 @@ int generate_input_signal(void *in, int *lengths)
 	input_t *input = in;
 	int block_length;
 	pmid_t blen_id;
-	int size;
 
 	blen_id = param_id("block_length");
 	if (!blen_id) {

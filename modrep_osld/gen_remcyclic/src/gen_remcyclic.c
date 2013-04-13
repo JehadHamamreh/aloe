@@ -71,7 +71,6 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int i, j;
-	int nof_ofdm_symb;
 	int ofdm_symbol_sz, cyclic_prefix_sz, first_cyclic_prefix_sz;
 	int k, nof_ofdm_symbols_per_slot;
 	int cpy;

@@ -11,14 +11,14 @@ modules:
 	coder:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
-		mopts=12;
+		mopts=14;
 		variables=({name="direction";value=0},{name="padding";value=0;});
 	};
 	
 	ratematching:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
-		mopts=23;
+		mopts=26;
 		variables=(
 			{name="direction";value=0},{name="out_len";value=0},
 			{name="rvidx";value=0;}
@@ -28,7 +28,7 @@ modules:
 	scrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=11;
+		mopts=19;
 		variables=({name="subframe";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
 		{name="hard";value=1},{name="channel";value=0});
 	};
@@ -36,7 +36,7 @@ modules:
 	modulator:
 	{
 		binary="modrep_osld/libgen_modulator.so";	
-		mopts=11;
+		mopts=17;
 		variables=({name="modulation";value=2;});
 	};
 

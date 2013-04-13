@@ -112,7 +112,7 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int n;
-	int cfi;
+
 	subframe_idx=-1;
 	if (subframe_idx_id) {
 		param_get_int(subframe_idx_id, &subframe_idx);

@@ -126,30 +126,15 @@ int insert_signals(complex_t *output) {
 #ifdef ENABLE_REF
 		lte_refsig_put(&reference_signal,&output[i*grid.fft_size],&symbol,&grid);
 #endif
-		}
+	}
+	return 0;
 }
 
 int allocate_channel(struct channel *ch, int ch_id, void **inp, void *output) {
 	if (!inp[ch->in_port]) {
 		return 0;
 	}
-	int i;
-	_Complex float *input;
 
-	/*
-	if (!strcmp(ch->name,"PBCH")) {
-
-		input = inp[ch->in_port];
-		printf("src=[");
-		for (i=0;i<240;i++) {
-			__real__ input[i] = (float) i/240;
-			__imag__ input[i] = (float) i/240;
-			printf("%g, ",__real__ input[i]);
-		}
-		printf("];\n");
-		printf("here output=0x%x\n",output);
-	}
-	*/
 	return lte_ch_put_sf(inp[ch->in_port],output,ch->type,ch_id,subframe_idx,&grid);
 }
 

@@ -42,7 +42,7 @@ extern int output_sample_sz;
  * \returns This function returns 0 on success or -1 on error
  */
 int initialize() {
-	int size;
+
 
 	out_len_id = param_id("out_len");
 	rvidx_id = param_id("rvidx");
@@ -71,7 +71,7 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int in_len,nof_active_itf,out_len,out_len_block,rvidx;
-	int i,j;
+	int i;
 	char *input_b;
 	char *output_b;
 	float *input_f;

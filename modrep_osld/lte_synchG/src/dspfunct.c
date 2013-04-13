@@ -27,7 +27,7 @@
 int vector_convolution(int numsamples, int decimate, _Complex float *in,\
 			_Complex float *coeffi, int seqlength, _Complex float *corr){
 
-	int i, j;
+	int i;
 	int length=seqlength/decimate;
 	int num=numsamples/decimate;
 	_Complex float state[MAXCORRWINDOW];
@@ -53,7 +53,7 @@ float vector_correlation(int length_in1, int decimate, _Complex float *in1,\
 	int i, j;
 	int length=length_in2/decimate;
 	int num=length_in1/decimate;
-	_Complex float state[MAXCORRWINDOW], coeff[MAXCORRWINDOW];
+	_Complex float state[MAXCORRWINDOW];
 	_Complex float *pstate;
 	float CORRvalue=0.;
 

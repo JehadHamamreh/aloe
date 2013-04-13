@@ -138,14 +138,11 @@ int initialize() {
  * On error returns -1.
  */
 int work(void **inp, void **out) {
-	int i;
 	int rcv_samples, snd_samples;
 	char *input_b;
 	char *output_b;
 	float *input_f;
 	float *output_f;
-	char crc_b[L_MAX], out_crc_b[L_MAX];
-	float crc_f[L_MAX], out_crc_f[L_MAX];
 	char c[L_MAX];
 	struct pdcch_params params;
 	int nof_ports;

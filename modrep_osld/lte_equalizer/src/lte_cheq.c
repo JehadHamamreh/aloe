@@ -98,7 +98,6 @@ int initialize() {
 
 int work(void **inp, void **out) {
 	int rcv_samples, snd_samples;
-	int j, offset;
 	input_t *input;
 	output_t *output;
 
@@ -120,11 +119,6 @@ int work(void **inp, void **out) {
 
 	equalizer (&refsignal, subframe_idx,input, output, &filter,&grid);
 
-/*	subframe_idx++;
-	if (subframe_idx==NOF_SUBFRAMES_X_FRAME) {
-		subframe_idx=0;
-	}
-*/
 	return snd_samples;
 }
 

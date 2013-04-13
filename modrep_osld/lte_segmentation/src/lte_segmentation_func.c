@@ -58,7 +58,7 @@ int get_nof_cb(int recv_bits, int *nof_short_cb, int *nof_long_cb,
 		int *len_short_cb, int *len_long_cb, int *nof_filler_bits) {
 
 	int num_cb;
-	int i, k, s, r, P, Bp, /*Kp, Km,*/Ak, Kr, Kr0;
+	int i, Bp, Ak;
 
 	/** Calculate Number of output code blocks*/
 	if (recv_bits <= Z) {

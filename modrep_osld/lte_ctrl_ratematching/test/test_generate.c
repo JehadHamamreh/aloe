@@ -26,7 +26,6 @@
 
 #define INCLUDE_DEFS_ONLY
 #include "lte_ctrl_ratematching.h"
-#include "ctrl_ratematching.h"
 
 /**
  * Generates input signal. VERY IMPORTANT to fill length vector with the number of
@@ -46,7 +45,7 @@ int generate_input_signal(void *in, int *lengths)
 
 	int block_length;
 	pmid_t blen_id, direction_id;
-	int size, direction;
+	int direction;
 
 	blen_id = param_id("block_length");
 	if (!blen_id) {

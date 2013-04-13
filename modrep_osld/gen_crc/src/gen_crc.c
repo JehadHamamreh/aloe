@@ -45,7 +45,6 @@ int print_nof_pkts,print_nof_pkts_cnt;
  */
 
 int initialize() {
-	int tslen;
 
 	if (param_get_int_name("direction",&mode)) {
 		mode = MODE_ADD;
@@ -66,13 +65,14 @@ int initialize() {
 	}
 
 	poly_id = param_id("poly");
-	if (param_get_int(poly_id,&poly) != 1) {
+	if (param_get_int(poly_id,(int*) &poly) != 1) {
 		poly = DEFAULT_POLY;
 		poly_id = NULL;
 	}
 
 
 #ifdef _COMPILE_ALOE
+	int tslen;
 	tslen = oesr_tslot_length(ctx);
 	if (tslen > EXEC_MIN_INTERVAL_MS*1000) {
 		interval_ts = 1;
@@ -91,17 +91,18 @@ int initialize() {
  * Adds a CRC to every received packet from each interface
  */
 int work(void **inp, void **out) {
-	int i,j;
+	int i;
 	unsigned int n;
 	int rcv_samples;
 	input_t *input;
 
-	if (poly_id) param_get_int(poly_id,&poly);
+	if (poly_id) param_get_int(poly_id,(int*)&poly);
 	if (long_crc_id) param_get_int(long_crc_id, &long_crc);
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		rcv_samples = get_input_samples(i);
 		if (rcv_samples) {
+			printf("received %d samples\n",rcv_samples);
 			if (out[i]) {
 				memcpy(out[i],inp[i],sizeof(input_t)*rcv_samples);
 				input = out[i];

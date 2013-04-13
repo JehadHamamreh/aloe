@@ -72,7 +72,7 @@ void nod_module_kill_status_task(nod_module_t *module);
 variable_t* nod_module_variable_get(nod_module_t *module, string name);
 variable_t* nod_module_variable_create(nod_module_t *module, string name, int size);
 
-int nod_module_execinfo_add_sample(execinfo_t *execinfo);
+int nod_module_execinfo_add_sample(execinfo_t *execinfo, int ctx_tstamp);
 
 int nod_variable_init(variable_t *variable, int size);
 int nod_variable_close(variable_t *variable);

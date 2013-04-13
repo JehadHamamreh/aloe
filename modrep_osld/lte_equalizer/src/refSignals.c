@@ -93,7 +93,6 @@ int mapRS (	int 	Ndlrb,	// Number of PRBs in a downlink ofdm symbol
 		){
 	int m, mp, k;
 	int v, vshift;
-	int count = 0;
 	int guard, fftsize;
 
 	/* Get FFT size */
@@ -159,7 +158,7 @@ int setRefSignals (	int		Ndlrb,		// Number of PRBs in a downlink ofdm symbol
 					int*	rspos,		// Reference signals positions
 					int		fseg		// Frame segmentation that is received each processing TS
 					) {
-	int ns, i;
+	int ns;
 	int count = 0;
 
 	rs_t rss [2*Ndlrbmax];

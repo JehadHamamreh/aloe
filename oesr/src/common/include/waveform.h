@@ -30,6 +30,7 @@ typedef struct {
 	int node_ts;
 	float mean_exec_us;
 	int max_exec_us;
+	int max_exec_ts;
 	float mean_rel_us;
 	int max_rel_us;
 	float mean_start_us;

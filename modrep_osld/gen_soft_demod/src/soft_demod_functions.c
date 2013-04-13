@@ -108,7 +108,6 @@ void llr_exact(input_t *in, output_t *out, int N, int M, int B,
 		_Complex float *symbols, int (*S)[6][32], float sigma2) {
 	int i, s, b;
 	float num, den;
-	float new_num, new_den;
 	float idiff0, qdiff0, idiff1, qdiff1;
 	int change_sign = -1;
 

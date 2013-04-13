@@ -25,17 +25,14 @@
 #define COLS 32
 #define ROWS intceil(inlen, COLS)
 
+#ifndef INCLUDE_FUNCTIONS
 /* Permutation pattern */
-static int PERM[32] = {1, 17, 9, 25, 5, 21, 13, 29,\
+const static int PERM[32] = {1, 17, 9, 25, 5, 21, 13, 29,\
 		3, 19, 11, 27, 7, 23, 15, 31, \
 		0, 16, 8, 24, 4, 20, 12, 28, \
 		2, 18, 10, 26, 6, 22, 14, 30};
 
-/* Dummy bit insertion pattern for corresponding deinterleaver */
-static int Pd[32] = {16, 0, 24, 8, 20, 4, 28, 12, 18,
-		2, 26, 10, 22, 6, 30, 14, 17,
-		1, 25, 9, 21, 5, 29, 13, 19,
-		3, 27, 11, 23, 7, 31, 15};
+#endif
 
 /* Function prototypes */
 void rate_matching(char *input, char *output, int in_l, int E);

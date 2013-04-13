@@ -95,9 +95,6 @@ int sf_pm_idx;
  * \param FFTsize: define the size of the OFMD symbols: 128, 256, 512, 1024, 1536 o 2048
  */
 int initialize() {
-	int tmp;
-	int i, s, j;
-
 
 	//INPUT PARAMS
 	if (param_get_int_name("block_length", &block_length)) {
@@ -183,19 +180,17 @@ int initialize() {
 	buffCtrl.occuplevel=0;
 
 #ifdef _COMPILE_ALOE
-#ifdef SETPARAM
 	sf_pm_idx = oesr_get_variable_idx(ctx, "ctrl","subframe_rx");
 	if (sf_pm_idx < 0) {
 		moderror("Error getting remote parameter subframe_rx\n");
 	}
 	modinfo_msg("Remote subframe_rx parameter is a at %d\n",sf_pm_idx)
 #endif
-#endif
 
 
 	return 0;
 }
-
+int first=0;
 
 //set_output_samples(1,1024) envia 1024 samples pel interface 1 (encomptes del 0)
 
@@ -205,19 +200,19 @@ int initialize() {
 
 int work(void **inp, void **out) {
 	int bypass;
-	int i, j, k=0, n, t, rcv_samples, snd_samples;
-	input_t *input, *input1;
-	input_t *graph;
+	int j, k=0, n, t, rcv_samples, snd_samples;
+	input_t *input;
+
 	output_t *output;
 	int numsubframes=1;
 
 	buffctrl localbuffCtrl;
 	int corr_detct=0;				//Correlation detected
-	int p2FFTpos[64];
+
 	_Complex float aux[BUFFERCsz];
 	int bufferroom;
 
-	int RxphyLayerCellID;
+
 		bypass=0;
 		param_get_int_name("bypass",&bypass);
 
@@ -229,7 +224,20 @@ int work(void **inp, void **out) {
 		output = out[0];
 		if (bypass) {
 			memcpy(output,input,rcv_samples*sizeof(input_t));
-			return rcv_samples;
+			if (!first) {
+#ifdef _COMPILE_ALOE
+				if (sf_pm_idx >= 0) {
+					if (param_remote_set(out, 1, sf_pm_idx, &first,
+							sizeof(int))) {
+						moderror("Setting parameter\n");
+						return -1;
+					}
+				}
+#endif
+				first=1;
+			}
+			set_output_samples(0,rcv_samples);
+			return 0;
 		}
 
 		moddebug("/////////////////WORK START\n",0);
@@ -281,6 +289,7 @@ int work(void **inp, void **out) {
 				if (detect_SSS (FFTsize, aux, subfrmCtrl.PSSseq, m0s, m1s, (synchctrl2_t *) &subfrmCtrl) == 1) {
 #ifdef SETPARAM
 				#ifdef _COMPILE_ALOE
+
 					moddebug("ts: %d. Detected SSS subframe %d\n", oesr_tstamp(ctx),
 							subfrmCtrl.nofsubframe);
 					if (sf_pm_idx >= 0) {

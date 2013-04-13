@@ -12,7 +12,7 @@ modules:
 	crc:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=6;
+		mopts=4;
 		variables=({name="long_crc";value=16;});
 	};	
 	
@@ -20,7 +20,7 @@ modules:
 	coder:
 	{
 		binary="modrep_osld/libgen_convcoder.so";	
-		mopts=8;
+		mopts=10;
 		variables=(
 			{name="constraint_length";value=7},{name="rate";value=3},{name="tail_bit";value=1},
 			{name="generator_0";value=91},{name="generator_1";value=127},{name="generator_2";value=117}
@@ -30,7 +30,7 @@ modules:
 	ratematching:
 	{
 		binary="modrep_osld/liblte_ctrl_ratematching.so";	
-		mopts=8;
+		mopts=7;
 		variables=(
 			{name="direction";value=0},{name="E";value=0}
 		);
@@ -39,7 +39,7 @@ modules:
 	scrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=11;
+		mopts=5;
 		variables=({name="subframe";value=0},{name="cell_gr";value=2},{name="cell_sec";value=0},
 		{name="channel";value=2},{name="direct";value=0},{name="hard";value=1});
 	};
@@ -47,7 +47,7 @@ modules:
 	modulator:
 	{
 		binary="modrep_osld/libgen_modulator.so";	
-		mopts=11;
+		mopts=5;
 		variables=({name="modulation";value=2;});
 	};
 		
