@@ -73,7 +73,7 @@ modules:
 
 	symb_rx:
 	{
-		include="../aloe_git/symb_rx.app";	
+		include="./symb_rx.app";	
 	};
 	
 	mux_rx:
@@ -96,7 +96,7 @@ modules:
 	
 	pbch_rx:
 	{
-		include="../aloe_git/pbch_rx.app";	
+		include="./pbch_rx.app";	
 	};
 
 	resdemapp_pcfich:
@@ -109,7 +109,7 @@ modules:
 	
 	pcfich_rx:
 	{
-		include="../aloe_git/pcfich_rx.app";	
+		include="./pcfich_rx.app";	
 	};
 	
 	resdemapp_pdcch:
@@ -122,7 +122,7 @@ modules:
 	
 	pdcch_rx:
 	{
-		include="../aloe_git/pdcch_rx.app";	
+		include="./pdcch_rx.app";	
 	};
 	
 	resdemapp_pdsch:
@@ -135,7 +135,7 @@ modules:
 	
 	pdsch_rx:
 	{
-		include="../aloe_git/pdsch_rx.app";	
+		include="./pdsch_rx.app";	
 	};
 	
 	sink:

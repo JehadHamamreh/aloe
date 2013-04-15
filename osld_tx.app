@@ -48,22 +48,22 @@ modules:
 
 	pbch_tx:
 	{
-		include="../aloe_git/pbch_tx.app";	
+		include="./pbch_tx.app";	
 	};
 	
 	pcfich_tx:
 	{
-		include="../aloe_git/pcfich_tx.app";	
+		include="./pcfich_tx.app";	
 	};
 
 	pdcch_tx:
 	{
-		include="../aloe_git/pdcch_tx.app";	
+		include="./pdcch_tx.app";	
 	};
 	
 	pdsch_tx:
 	{
-		include="../aloe_git/pdsch_tx.app";	
+		include="./pdsch_tx.app";	
 	};
 
 	resmapp:
@@ -86,7 +86,7 @@ modules:
 	
 	symb_tx:
 	{
-		include="../aloe_git/symb_tx.app";	
+		include="./symb_tx.app";	
 	};
 
 	
@@ -94,7 +94,7 @@ modules:
 	{
 		binary="modrep_default/libudp_sink.so";
 		mopts=4;
-		variables=({name="address";value="127.0.0.1"},{name="port";value=10000});
+		variables=({name="address";value="0.0.0.0"},{name="port";value=10000});
 	};	
 	
 	

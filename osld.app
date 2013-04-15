@@ -66,22 +66,22 @@ modules:
 
 	pbch_tx:
 	{
-		include="../aloe_git/pbch_tx.app";	
+		include="./pbch_tx.app";	
 	};
 	
 	pcfich_tx:
 	{
-		include="../aloe_git/pcfich_tx.app";	
+		include="./pcfich_tx.app";	
 	};
 
 	pdcch_tx:
 	{
-		include="../aloe_git/pdcch_tx.app";	
+		include="./pdcch_tx.app";	
 	};
 	
 	pdsch_tx:
 	{
-		include="../aloe_git/pdsch_tx.app";	
+		include="./pdsch_tx.app";	
 	};
 
 	resmapp:
@@ -104,7 +104,7 @@ modules:
 	
 	symb_tx:
 	{
-		include="../aloe_git/symb_tx.app";	
+		include="./symb_tx.app";	
 	};
 
 	channel:
@@ -129,7 +129,7 @@ modules:
 
 	symb_rx:
 	{
-		include="../aloe_git/symb_rx.app";	
+		include="./symb_rx.app";	
 	};
 	
 	mux_rx:
@@ -152,7 +152,7 @@ modules:
 	
 	pbch_rx:
 	{
-		include="../aloe_git/pbch_rx.app";	
+		include="./pbch_rx.app";	
 	};
 
 	resdemapp_pcfich:
@@ -165,7 +165,7 @@ modules:
 	
 	pcfich_rx:
 	{
-		include="../aloe_git/pcfich_rx.app";	
+		include="./pcfich_rx.app";	
 	};
 	
 	resdemapp_pdcch:
@@ -178,7 +178,7 @@ modules:
 	
 	pdcch_rx:
 	{
-		include="../aloe_git/pdcch_rx.app";	
+		include="./pdcch_rx.app";	
 	};
 	
 	resdemapp_pdsch:
@@ -191,7 +191,7 @@ modules:
 	
 	pdsch_rx:
 	{
-		include="../aloe_git/pdsch_rx.app";	
+		include="./pdsch_rx.app";	
 	};
 	
 	sink:

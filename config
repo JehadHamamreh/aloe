@@ -22,7 +22,7 @@ rtdal:
 								- to use a single core, use 1, for instance, to use core 1
 							*/
 						
-	path_to_libs="./lib";
+	path_to_libs="build/lib";
 	
 };
 
