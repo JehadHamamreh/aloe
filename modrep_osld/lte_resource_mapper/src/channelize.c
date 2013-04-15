@@ -53,7 +53,6 @@ int check_received_samples_channel(struct channel *ch, int ch_id) {
 		if (!get_input_samples(ch->in_port)) {
 			return 0;
 		}
-		moddebug("ch %s port %d rcv_len=%d\n",ch->name,ch->in_port, get_input_samples(ch->in_port));
 		if (re != get_input_samples(ch->in_port)) {
 			moderror_msg("Received %d samples from channel %s in_port %d, but expected %d "
 					"(subframe_idx=%d)\n",
@@ -131,10 +130,10 @@ int insert_signals(complex_t *output) {
 }
 
 int allocate_channel(struct channel *ch, int ch_id, void **inp, void *output) {
-	if (!inp[ch->in_port]) {
+	if (!inp[ch->in_port] || !get_input_samples(ch->in_port)) {
 		return 0;
 	}
-
+	moddebug("allocating %d re on channel %s\n",get_input_samples(ch->in_port),ch->name);
 	return lte_ch_put_sf(inp[ch->in_port],output,ch->type,ch_id,subframe_idx,&grid);
 }
 

@@ -27,7 +27,7 @@
 
 struct turbodecoderConf ccfg;
 
-pmid_t padding_id;
+pmid_t padding_id,iter_id;
 static int padding;
 
 int direction;
@@ -50,6 +50,7 @@ int initialize() {
 		moderror("Parameter direction not specified\n");
 		return -1;
 	}
+	iter_id = param_id("iterations");
 	if (!direction) {
 		input_sample_sz = sizeof(char);
 		output_sample_sz = sizeof(char);
@@ -67,6 +68,7 @@ int work(void **inp, void **out) {
 	input_t *input;
 	output_t *output;
 	Tdec *input_llr;
+	int n;
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
@@ -85,12 +87,14 @@ int work(void **inp, void **out) {
 
 				ccfg.Long_CodeBlock=out_len;
 				ccfg.Turbo_Dt=100000;
-				ccfg.Turbo_iteracions=1;
+				ccfg.Turbo_iteracions = 1;
+				param_get_int(iter_id,&ccfg.Turbo_iteracions);
 				ccfg.haltMethod=HALT_METHOD_NONE;
-
-				if (turbo_decoder(input_llr,output,&ccfg, NULL)<0) {
+				n = turbo_decoder(input_llr,output,&ccfg, NULL);
+				if (n<0) {
 					return -1;
 				}
+
 			}
 			for (j=0;j<padding;j++) {
 				output[out_len+j] = 0;

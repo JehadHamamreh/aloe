@@ -4,6 +4,12 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
+#include <execinfo.h>
+#include <unistd.h>
+#include <dlfcn.h>
+#if !defined(__cplusplus) && !defined(NO_CPP_DEMANGLE)
+#define NO_CPP_DEMANGLE
+#endif
 
 #include "rtdal_context.h"
 #include "rtdal_kernel.h"
@@ -12,9 +18,11 @@
 
 
 #define KERNEL_SIG_THREAD_SPECIFIC SIGRTMIN
-#define N_THREAD_SPECIFIC_SIGNALS 6
+#define N_THREAD_SPECIFIC_SIGNALS 7
 const int thread_specific_signals[N_THREAD_SPECIFIC_SIGNALS] =
-	{SIGSEGV, SIGBUS, SIGILL, SIGFPE, TASK_TERMINATION_SIGNAL, SIGUSR1};
+	{SIGSEGV, SIGABRT, SIGBUS, SIGILL, SIGFPE, TASK_TERMINATION_SIGNAL, SIGUSR1};
+const char *thread_specific_signals_name[N_THREAD_SPECIFIC_SIGNALS] =
+	{"SIGSEGV", "SIGABRT", "SIGBUS", "SIGILL", "SIGFPE", "TASK_TERMINATION_SIGNAL", "SIGUSR1"};
 
 extern int sigwait_stops;
 strdef(tmp_msg);
@@ -31,6 +39,8 @@ static void kernel_timer_recover_thread() {
 	aerror("Not implemented\n");
 }
 
+/*#define RECOVER_THREAD
+*/
 
 static int sigwait_loop_process_thread_signal(siginfo_t *info) {
 	int thread_id, signum;
@@ -39,34 +49,39 @@ static int sigwait_loop_process_thread_signal(siginfo_t *info) {
 	thread_id = info->si_value.sival_int >> 16;
 	hdebug("signum=%d, thread_id=%d\n",signum,thread_id);
 	if (signum < N_THREAD_SPECIFIC_SIGNALS) {
-		snprintf(tmp_msg, STR_LEN, "Got signal num %d from ",
-				thread_specific_signals[signum]);
+		snprintf(tmp_msg, STR_LEN, "[rtdal]: Got signal %s from ",
+				thread_specific_signals_name[signum]);
 	} else {
-		snprintf(tmp_msg, STR_LEN, "Got unknown signal from ");
+		snprintf(tmp_msg, STR_LEN, "[rtdal]: Got unknown signal from ");
 	}
 
 	/* now try to restore the pipeline, if the thread was a pipeline */
 	if (thread_id > -1) {
 		if (strnlen(tmp_msg,STR_LEN)>1) {
 			snprintf(&tmp_msg[strlen(tmp_msg)-1],STR_LEN,
-					"pipeline thread %d process %d\n",
+					" pipeline thread %d. Current running process idx is %d\n",
 					thread_id,
 					rtdal.pipelines[thread_id].running_process_idx);
 		}
+#ifdef RECOVER_THREAD
 		if (pipeline_recover_thread(
 				&rtdal.pipelines[thread_id])) {
 			aerror("recovering pipeline thread\n");
 		}
+#endif
 
 	} else if (info->si_value.sival_int == -1) {
-		strcat(tmp_msg, "the kernel thread\n");
+		strcat(tmp_msg, " the kernel thread\n");
 		kernel_timer_recover_thread();
 	} else {
-		strcat(tmp_msg, "an unkown thread\n");
+		strcat(tmp_msg, " an unkown thread\n");
 	}
+	write(0,tmp_msg,strlen(tmp_msg));
 	return 1;
 }
 
+/*#define EXIT_ON_THREADSIG
+*/
 /**
  * This is a thread with priority kernel_prio that synchronously waits for
  * rtdal_pipeline signals (usign sigwaitinfo). All signals except thread-specific
@@ -97,7 +112,13 @@ void sigwait_loop(void) {
 		}
 		hdebug("detected signal %d\n",signum);
 		if (signum == KERNEL_SIG_THREAD_SPECIFIC) {
+			printf("[rtdal]: Caught thread-specific signal\n");
+#ifdef EXIT_ON_THREADSIG
+			fflush(stdout);
+			goto out;
+#else
 			sigwait_loop_process_thread_signal(&info);
+#endif
 		} else if (signum == SIGINT) {
 			printf("Caught SIGINT, exiting\n");
 			fflush(stdout);
@@ -113,6 +134,133 @@ out:
 	kernel_exit();
 }
 
+static void full_write(int fd, const char *buf, size_t len)
+{
+        while (len > 0) {
+                ssize_t ret = write(fd, buf, len);
+
+                if ((ret == -1) && (errno != EINTR))
+                        break;
+
+                buf += (size_t) ret;
+                len -= (size_t) ret;
+        }
+}
+
+void *bt[1024];
+
+/** FIXME: Use REG_RIP on IA64 */
+void print_backtrace(void)
+{
+        static const char start[] = "BACKTRACE ------------\n";
+        static const char end[] = "----------------------\n";
+
+        int bt_size;
+        char **bt_syms;
+        int i;
+
+        bt_size = backtrace(bt, 1024);
+        bt_syms = backtrace_symbols(bt, bt_size);
+        full_write(STDERR_FILENO, start, strlen(start));
+        for (i = 2; i < bt_size; i++) {
+                size_t len = strlen(bt_syms[i]);
+                full_write(STDERR_FILENO, bt_syms[i], len);
+                full_write(STDERR_FILENO, "\n", 1);
+        }
+        full_write(STDERR_FILENO, end, strlen(end));
+    free(bt_syms);
+}
+
+#define sigsegv_outp(x, ...)    fprintf(stderr, x "\n", ##__VA_ARGS__)
+
+#if defined(REG_RIP)
+# define SIGSEGV_STACK_IA64
+# define REGFORMAT "%016lx"
+#elif defined(REG_EIP)
+# define SIGSEGV_STACK_X86
+# define REGFORMAT "%08x"
+#else
+# define SIGSEGV_STACK_GENERIC
+# define REGFORMAT "%x"
+#endif
+
+static void signal_segv(int signum, siginfo_t* info, void*ptr)
+{
+	static const char *si_codes[3] = {"", "SEGV_MAPERR", "SEGV_ACCERR"};
+
+	int i, f = 0;
+	ucontext_t *ucontext = (ucontext_t*)ptr;
+	Dl_info dlinfo;
+	void **bp = 0;
+	void *ip = 0;
+
+	sigsegv_outp("Segmentation Fault!");
+	sigsegv_outp("Use add2line from binutils to help resolve address to file:line.");
+	sigsegv_outp("info.si_signo = %d", signum);
+	sigsegv_outp("info.si_errno = %d", info->si_errno);
+	sigsegv_outp("info.si_code  = %d (%s)", info->si_code, si_codes[info->si_code]);
+	sigsegv_outp("info.si_addr  = %p", info->si_addr);
+	for (i = 0; i < NGREG; i++)
+		sigsegv_outp("reg[%02d]       = 0x" REGFORMAT, i, ucontext->uc_mcontext.gregs[i]);
+
+#ifndef SIGSEGV_NOSTACK
+#if defined(SIGSEGV_STACK_IA64) || defined(SIGSEGV_STACK_X86)
+#if defined(SIGSEGV_STACK_IA64)
+	ip = (void*)ucontext->uc_mcontext.gregs[REG_RIP];
+	bp = (void**)ucontext->uc_mcontext.gregs[REG_RBP];
+#elif defined(SIGSEGV_STACK_X86)
+	ip = (void*)ucontext->uc_mcontext.gregs[REG_EIP];
+	bp = (void**)ucontext->uc_mcontext.gregs[REG_EBP];
+#endif
+
+	sigsegv_outp("Stack trace:");
+	while (bp && ip) {
+		if (!dladdr(ip, &dlinfo))
+			break;
+
+		const char *symname = dlinfo.dli_sname;
+
+#ifndef NO_CPP_DEMANGLE
+		int status;
+		char * tmp = __cxa_demangle(symname, NULL, 0, &status);
+
+		if (status == 0 && tmp)
+			symname = tmp;
+#endif
+
+		sigsegv_outp("% 2d: %p <%s+%lu> (%s)",
+			     ++f,
+			     ip,
+			     symname,
+			     (unsigned long)ip - (unsigned long)dlinfo.dli_saddr,
+			     dlinfo.dli_fname);
+
+#ifndef NO_CPP_DEMANGLE
+		if (tmp)
+			free(tmp);
+#endif
+
+		if (dlinfo.dli_sname && !strcmp(dlinfo.dli_sname, "main"))
+			break;
+
+		ip = bp[1];
+		bp = (void**)bp[0];
+	}
+#else
+	sigsegv_outp("Stack trace (non-dedicated):");
+	sz = backtrace(bt, 20);
+	strings = backtrace_symbols(bt, sz);
+	for (i = 0; i < sz; ++i)
+		sigsegv_outp("%s", strings[i]);
+#endif
+	sigsegv_outp("End of stack trace.");
+#else
+	sigsegv_outp("Not printing stack strace.");
+#endif
+	_exit(-1);
+}
+
+#define PRINT_BT_ON_SIGSEGV
 
 /**
  * Handler for thread-specific signals (SIGSEGV,SIGILL,SIGFPE,SIGBUS).
@@ -127,14 +275,9 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	int i;
 
 #ifdef PRINT_BT_ON_SIGSEGV
-	void *pnt = NULL;
-	ucontext_t *context = (ucontext_t*) ctx;
-	char **msg;
-
-	pnt = (void*) context->uc_mcontext.gregs[REG_EIP];
-	msg = backtrace_symbols(&pnt, 1);
-	strcat(sigmsg, msg[0]);
-	free(msg);
+	if (signum == SIGSEGV) {
+		signal_segv(signum,info,ctx);
+	}
 #endif
 
 	signal_received++;
@@ -190,11 +333,19 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	if (sigqueue(kernel_pid,
 			KERNEL_SIG_THREAD_SPECIFIC,
 			value)) {
-		poserror(errno, "sigspscq");
+		poserror(errno, "sigqueue");
 	}
 
 cancel_and_exit:
-	pthread_exit(NULL);
+	if (signum != SIGABRT) {
+		pthread_exit(NULL);
+	} else {
+		rtdal.pipelines[thread_id].waiting=1;
+		while(rtdal.pipelines[thread_id].waiting) {
+			hdebug("waiting\n",0);
+			usleep(1000);
+		}
+	}
 }
 
 

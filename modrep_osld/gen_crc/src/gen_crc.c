@@ -30,6 +30,8 @@ static int long_crc;
 static int mode;
 static unsigned int poly;
 
+/*#define CHECK_ZEROS
+*/
 #define PRINT_BLER
 #define EXEC_MIN_INTERVAL_MS 1000
 int interval_ts;
@@ -91,7 +93,8 @@ int initialize() {
  * Adds a CRC to every received packet from each interface
  */
 int work(void **inp, void **out) {
-	int i;
+	int i,j;
+	char checkzero;
 	unsigned int n;
 	int rcv_samples;
 	input_t *input;
@@ -102,7 +105,6 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		rcv_samples = get_input_samples(i);
 		if (rcv_samples) {
-			printf("received %d samples\n",rcv_samples);
 			if (out[i]) {
 				memcpy(out[i],inp[i],sizeof(input_t)*rcv_samples);
 				input = out[i];
@@ -112,10 +114,21 @@ int work(void **inp, void **out) {
 			n = icrc(0, input, rcv_samples, long_crc, poly, mode == MODE_ADD);
 
 			if (mode==MODE_CHECK) {
+#ifdef CHECK_ZEROS
+				checkzero=0;
+				for (j=0;j<rcv_samples;j++) {
+					checkzero+=input[j];
+				}
+#ifdef _COMPILE_ALOE
+				if (!checkzero) {
+					modinfo_msg("received zero packet ts=%d len=%d\n",oesr_tstamp(ctx),rcv_samples)
+				}
+#endif
+#endif
 				if (n) {
 					total_errors++;
 #ifdef _COMPILE_ALOE
-					modinfo_msg("error at packet %d ts=%d\n",total_pkts,oesr_tstamp(ctx));
+					modinfo_msg("error at packet %d ts=%d len=%d\n",total_pkts,oesr_tstamp(ctx),rcv_samples);
 #endif
 				}
 				total_pkts++;

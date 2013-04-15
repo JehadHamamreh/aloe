@@ -38,6 +38,8 @@ pmid_t subframe_idx_id;
 
 struct lte_grid_config grid;
 
+#define CHECK_RCV_SAMPLES
+
 
 /**
  * @ingroup lte_resource_mapper
@@ -103,6 +105,7 @@ int work(void **inp, void **out) {
 		param_get_int(subframe_idx_id, &subframe_idx);
 	}
 #ifdef CHECK_RCV_SAMPLES
+	int n;
 	n=check_received_samples_mapper();
 	if (n < 1) {
 		return n;

@@ -124,7 +124,7 @@ int work(void **inp, void **out) {
 	}
 
 	/* Verify parameters */
-	if (modulation > 3 || modulation < 0) {
+	if (modulation > 6 || modulation < 0) {
 		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
 				"4 for 16QAM, or 6 for 64QAM\n", modulation);
 		return -1;

@@ -67,6 +67,8 @@ typedef struct {
 	rtdal_process_t *running_process;
 	int running_process_idx;
 
+	int waiting;
+
 }pipeline_t;
 
 void pipeline_run_from_timer(void *arg, struct timespec *time);

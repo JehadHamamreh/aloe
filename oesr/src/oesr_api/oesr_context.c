@@ -84,6 +84,18 @@ int oesr_module_id(void *context) {
 	return module->parent.id;
 }
 
+/**  Returns the module idx (non-negative integer), -1 on error
+ */
+int oesr_module_idx(void *context) {
+	cast(ctx,context);
+	nod_module_t *module = (nod_module_t*) ctx->module;
+	sdebug("context=0x%x, module_id=%d, module_name=0x%x\n",context,module->parent.id,
+			module->parent.name);
+
+	return module->parent.index;
+}
+
+
 /**
  * Returns the index of a module in the waveform.
  *

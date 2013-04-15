@@ -109,13 +109,15 @@ int work(void **inp, void **out) {
 	if (!rcv_samples) {
 		return 0;
 	}
-	sprintf(tmp,"hola");
-	n = sendto(fd,tmp,strlen(tmp),0,(struct sockaddr *) &servaddr, sizeof (servaddr));
+
+	moddebug("Sending %d bytes\n",rcv_samples);
+
+	n = sendto(fd,inp[0],rcv_samples,0,(struct sockaddr *) &servaddr, sizeof (servaddr));
 	if (n == -1) {
 		perror("sendto");
 		return -1;
 	}
-	modinfo_msg("sent %d bytes\n",n);
+
 	return 0;
 }
 

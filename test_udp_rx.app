@@ -5,9 +5,17 @@ modules:
 	{
 		binary="modrep_default/libudp_source.so";	
 		mopts=8;
-		variables=({name="address";value="127.0.0.1"},{name="port";value=20000;}
+		variables=({name="address";value="127.0.0.1"},{name="port";value=10000;}
 			); 
 	};
+	
+	bit_unpack:
+	{
+		binary="modrep_default/libbitpacker.so";	
+		mopts=8;
+		variables=({name="direction";value=0}); 
+	};
+	
 
 	
 	crc_check:
@@ -24,6 +32,7 @@ modules:
 
 interfaces:
 (
-	{src="source";dest="crc_check"}
+	{src="source";dest="bit_unpack"},
+	{src="bit_unpack";dest="crc_check"}
 );
 

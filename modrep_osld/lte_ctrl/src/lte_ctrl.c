@@ -16,7 +16,7 @@ int nof_symb_slot;
 
 int x_mode;
 
-itf_t pdcch_itf_out,pdcch_itf_in;
+#define PRINT 0
 
 #define MAX_DCI_PACKET_SZ 128
 char dci_packet[MAX_DCI_PACKET_SZ];
@@ -29,16 +29,22 @@ int mode_is_rx() {
 }
 
 int ctrl_init() {
-
-	pdcch_itf_out = oesr_itf_create(ctx,0,ITF_WRITE,MAX_DCI_PACKET_SZ);
-	if (!pdcch_itf_out) {
-		moderror("Creating PDCCH output itf\n");
-		return -1;
-	}
-
 	if (param_get_int_name("mode",&x_mode)) {
 		printf("mode undefined\n");
 		return -1;
+	}
+
+	switch (x_mode) {
+	case 0:
+		set_remote_params(remote_params_tx);
+		break;
+	case 1:
+		set_remote_params(remote_params_rx);
+		break;
+	case 2:
+		set_remote_params(remote_params_tx);
+		set_remote_params(remote_params_rx);
+		break;
 	}
 
 	grid_tx.verbose = 0;
@@ -103,7 +109,6 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 		}
 	}
 
-
 	if (_get_param("nof_prb",&grid->nof_prb,mode)) {
 		return -1;
 	}
@@ -125,6 +130,7 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	params->cfi = grid->cfi;
 	params->nof_rbg[0] = grid->pdsch[0].nof_rbg;
 	params->pdsch_mask[0] = grid->pdsch[0].rbg_mask;
+	params->nof_pdsch = 1;
 
 	params->tbs = lte_get_tbs(params->mcs,params->nof_rbg[0]);
 	params->cbs = lte_get_cbits(params->mcs,params->nof_rbg[0]);
@@ -134,14 +140,34 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	params->bits_x_slot = lte_pdsch_get_re(0,grid->subframe_idx%NOF_SUBFRAMES_X_FRAME,grid)*
 			params->modulation;
 
+	/* check code rate and if exceeds 0.93, do not transmit */
+	if (params->bits_x_slot && grid->subframe_idx >= 0) {
+		if ((params->tbs+16)/params->bits_x_slot > 0.93) {
+			if (PRINT) {
+				printf("not transmitting subframe %d coderate %f\n",grid->subframe_idx,
+					(float) (params->tbs+16)/params->bits_x_slot);
+			}
+			params->tbs = 0;
+			params->bits_x_slot = 0;
+			params->pdsch_mask[0] = 0;
+		}
+	}
+
+	if (local_params.divide) {
+		params->tbs /=8;
+	}
+
+
 	for (i=0;i<SUBFRAME_DELAY;i++) {
 		params->tslot_idx[i] = (grid->subframe_idx-i)%NOF_SUBFRAMES_X_FRAME;
 	}
 
-/*	printf("mode=%s fft_size=%d mcs=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
-				mode, grid->fft_size, params->mcs, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
+	if (PRINT) {
+		printf("ts=%d, mode=%s fft_size=%d mcs=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
+				oesr_tstamp(ctx),mode, grid->fft_size, params->mcs, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
 				params->modulation,params->bits_x_slot);
-*/
+	}
+
 	return 0;
 }
 
@@ -172,8 +198,6 @@ int ctrl_work(int tslot) {
 			return -1;
 		}
 		tx_params.nof_pdsch = 1;
-		tx_params.pdsch_mask[0] = grid_tx.pdsch[0].rbg_mask;
-		tx_params.nof_rbg[0] = grid_tx.pdsch[0].nof_rbg;
 		tx_params.nof_prb = grid_tx.nof_prb;
 		tx_params.bch_enable = !(grid_tx.subframe_idx % 40);
 		tx_params.sfn = grid_tx.subframe_idx/10;
@@ -184,7 +208,6 @@ int ctrl_work(int tslot) {
 			return -1;
 		}
 		if (grid_rx.cfi > 0) {
-			rx_params.nof_pdsch = 1;
 			rx_params.nof_pdcch = 1;
 			rx_params.pdcch_cce[0] = 2;
 		}

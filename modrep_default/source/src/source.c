@@ -106,7 +106,7 @@ int work(void **inp, void **out) {
 		return -1;
 	}
 	if (type != last_type) {
-		modinfo_msg("Select generator: %s\n",generators[i].desc);
+		moddebug("Select generator: %s\n",generators[i].desc);
 		last_type = type;
 	}
 
@@ -118,7 +118,7 @@ int work(void **inp, void **out) {
 
 #ifdef _COMPILE_ALOE
 	if (block_length != last_block_length) {
-		modinfo_msg("Select block_length: block_length=%d at tslot=%d\n",block_length,oesr_tstamp(ctx));
+		moddebug("Select block_length: block_length=%d at tslot=%d\n",block_length,oesr_tstamp(ctx));
 		last_block_length = block_length;
 	}
 #endif

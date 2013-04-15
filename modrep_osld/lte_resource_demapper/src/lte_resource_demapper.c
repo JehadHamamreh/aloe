@@ -123,6 +123,10 @@ int work(void **inp, void **out) {
 		get_input_samples(0),grid.cfi);
 #endif
 
+	if (subframe_idx==-1) {
+		return 0;
+	}
+
 	n=check_received_samples_demapper();
 	if (n < 1) {
 		return n;

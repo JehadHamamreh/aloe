@@ -165,6 +165,7 @@ int init_pdsch(int ch_id) {
 		moderror_msg("Initiating PDSCH channel %d\n",ch_id);
 		return -1;
 	}
+	moddebug("sf=%d, rbgmask=%d\n",subframe_idx,grid.pdsch[0].rbg_mask);
 	if (lte_pdsch_init_sf(subframe_idx, &grid.phch[CH_PDSCH], &grid)) {
 		moderror_msg("Initiating PDSCH channel %d SF=%d\n",ch_id,subframe_idx);
 		return -1;
@@ -175,7 +176,6 @@ int init_pdsch(int ch_id) {
 }
 
 int init_pdcch(int ch_id) {
-
 
 	if (lte_grid_init(&grid)) {
 		moderror("Initiating resource grid\n");
@@ -220,7 +220,6 @@ int channels_init_grid(int *channel_ids, int nof_channels) {
 int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 	int n;
 
-
 	if (!out[ch->out_port]) {
 		return -1;
 	}
@@ -232,7 +231,8 @@ int deallocate_channel(struct channel *ch, int ch_id, void *input, void **out) {
 	if (n>0) {
 		set_output_samples(ch->out_port,n);
 	}
-	moddebug("ch %s deallocated %d RE. pdcch=%d, cce=%d\n",ch->name,n,grid.nof_pdcch,grid.pdcch[0].nof_cce);
+	moddebug("sf=%d ch %s deallocated %d RE. pdsch=%d, cce=%d\n",subframe_idx,
+			ch->name,n,grid.nof_pdsch,grid.pdcch[0].nof_cce);
 
 	return n;
 }

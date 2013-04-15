@@ -282,9 +282,12 @@ int nod_waveform_status_init(nod_waveform_t *waveform) {
 		aerror_msg("Init task did not finish (waveform %s)\n", waveform->name);
 	} else {
 		if (ret_val == NULL) {
-			aerror_msg("Waveform %s did not init correctly. Stopping\n",
+			aerror_msg("Waveform %s did not init correctly. Removing\n",
 					waveform->name);
-			nod_waveform_status_stop(waveform);
+			if (nod_waveform_remove(waveform)) {
+				aerror("nod_waveform_remove");
+				return -1;
+			}
 			return -1;
 		}
 	}

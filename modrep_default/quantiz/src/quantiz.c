@@ -24,12 +24,12 @@
 #include <params.h>
 #include <skeleton.h>
 
-#include "gen_quantiz.h"
+#include "quantiz.h"
 
 pmid_t scale_id,amplitude_id;
 
 /**
- * @ingroup gen_quantiz
+ * @ingroup quantiz
  *
  * \param scale
  * \param amplitude

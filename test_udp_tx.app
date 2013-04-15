@@ -6,7 +6,7 @@ modules:
 		binary="modrep_default/libsource.so";	
 		mopts=8;
 		variables=(
-			{name="block_length";value=20},{name="generator";value=0}
+			{name="block_length";value=24},{name="generator";value=0}
 		);
 	};
 
@@ -17,6 +17,14 @@ modules:
 		mopts=6;
 		variables=({name="long_crc";value=16;});
 	};	
+	
+	bit_pack:
+	{
+		binary="modrep_default/libbitpacker.so";	
+		mopts=8;
+		variables=({name="direction";value=1}); 
+	};
+	
 	
 	sink:
 	{
@@ -32,6 +40,7 @@ modules:
 interfaces:
 (
 	{src="source";dest="crc"},
-	{src="crc";dest="sink"}
+	{src="crc";dest="bit_pack"},
+	{src="bit_pack";dest="sink"}
 );
 

@@ -31,8 +31,8 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
-		mopts=80;
-		variables=({name="direction";value=1},{name="padding";value=0;});
+		mopts=200;
+		variables=({name="direction";value=1},{name="iterations";value=1},{name="padding";value=0;});
 	};
 
 	uncrc_tb:
@@ -40,7 +40,7 @@ modules:
 		binary="modrep_osld/libgen_crc.so";
 		mopts=8;
 		variables=({name="direction";value=1},{name="long_crc";value=16;}
-					,{name="print_nof_pkts";value=10000} 
+					/*,{name="print_nof_pkts";value=1} */ 
 			); 
 	};	
 	

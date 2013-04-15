@@ -86,8 +86,8 @@ int readCbuff(buffctrl* buffer,_Complex float *buffdata, _Complex float *out, in
 
 		return 0;
 	}else{
-		printf("Error: Not enough data in buffer\n");
-		return -1;
+/*		printf("Error: Not enough data in buffer\n");
+*/		return -1;
 	}
 }
 

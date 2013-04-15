@@ -98,6 +98,7 @@ int oesr_tslot_length(void *context);
 int oesr_exit(void *context);
 char *oesr_module_name(void *context);
 int oesr_module_id(void *context);
+int oesr_module_idx(void *context);
 int oesr_get_module_idx(void *context, char *name);
 int oesr_get_variable_idx(void *context, char *module_name, char *variable_name);
 int oesr_get_nofmodules(void *context);

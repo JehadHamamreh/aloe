@@ -86,7 +86,7 @@ void *nod_module_finish_callback(void *context) {
 						module->parent.name);
 		break;
 	case RUNERROR:
-		aerror_msg("Module %s terminated abnormally. Trying a clean stop\n",
+		aerror_msg("Module %s returned error from work() function. Trying a clean stop\n",
 						module->parent.name);
 		break;
 	default:
@@ -198,10 +198,6 @@ int nod_module_stop(nod_module_t *module) {
 	}
 	if (module->stop(module)) {
 		aerror_msg("stopping module_id=%d\n",module->parent.id);
-		return -1;
-	}
-	if (nod_module_remove(module)) {
-		aerror_msg("removing module_id=%d\n",module->parent.id);
 		return -1;
 	}
 	return 0;

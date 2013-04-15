@@ -28,6 +28,8 @@ lstrdef(tmp);
 lstrdef(tmp2);
 lstrdef(tmp3);
 
+extern pid_t kernel_pid;
+
 extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
 
 extern char libs_path[255];
@@ -44,7 +46,15 @@ int rtdal_process_launch(rtdal_process_t *obj) {
 	RTDAL_ASSERT_PARAM(obj);
 	char *error;
 
-	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
+	char *name = strstr(obj->attributes.binary_path,"/");
+	if (!name) {
+		name = obj->attributes.binary_path;
+	} else {
+		name++;
+	}
+
+	snprintf(tmp,LSTR_LEN,"/tmp/am_%s_%d_%d.so",name,
+			obj->pid,kernel_pid);
 	snprintf(tmp2,LSTR_LEN,"cp %s/%s %s",libs_path,obj->attributes.binary_path,tmp);
 	if (system(tmp2) == -1) {
 		aerror("Error removing file\n");
@@ -89,7 +99,15 @@ int rtdal_process_remove(r_proc_t process) {
 
 	dlclose(obj->dl_handle);
 
-	snprintf(tmp,LSTR_LEN,"/tmp/am_%d.so",obj->pid);
+	char *name = strstr(obj->attributes.binary_path,"/");
+	if (!name) {
+		name = obj->attributes.binary_path;
+	} else {
+		name++;
+	}
+
+	snprintf(tmp,LSTR_LEN,"/tmp/am_%s_%d_%d.so",name,
+			obj->pid,kernel_pid);
 	snprintf(tmp2,LSTR_LEN,"rm %s",tmp);
 	if (system(tmp2) == -1) {
 		aerror("Error removing file\n");

@@ -19,15 +19,15 @@
 
 
 /**
- * @defgroup template gen_channel
- *
+ * @defgroup bit_packer bit_packer
+ * Converts bits to bytes and viceversa
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef _Complex float input_t;
-typedef _Complex float output_t;
+typedef char input_t;
+typedef char output_t;
 
 #define OUTPUT_MAX_SAMPLES 	14*2048
 #define INPUT_MAX_SAMPLES 	14*2048
@@ -38,6 +38,7 @@ typedef _Complex float output_t;
 #endif
 
 /**@} */
+
 
 
 /********* do not need to modify beyond here */

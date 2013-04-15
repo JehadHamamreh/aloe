@@ -13,7 +13,7 @@ set(MODULE_REPOS_NAME "default")
 
 if(DEBUG)
 	message("-- Configuring debugging CFLAGS")
-	set(CFDEB "-O0 -g")
+	set(CFDEB "-O0 -g -rdynamic")
 else()
 	set(CFDEB "-O2")
 endif()

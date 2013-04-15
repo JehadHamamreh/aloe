@@ -24,7 +24,7 @@
 #include "ctrl_pkt.h"
 #include "ctrl_skeleton.h"
 
-#define MAX_OUTPUTS 100
+#define MAX_OUTPUTS 		100
 #define MAX_INPUT_PACKETS	20
 
 typedef struct {
@@ -44,18 +44,30 @@ void *ctx;
 
 itf_t ctrl_in;
 
-extern remote_params_db_t remote_params_db[];
+remote_params_db_t remote_params_db[MAX_VARIABLES];
 extern my_params_db_t local_params_db[];
 
 static mod_addr_t outputs[MAX_OUTPUTS];
 static pm_addr_t remote_variables[MAX_VARIABLES];
 static var_t local_variables[MAX_VARIABLES];
 
-static int nof_remote_variables, nof_local_variables, nof_remote_itf;
+static int nof_remote_variables=0, nof_local_variables, nof_remote_itf;
 
 static struct ctrl_in_pkt ctrl_in_buffer[MAX_INPUT_PACKETS], ctrl_out_buffer;
 
 static int nof_output_data_itf;
+
+int set_remote_params(remote_params_db_t *params) {
+	int i=0;
+	while(nof_remote_variables<MAX_VARIABLES
+			&& params[i].module_name) {
+		memcpy(&remote_params_db[nof_remote_variables],
+				&params[i],sizeof(remote_params_db_t));
+		i++;
+		nof_remote_variables++;
+	}
+	return i;
+}
 
 void init_memory() {
 	memset(outputs,0,MAX_OUTPUTS*sizeof(mod_addr_t));
@@ -63,16 +75,12 @@ void init_memory() {
 	memset(local_variables,0,MAX_VARIABLES*sizeof(pmid_t));
 }
 
-int kkts=0;
-
 int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	int n;
 	if (dest_idx<0 || dest_idx>nof_remote_variables) {
 		return -1;
 	}
-	if (remote_variables[dest_idx].module_idx == 77) {
-		n=0;
-	}
+
 	ctrl_out_buffer.pm_idx = remote_variables[dest_idx].variable_idx;
 	ctrl_out_buffer.size = size;
 	memcpy(ctrl_out_buffer.value,value,size);
@@ -104,13 +112,14 @@ int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value,
 int remote_parameters_sendall(void *ctx) {
 	int i;
 	for (i=0;i<nof_remote_variables;i++) {
+
 		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size,oesr_tstamp(ctx))) {
 			moderror_msg("sending ctrl packet to %s:%s\n",
 					remote_params_db[i].module_name,remote_params_db[i].variable_name);
 			return -1;
 		}
 	}
-	kkts++;
+
 	return 0;
 }
 
@@ -132,24 +141,27 @@ int init_ctrl_input(void *ctx) {
 int init_remote_variables(void *ctx) {
 	int i;
 
-	i=0;
-	while(remote_params_db[i].module_name && i<MAX_VARIABLES) {
-		remote_variables[i].module_idx = oesr_get_module_idx(ctx, (char*) remote_params_db[i].module_name);
+	for (i=0;i<nof_remote_variables;i++) {
+		remote_variables[i].module_idx =
+				oesr_get_module_idx(ctx, (char*) remote_params_db[i].module_name);
 		if (remote_variables[i].module_idx == -1) {
 			moderror_msg("Module %s not found\n",remote_params_db[i].module_name);
 			return -1;
 		}
-		remote_variables[i].variable_idx = oesr_get_variable_idx(ctx, (char*) remote_params_db[i].module_name,
+		remote_variables[i].variable_idx = oesr_get_variable_idx(ctx,
+				(char*) remote_params_db[i].module_name,
 				(char*) remote_params_db[i].variable_name);
 		if (remote_variables[i].variable_idx == -1) {
-			modinfo_msg("Variable %s not found in module %s. Creating...\n",remote_params_db[i].variable_name,
+			modinfo_msg("Variable %s not found in module %s. "
+					"Creating...\n",remote_params_db[i].variable_name,
 					remote_params_db[i].module_name);
 
 			/* create a new variable if not defined in .app */
 			var_t new_var = oesr_var_param_create_remote(ctx,remote_variables[i].module_idx,
 					(char*) remote_params_db[i].variable_name,remote_params_db[i].size);
 			if (!new_var) {
-				moderror_msg("Error creating remote variable %s in module %s.\n",remote_params_db[i].variable_name,
+				moderror_msg("Error creating remote variable %s in module %s.\n",
+						remote_params_db[i].variable_name,
 						remote_params_db[i].module_name);
 				return -1;
 			}
@@ -158,7 +170,6 @@ int init_remote_variables(void *ctx) {
 		modinfo_msg("Init remote parameter %s:%s (%d,%d)\n",remote_params_db[i].module_name,
 				remote_params_db[i].variable_name,remote_variables[i].module_idx,
 				remote_variables[i].variable_idx);
-		i++;
 	}
 	if (i==MAX_VARIABLES) {
 		modinfo_msg("Caution: Only %d variables where parsed. "
@@ -168,32 +179,38 @@ int init_remote_variables(void *ctx) {
 }
 
 int scan_remote_itf(void *ctx, int nof_variables) {
-	int i,j;
+	int i,j,k;
+	for (i=0;i<MAX_OUTPUTS;i++) {
+		outputs[i].module_idx = -1;
+	}
 	for (i=0;i<nof_variables;i++) {
-		if (!remote_variables[i].module_idx) {
-			return 0;
-		}
+		k=-1;
 		for (j=0;j<MAX_OUTPUTS;j++) {
 			if (outputs[j].module_idx == remote_variables[i].module_idx) {
-				remote_variables[i].addr = &outputs[j];
 				break;
-			} else if (!outputs[j].module_idx) {
-				remote_variables[i].addr = &outputs[j];
-				outputs[j].module_idx = remote_variables[i].module_idx;
-				break;
+			} else if (outputs[j].module_idx == -1 && k==-1) {
+				k = j;
 			}
 		}
 		if (j==MAX_OUTPUTS) {
-			moderror_msg("Not enough output interfaces. Increase MAX_OUTPUTS (%d) "
-					"in oesr/src/ctrl_skeleton.c\n",j);
-			return -1;
+			if (k==-1) {
+				moderror_msg("Not enough output interfaces. Increase MAX_OUTPUTS (%d) "
+									"in oesr/src/ctrl_skeleton.c\n",j);
+				return -1;
+			} else {
+				j=k;
+			}
+		}
+		remote_variables[i].addr = &outputs[j];
+		outputs[j].module_idx = remote_variables[i].module_idx;
+	}
+	k=0;
+	for (j=0;j<MAX_OUTPUTS;j++) {
+		if (outputs[j].module_idx!=-1) {
+			k++;
 		}
 	}
-	for (j=0;j<MAX_OUTPUTS;j++) {
-		if (!outputs[j].module_idx)
-			break;
-	}
-	return j;
+	return k;
 }
 
 int init_local_variables(void *ctx) {
@@ -234,6 +251,10 @@ int init_remote_itf(void *ctx, int nof_itf) {
 
 	for (i=0;i<nof_itf;i++) {
 		port = outputs[i].module_idx-oesr_module_id(ctx)+nof_output_data_itf;
+		if (port < 0) {
+			moderror_msg("Can't sent to a module back in the chain (module_idx=%d)\n",outputs[i].module_idx);
+			return -1;
+		}
 
 		/* check if a parameter sets a different delay */
 		for (j=0;j<nof_remote_variables;j++) {
@@ -306,8 +327,7 @@ int Init(void *_ctx) {
 	nof_output_data_itf = 0;
 	param_get_int_name("nof_output_data_itf",&nof_output_data_itf);
 
-	nof_remote_variables = init_remote_variables(ctx);
-	if (nof_remote_variables == -1) {
+	if (init_remote_variables(ctx) == -1) {
 		return -1;
 	}
 

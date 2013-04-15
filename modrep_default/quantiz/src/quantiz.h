@@ -19,7 +19,7 @@
 
 
 /**
- * @defgroup template gen_quantiz
+ * @defgroup quantiz quantiz
  *
  * @{
  */

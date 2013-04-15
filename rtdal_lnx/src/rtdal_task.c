@@ -199,7 +199,7 @@ int rtdal_task_new_thread(pthread_t *thread, void *(*fnc)(void*), void *arg,
 		}
 	}
 	
-	printf("creating thread prio %d cpuid %d\n",prio,cpu);
+	hdebug("creating thread prio %d cpuid %d\n",prio,cpu);
 
 	s = pthread_create(thread, &attr, fnc, arg);
 	if (s) {

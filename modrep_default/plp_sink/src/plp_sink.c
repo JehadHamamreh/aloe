@@ -218,7 +218,7 @@ int work(void **inp, void **out) {
 		if (get_input_samples(n) != last_rcv_samples) {
 			last_rcv_samples = get_input_samples(n);
 #ifdef _COMPILE_ALOE
-			modinfo_msg("Receiving %d samples at tslot %d\n",last_rcv_samples,
+			moddebug("Receiving %d samples at tslot %d\n",last_rcv_samples,
 					oesr_tstamp(ctx));
 #endif
 		}

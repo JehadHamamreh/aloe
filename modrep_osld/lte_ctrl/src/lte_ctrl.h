@@ -42,11 +42,12 @@ struct local_parameters {
 	int nrb;
 	int fft_size;
 	int cp_is_long;
+	int divide;
 };
 
 struct local_parameters local_params;
 
-remote_params_db_t remote_params_db[] = {
+remote_params_db_t remote_params_tx[] = {
 
 		{"source","block_length",&tx_params.tbs,sizeof(int)},
 
@@ -75,7 +76,9 @@ remote_params_db_t remote_params_db[] = {
 				{"resmapp","pdsch_rbgmask_0",&remote_params.pdsch_mask[0],sizeof(int)},
 		*/
 
-/* Receiver */
+		{NULL,NULL,NULL,0}}; /* etc */
+
+remote_params_db_t remote_params_rx[] = {
 
 /*		{"synchro","bypass",&rx_params.synchro_bypass,sizeof(int)},
 */
@@ -84,6 +87,7 @@ remote_params_db_t remote_params_db[] = {
 
 		/* PCFICH */
 		{"pcfich_rx_descrambling","subframe",&rx_params.tslot_idx[1],sizeof(int)},
+		{"resdemapp_pcfich","subframe_idx",&rx_params.tslot_idx[1],sizeof(int)},
 
 		/* PDCCH */
 		{"resdemapp_pdcch","subframe_idx",&rx_params.tslot_idx[2],sizeof(int)},
@@ -96,17 +100,16 @@ remote_params_db_t remote_params_db[] = {
 		/* PDSCH */
 		{"resdemapp_pdsch","subframe_idx",&rx_params.tslot_idx[3],sizeof(int)},
 		{"resdemapp_pdsch","cfi",&rx_params.cfi,sizeof(int)},
-		{"resdemapp_pdsch","nof_pdsch",&rx_params.nof_pdsch,sizeof(int)},
 		{"resdemapp_pdsch","pdsch_rbgmask_0",&rx_params.pdsch_mask[0],sizeof(int)},
 		{"pdsch_rx_demodulator","modulation",&rx_params.modulation,sizeof(int)},
 		/*{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
 		*/{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
 
-
 		{NULL,NULL,NULL,0}}; /* etc */
 
 
 my_params_db_t local_params_db[] = {
+		{"divide",&local_params.divide,sizeof(int)},
 	{NULL,NULL,0}
 };
 

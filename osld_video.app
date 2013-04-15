@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=false;
+	precach_pipeline=true;
 	auto_ctrl_module="ctrl";
 };
 
@@ -24,13 +24,13 @@ modules:
 		binary="modrep_osld/liblte_ctrl.so";	
 		mopts=100;
 		variables=(
-			{name="nof_output_data_itf";value=0},
+			{name="nof_output_data_itf";value=1},
 			{name="mode";value=2}, /* 0 tx, 1 rx, 2 both */
-			{name="mcs_tx";value=9},{name="nof_rbg_tx";value=6},{name="rbg_mask_tx";value=0x3f},
+			{name="mcs_tx";value=6},{name="nof_rbg_tx";value=6},{name="rbg_mask_tx";value=0x3f},
 			{name="nof_prb_tx";value=6},
 			
 			{name="cfi_tx";value=1},
-			{name="divide";value=0},
+			{name="divide";value=1},
 			
 			{name="cfi_rx";value=-1},
 			{name="subframe_rx";value=-1},
@@ -54,16 +54,30 @@ modules:
 			
 		);
 	};
-		
+	
+	capture:
+	{
+		binary="modrep_default/libudp_source.so";	
+		mopts=8;
+		variables=({name="address";value="127.0.0.1"},{name="port";value=10000;}
+			); 
+	};
+	
 	source:
 	{
-		binary="modrep_default/libsource.so";	
-		mopts=6;
-		variables=(
-			{name="block_length";value=100},{name="generator";value=0}
-		);
+		binary="modrep_default/libblock_adapter.so";	
+		mopts=8;
+		variables=({name="block_length";value=22},{name="buffer_size";value=100000}
+			); 
 	};
-
+		
+	bit_pack:
+	{
+		binary="modrep_default/libbitpacker.so";	
+		mopts=8;
+		variables=({name="direction";value=0}); 
+	};
+	
 	pbch_tx:
 	{
 		include="../aloe_git/pbch_tx.app";	
@@ -196,17 +210,32 @@ modules:
 	
 	sink:
 	{
-		binary="modrep_default/libplp_sink.so";
-		mopts=4;
-		variables=({name="is_complex";value=1},{name="mode";value=0});
-	};	
+		binary="modrep_default/libblock_adapter.so";	
+		mopts=8;
+		variables=({name="block_length";value=10624},{name="buffer_size";value=100000}
+			); 
+	};
 	
+	bit_unpack:
+	{
+		binary="modrep_default/libbitpacker.so";	
+		mopts=8;
+		variables=({name="direction";value=1}); 
+	};
+	
+	display:
+	{
+		binary="modrep_default/libudp_sink.so";
+		mopts=5;
+		variables=({name="address";value="127.0.0.1"},{name="port";value=20000;}
+			); 
+	};	
 	
 };
 
 join_stages=
 (
-	("ctrl_mux","ctrl","source","pbch_tx_pack","pbch_tx_crc","pbch_tx_pack","pbch_tx_crc_scramble","pbch_tx_coder","pbch_tx_ratematching","pbch_tx_demux","pbch_tx_scrambling","pbch_tx_modulator","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_pack","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
+	("ctrl_mux","ctrl","capture","source","bit_pack","pbch_tx_pack","pbch_tx_crc","pbch_tx_pack","pbch_tx_crc_scramble","pbch_tx_coder","pbch_tx_ratematching","pbch_tx_demux","pbch_tx_scrambling","pbch_tx_modulator","pcfich_tx_coder","pcfich_tx_modulator","pcfich_tx_scrambling","pdcch_tx_pack","pdcch_tx_crc","pdcch_tx_coder","pdcch_tx_ratematching","pdcch_tx_scrambling","pdcch_tx_modulator","pdsch_tx_crc_tb","pdsch_tx_coder","pdsch_tx_ratematching","pdsch_tx_scrambling","pdsch_tx_modulator","resmapp","demux_tx"),
 	("symb_tx_ifft_0","symb_tx_cyclic_first_0"),
 	("symb_tx_ifft_1","symb_tx_cyclic_0"),
 	("symb_tx_ifft_2","symb_tx_cyclic_1"),
@@ -242,14 +271,19 @@ join_stages=
 	("mux_rx","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
 	("resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
 	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check","pdcch_rx_unpack"),
-	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink")
+	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink","bit_unpack","display")
 );
 
 interfaces:
 (
 	{src="ctrl_mux";dest="ctrl";delay=0},
 	
-	{src="source";dest="pdsch_tx"},
+	{src="ctrl";dest="pdcch_tx"},
+	
+	{src="capture";dest="source"},
+	{src="source";dest="bit_pack"},
+	{src="bit_pack";dest="pdsch_tx"},
+	
 	{src="pdsch_tx";dest=("resmapp",0)},
 	{src="pcfich_tx";dest=("resmapp",1)},
 	{src="pdcch_tx";dest=("resmapp",2)},
@@ -317,6 +351,8 @@ interfaces:
 	
 	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
 	
-	{src="pdsch_rx";dest="sink"}
+	{src="pdsch_rx";dest="sink"},
+	{src="sink";dest="bit_unpack"},
+	{src="bit_unpack";dest="display"}
 );
 

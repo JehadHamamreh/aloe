@@ -35,6 +35,8 @@
 
 static int fd;
 
+pmid_t blen_id;
+
 int create_server_upd(char *address, int port) {
 	int sockfd,n;
 	struct sockaddr_in me;
@@ -51,13 +53,15 @@ int create_server_upd(char *address, int port) {
 	me.sin_addr.s_addr=inet_addr(address);
 	me.sin_port=htons(port);
 
-	if (bind(sockfd,&me, sizeof(me))) {
+	if (bind(sockfd,(struct sockaddr*) &me, sizeof(me))) {
 		perror("bind");
 		return -1;
 	}
+	/*
 	int flags = fcntl(sockfd,F_GETFL);
 	flags |= O_NONBLOCK;
 	fcntl(sockfd,F_SETFL,flags);
+	*/
 	return sockfd;
 
 }
@@ -74,6 +78,8 @@ int initialize() {
 	var_t pm;
 	int i;
 	int port;
+
+	blen_id = param_id("block_length");
 
 	if (param_get_int_name("port",&port)) {
 		moderror("Port undefined\n");
@@ -114,12 +120,21 @@ int work(void **inp, void **out) {
 	struct sockaddr_in other;
 	socklen_t addrsz = sizeof(other);
 	int n;
+	int block_length=0,b=0;
+
 	if (!out[0]) {
 		moderror("output buffer not ready\n");
 		return 0;
 	}
 
-	n = recvfrom(fd,out[0],OUTPUT_MAX_SAMPLES,MSG_DONTWAIT,(struct sockaddr*) &other, &addrsz);
+	param_get_int(blen_id,&block_length);
+
+	if (!block_length) {
+		block_length = OUTPUT_MAX_SAMPLES;
+		b=1;
+	}
+
+	n = recvfrom(fd,out[0],block_length,MSG_DONTWAIT,(struct sockaddr*) &other, &addrsz);
 	if (n == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			n=0;
@@ -131,7 +146,8 @@ int work(void **inp, void **out) {
 		moderror("connection lost\n");
 		return -1;
 	}
-	printf("received %d bytes\n",n);/* from %s:%d\n",n,inet_ntoa(other.sin_addr),ntohs(other.sin_port));*/
+
+	moddebug("received %d bytes\n",n);
 
 	return n;
 }

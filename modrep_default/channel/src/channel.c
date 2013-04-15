@@ -24,9 +24,9 @@
 #include <params.h>
 #include <skeleton.h>
 
-#include "gen_channel.h"
-#include "base/vector.h"
 #include "channel.h"
+#include "base/vector.h"
+#include "gauss.h"
 
 pmid_t scale_id,gain_re_id,gain_im_id,variance_id;
 
@@ -40,7 +40,7 @@ float get_variance(float snr_db,float scale) {
 }
 
 /**
- * @ingroup gen_channel
+ * @ingroup channel
  *
  * \param variance Gaussian noise variance
  * \param gain Channel gain

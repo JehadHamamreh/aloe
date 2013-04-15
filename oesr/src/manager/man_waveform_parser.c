@@ -646,7 +646,7 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 			return 0;
 		}
 		for (i=ctrl->index+1;i<w->nof_modules;i++) {
-			pardebug("ctrl module port %d dest %d:%d\n",ctrl->nof_outputs,w->modules[i].id,w->modules[i].nof_inputs);
+			pardebug("ctrl module port %d dest %s:%d\n",ctrl->nof_outputs,w->modules[i].name,w->modules[i].nof_inputs);
 			ctrl->outputs[ctrl->nof_outputs].remote_module_id = w->modules[i].id;
 			ctrl->outputs[ctrl->nof_outputs].remote_port_idx = w->modules[i].nof_inputs;
 			ctrl->outputs[ctrl->nof_outputs].delay = 1;

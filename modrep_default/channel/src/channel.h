@@ -19,26 +19,25 @@
 
 
 /**
- * @defgroup udp_source udp_source
- * This module reads data from an udp socket
+ * @defgroup channel
+ *
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef char output_t;
+typedef _Complex float input_t;
+typedef _Complex float output_t;
 
 #define OUTPUT_MAX_SAMPLES 	14*2048
-#define INPUT_MAX_SAMPLES 	0
+#define INPUT_MAX_SAMPLES 	14*2048
 
-#define NOF_INPUT_ITF		0
+#define NOF_INPUT_ITF		1
 #define NOF_OUTPUT_ITF		1
 
 #endif
 
 /**@} */
-
-
 
 
 /********* do not need to modify beyond here */
@@ -51,7 +50,7 @@ const int input_max_samples = INPUT_MAX_SAMPLES;
 const int output_max_samples = OUTPUT_MAX_SAMPLES;
 
 /* leave these two lines unmodified */
-const int input_sample_sz = 0;
+const int input_sample_sz = sizeof(input_t);
 const int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */

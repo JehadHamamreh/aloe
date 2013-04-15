@@ -301,6 +301,13 @@ static void check_threads() {
 				aerror_msg("pipeline thread %d still running, killing\n",i);
 				pthread_kill(rtdal.pipelines[i].thread, TASK_TERMINATION_SIGNAL);
 			}
+		} else {
+			if (rtdal.pipelines[i].waiting) {
+				hdebug("setting wait to zero\n",0);
+				rtdal.pipelines[i].waiting = 0;
+				usleep(20000);
+				hdebug("done",0);
+			}
 		}
 	}
 	hdebug("i=%d\n",i);
@@ -415,6 +422,8 @@ int main(int argc, char **argv) {
 
 	/* the main thread runs the sigwait loop */
 	sigwait_loop();
+
+	printf("exiting\n");
 
 clean_and_exit:
 	exit(0);

@@ -16,28 +16,6 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** Sends size bytes from the buffer value to the destination variable given by the index
- * dest_idx in the structure remote_params_db_t remote_params_db[]
- * \returns 0 on success, or -1 on error
- */
-int ctrl_skeleton_send_idx(int dest_idx, void *value, int size, int tstamp);
-
-/** Sends size bytes from the buffer value to the destination variable given by
- * module_name and variable_name
- * \returns 0 on success, or -1 on error
- */
-int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size, int tstamp);
-
-/* This function is called each timeslot, regardless of the parameters having changed or not.
- *
- * \param tslot Value of the current timeslot
- * \returns 0 on success or -1 on error
- */
-int ctrl_work(int tslot);
-
-int ctrl_init();
-
-
 /** value and size fields may be set to NULL and zero if ctrl_send_always is zero
  */
 typedef struct {
@@ -56,6 +34,30 @@ typedef struct {
 #define MAX_VARIABLES 200
 
 extern void *ctx;
+
+/** Sends size bytes from the buffer value to the destination variable given by the index
+ * dest_idx in the structure remote_params_db_t remote_params_db[]
+ * \returns 0 on success, or -1 on error
+ */
+int ctrl_skeleton_send_idx(int dest_idx, void *value, int size, int tstamp);
+
+/** Sends size bytes from the buffer value to the destination variable given by
+ * module_name and variable_name
+ * \returns 0 on success, or -1 on error
+ */
+int ctrl_skeleton_send_name(char *module_name, char *variable_name, void *value, int size, int tstamp);
+
+int set_remote_params(remote_params_db_t *params);
+
+/* This function is called each timeslot, regardless of the parameters having changed or not.
+ *
+ * \param tslot Value of the current timeslot
+ * \returns 0 on success or -1 on error
+ */
+int ctrl_work(int tslot);
+
+int ctrl_init();
+
 
 
 /* Info and error messages print */
