@@ -19,6 +19,7 @@ var searchData=
   ['lte_5fre',['lte_re',['../structlte__re.html',1,'']]],
   ['lte_5freg',['lte_reg',['../structlte__reg.html',1,'']]],
   ['lte_5fresource_5fmapper',['lte_resource_mapper',['../group__lte__resource__mapper.html',1,'']]],
+  ['lte_5fscrambling',['lte_scrambling',['../group__lte__scrambling.html',1,'']]],
   ['lte_5fsegmentation',['lte_segmentation',['../group__lte__segmentation.html',1,'']]],
   ['lte_5fsymbol',['lte_symbol',['../structlte__symbol.html',1,'']]],
   ['lte_5fturbocoder',['lte_turbocoder',['../group__lte__turbocoder.html',1,'']]]

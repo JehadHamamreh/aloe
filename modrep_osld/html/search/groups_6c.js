@@ -8,6 +8,7 @@ var searchData=
   ['lte_5flib',['lte_lib',['../group__lte__lib.html',1,'']]],
   ['lte_5fratematching',['lte_ratematching',['../group__lte__ratematching.html',1,'']]],
   ['lte_5fresource_5fmapper',['lte_resource_mapper',['../group__lte__resource__mapper.html',1,'']]],
+  ['lte_5fscrambling',['lte_scrambling',['../group__lte__scrambling.html',1,'']]],
   ['lte_5fsegmentation',['lte_segmentation',['../group__lte__segmentation.html',1,'']]],
   ['lte_5fturbocoder',['lte_turbocoder',['../group__lte__turbocoder.html',1,'']]]
 ];
