@@ -1,17 +1,24 @@
-
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/fbe47a2652453cdc1eb50219b38ab2f0 "githalytics.com")](http://githalytics.com/flexnets/aloe)
 ALOE stands for Abstraction Layer and Open Operating Environment. It is an Open Source framework for distributed real-time signal processing for SDR (Software-Defined Radio) applications. ALOE is released under the LGPL license (see license.txt) 
 
 ALOE++ is partially supported by the NLnet foundation (http://www.nlnet.nl), as part of the OSLD project. OSLD aims at building an Open Source LTE system based on ALOE. More information and documentation can be found in the OSLD project website (https://sites.google.com/site/osldproject/)
 
 [Click here to know more about ALOE++.](https://github.com/flexnets/aloe/wiki/ALOE-Project)
 
-### Contact
-For any question, bug report or suggestion, please contact us at
+### Mail list
+For any question, bug report or suggestion, please register to our mail list at
 https://groups.google.com/group/flexnets
 
 
 ### News
- * ALOE++ 0.4 has been officially released. New Features: 
+ * Upcoming presentation/demo:
+    * SDR-WinnComm-Europe, 11-13th June, Munich  
+ * ALOE++ 0.6 has been released. New features:
+    * Downlink Channels: PDSCH, PBCH, PCFICH and PDCCH 
+    * TX and RX isolation
+    * UDP source/sink modules
+    * MATLAB/Octave models: PUSCH and PUCCH.
+ * ALOE++ 0.4.1 has been released. New Features: 
     * Xenomai RTOS support to achieve lowest latencies.
     * Pipeline stage merge.
     * LTE PDSCH full TX and RX, 3 ms latency.  
@@ -19,7 +26,7 @@ https://groups.google.com/group/flexnets
 
 ### Requirements
 To install ALOE++, the only requirement is the libconfig parsing library and cmake:
- * libconfig 1.4.8.5
+ * libconfig 1.4.8
  * cmake
 
 The current ALOE++ release comes with an OFDM demo waveform and a small set of useful modues. These modules have more requirements: 
@@ -40,13 +47,13 @@ To be able to use Matlab for verification, type `export MATLAB_ROOT=/root/to/Mat
   
 ### Download and Compile
 
-Download aloe-0.4 from https://github.com/flexnets/aloe/archive/0.4.tar.gz and extract the contents:
+Download aloe-0.6 from https://github.com/flexnets/aloe/archive/0.6.tar.gz and extract the contents:
 
 ```
 
-wget https://github.com/flexnets/aloe/archive/0.4.1.tar.gz
-tar xzvf 0.4.1.tar.gz
-cd aloe-0.4.1
+wget https://github.com/flexnets/aloe/archive/0.6.tar.gz
+tar xzvf 0.6.tar.gz
+cd aloe-0.6
 mkdir build
 cd build
 cmake ../
@@ -65,11 +72,11 @@ ALOE++ does not need to be installed to run. Installing is more convenient in or
 ### Running the OFDM demo waveform
 The OFDM test waveform is defined in file ofdm.app. It defines the DSP modules that build the waveform and their interconnections, among others. 
 
-If you did not installed ALOE++, from the `build` directory, run:
+If you did not installed ALOE++, from the `aloe-0.6` directory, run:
 
-`rtdal_lnx/runcf ../osld.app ../config`
+`build/rtdal_lnx/runcf ./osld.app ./config`
 
-The file `../osld.app` defines the waveform graph. The file `../config` stores the configuration of ALOE++. It allows to change the time slot length, the support for USRP devices and the location of the component libraries. 
+The file `osld.app` defines the waveform graph. The file `config` stores the configuration of ALOE++. It allows to change the time slot length, the support for USRP devices and the location of the component libraries. 
 
 To LOAD, INIT and RUN the waveform, just type:
  *  **l** and Enter, 
