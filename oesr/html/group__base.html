@@ -50,6 +50,10 @@ Functions</h2></td></tr>
 <tr class="memitem:ga80078711483d249618c55331061fe8d5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#ga80078711483d249618c55331061fe8d5">oesr_exit</a> (void *context)</td></tr>
 <tr class="memitem:ga11dbee400724229ebd7870653e02bba9"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#ga11dbee400724229ebd7870653e02bba9">oesr_module_name</a> (void *context)</td></tr>
 <tr class="memitem:gafc3984482b5a92e69c54a9a6043bc5dc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#gafc3984482b5a92e69c54a9a6043bc5dc">oesr_module_id</a> (void *context)</td></tr>
+<tr class="memitem:gaa8707c8ab80fb710d00c65d600c6d79b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#gaa8707c8ab80fb710d00c65d600c6d79b">oesr_module_idx</a> (void *context)</td></tr>
+<tr class="memitem:ga89eac2640c4dcac49c87cb94363cdd05"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#ga89eac2640c4dcac49c87cb94363cdd05">oesr_get_module_idx</a> (void *context, char *name)</td></tr>
+<tr class="memitem:ga05867a6d6482de4401eeb77db40da036"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#ga05867a6d6482de4401eeb77db40da036">oesr_get_variable_idx</a> (void *context, char *module_name, char *variable_name)</td></tr>
+<tr class="memitem:ga80b7856bfc3d89fc0aa09723082139ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__base.html#ga80b7856bfc3d89fc0aa09723082139ed">oesr_get_nofmodules</a> (void *context)</td></tr>
 </table>
 <a name="details" id="details"></a><h2>Detailed Description</h2>
 <h2>Function Documentation</h2>
@@ -71,6 +75,89 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga89eac2640c4dcac49c87cb94363cdd05"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_get_module_idx </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the index of a module in the waveform.</p>
+<p>This function is used by the control interface skeleton.</p>
+<p>TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform contains the local modules only. </p>
+
+</div>
+</div>
+<a class="anchor" id="ga80b7856bfc3d89fc0aa09723082139ed"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_get_nofmodules </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the number of modules in the waveform.</p>
+<p>This function is used by the control interface skeleton.</p>
+<p>TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform contains the local modules only. </p>
+
+</div>
+</div>
+<a class="anchor" id="ga05867a6d6482de4401eeb77db40da036"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_get_variable_idx </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>variable_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the index of a variable in a module.</p>
+<p>This function is used by the control interface skeleton.</p>
+<p>TODO: In a distributed platform, should ask manager for the waveform, since nod_waveform contains the local modules only. </p>
+
+</div>
+</div>
 <a class="anchor" id="gafc3984482b5a92e69c54a9a6043bc5dc"></a>
 <div class="memitem">
 <div class="memproto">
@@ -85,6 +172,23 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Returns the module id (non-negative integer), -1 on error </p>
+
+</div>
+</div>
+<a class="anchor" id="gaa8707c8ab80fb710d00c65d600c6d79b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_module_idx </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the module idx (non-negative integer), -1 on error </p>
 
 </div>
 </div>
@@ -142,7 +246,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:22 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:02:58 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

@@ -47,7 +47,8 @@
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">rtdal_timer.c File Reference</div>  </div>
 </div><!--header-->
@@ -58,7 +59,6 @@
 <code>#include &lt;signal.h&gt;</code><br/>
 <code>#include &lt;time.h&gt;</code><br/>
 <code>#include &lt;error.h&gt;</code><br/>
-<code>#include &lt;sys/timerfd.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="defs_8h_source.html">defs.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal__timer_8h_source.html">rtdal_timer.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal_8h_source.html">rtdal.h</a>&quot;</code><br/>
@@ -68,14 +68,13 @@
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae1a672958fdb59920efdb76ae4ad2ff5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#ae1a672958fdb59920efdb76ae4ad2ff5">timer_close</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *info)</td></tr>
-<tr class="memitem:a91a7a34af4740f9cd40214dab6c38d14"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a91a7a34af4740f9cd40214dab6c38d14">timer_setup</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *info)</td></tr>
-<tr class="memitem:a98aa8339dd23e5016ee9432df047cf32"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a98aa8339dd23e5016ee9432df047cf32">timer_start</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *info)</td></tr>
-<tr class="memitem:a5cdfa5c3c222b363d7c3424ee578144c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a5cdfa5c3c222b363d7c3424ee578144c">timer_wait_period</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *info)</td></tr>
 <tr class="memitem:a788dd9ea55c96655a1c60321caefddff"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a788dd9ea55c96655a1c60321caefddff">timer_run_thread</a> (void *x)</td></tr>
-<tr class="memitem:a9690d748c0d24525f4214b9c07c11bf3"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a9690d748c0d24525f4214b9c07c11bf3">timerfd_timer_run_thread</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *obj)</td></tr>
-<tr class="memitem:af3313cb513c685b5db157b15fcd17776"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#af3313cb513c685b5db157b15fcd17776">timespec_sub_us</a> (struct timespec *t, long int us)</td></tr>
+<tr class="memitem:af3313cb513c685b5db157b15fcd17776"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#af3313cb513c685b5db157b15fcd17776">timespec_sub_us</a> (struct timespec *<a class="el" href="BoardIo_8cpp.html#af08842e1093c36a5c5a17a7b4441f106">t</a>, long int us)</td></tr>
 <tr class="memitem:ae458a16475ac37fff3e1914cc5bf83f4"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#ae458a16475ac37fff3e1914cc5bf83f4">nanoclock_timer_run_thread</a> (<a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *obj)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a0a054cd4bae72434b652293b11575dad"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__timer_8c.html#a0a054cd4bae72434b652293b11575dad">timeslot</a></td></tr>
 </table>
 <h2>Function Documentation</h2>
 <a class="anchor" id="ae458a16475ac37fff3e1914cc5bf83f4"></a>
@@ -92,33 +91,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00177">177</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00192">192</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__timer_8h_source.html#l00042">rtdal_timer_t::arg</a>, <a class="el" href="futex_8h_source.html#l00027">futex_wait</a>, <a class="el" href="rtdal__timer_8h_source.html#l00034">rtdal_timer_t::next</a>, <a class="el" href="rtdal__timer_8h_source.html#l00038">rtdal_timer_t::period</a>, <a class="el" href="rtdal__timer_8h_source.html#l00043">rtdal_timer_t::period_function</a>, <a class="el" href="rtdal__timer_8h_source.html#l00039">rtdal_timer_t::stop</a>, <a class="el" href="rtdal__timer_8h_source.html#l00026">TIMER_FUTEX_GUARD_SEC</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00041">rtdal_timer_t::wait_futex</a>.</p>
+<p>References <a class="el" href="rtdal__timer_8h_source.html#l00043">rtdal_timer_t::arg</a>, <a class="el" href="futex_8h_source.html#l00027">futex_wait</a>, <a class="el" href="rtdal__timer_8h_source.html#l00039">rtdal_timer_t::multiple</a>, <a class="el" href="BoardIo_8cpp_source.html#l00326">n</a>, <a class="el" href="rtdal__timer_8h_source.html#l00034">rtdal_timer_t::next</a>, <a class="el" href="rtdal__timer_8h_source.html#l00038">rtdal_timer_t::period</a>, <a class="el" href="rtdal__timer_8h_source.html#l00044">rtdal_timer_t::period_function</a>, <a class="el" href="rtdal__timer_8h_source.html#l00040">rtdal_timer_t::stop</a>, <a class="el" href="rtdal__timer_8h_source.html#l00026">TIMER_FUTEX_GUARD_SEC</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00042">rtdal_timer_t::wait_futex</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00109">timer_run_thread()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ae1a672958fdb59920efdb76ae4ad2ff5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void timer_close </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *&#160;</td>
-          <td class="paramname"><em>info</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00041">41</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__timer_8h_source.html#l00035">rtdal_timer_t::timer_fd</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00127">timerfd_timer_run_thread()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00114">timer_run_thread()</a>.</p>
 
 </div>
 </div>
@@ -136,115 +113,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00109">109</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00114">114</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00050">aerror_msg</a>, <a class="el" href="defs_8h_source.html#l00036">DEBUG_rtdal</a>, <a class="el" href="rtdal__timer_8h_source.html#l00044">rtdal_timer_t::mode</a>, <a class="el" href="rtdal__timer_8c_source.html#l00177">nanoclock_timer_run_thread()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">NANOSLEEP</a>, <a class="el" href="rtdal__task_8c_source.html#l00219">rtdal_task_print_sched()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">TIMERFD</a>, and <a class="el" href="rtdal__timer_8c_source.html#l00127">timerfd_timer_run_thread()</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00056">aerror</a>, <a class="el" href="defs_8h_source.html#l00055">aerror_msg</a>, <a class="el" href="defs_8h_source.html#l00036">DEBUG_rtdal</a>, <a class="el" href="rtdal__timer_8h_source.html#l00045">rtdal_timer_t::mode</a>, <a class="el" href="rtdal__timer_8c_source.html#l00192">nanoclock_timer_run_thread()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">NANOSLEEP</a>, <a class="el" href="rtdal__task_8c_source.html#l00221">rtdal_task_print_sched()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">TIMERFD</a>, <a class="el" href="rtdal__timer_8h.html#a8ab552c364977e6fbd75c0ea6f31b6e3">timerfd_timer_run_thread()</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00029">XENOMAI</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00191">kernel_initialize_create_pipeline()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a91a7a34af4740f9cd40214dab6c38d14"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int timer_setup </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *&#160;</td>
-          <td class="paramname"><em>info</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00045">45</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
-
-<p>References <a class="el" href="defs_8h_source.html#l00050">aerror_msg</a>, <a class="el" href="rtdal__timer_8h_source.html#l00037">rtdal_timer_t::itval</a>, <a class="el" href="rtdal__timer_8h_source.html#l00038">rtdal_timer_t::period</a>, <a class="el" href="rtdal__timer_8h_source.html#l00035">rtdal_timer_t::timer_fd</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00036">rtdal_timer_t::wakeups_missed</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00127">timerfd_timer_run_thread()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a98aa8339dd23e5016ee9432df047cf32"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int timer_start </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *&#160;</td>
-          <td class="paramname"><em>info</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00077">77</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__timer_8h_source.html#l00037">rtdal_timer_t::itval</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00035">rtdal_timer_t::timer_fd</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00127">timerfd_timer_run_thread()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a5cdfa5c3c222b363d7c3424ee578144c"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int timer_wait_period </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *&#160;</td>
-          <td class="paramname"><em>info</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00088">88</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__timer_8h_source.html#l00035">rtdal_timer_t::timer_fd</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00036">rtdal_timer_t::wakeups_missed</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00127">timerfd_timer_run_thread()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a9690d748c0d24525f4214b9c07c11bf3"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* timerfd_timer_run_thread </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structrtdal__timer__t.html">rtdal_timer_t</a> *&#160;</td>
-          <td class="paramname"><em>obj</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00127">127</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
-
-<p>References <a class="el" href="defs_8h_source.html#l00051">aerror</a>, <a class="el" href="rtdal__timer_8h_source.html#l00042">rtdal_timer_t::arg</a>, <a class="el" href="futex_8h_source.html#l00027">futex_wait</a>, <a class="el" href="rtdal__timer_8h_source.html#l00043">rtdal_timer_t::period_function</a>, <a class="el" href="rtdal__timer_8h_source.html#l00039">rtdal_timer_t::stop</a>, <a class="el" href="rtdal__timer_8c_source.html#l00041">timer_close()</a>, <a class="el" href="rtdal__timer_8c_source.html#l00045">timer_setup()</a>, <a class="el" href="rtdal__timer_8c_source.html#l00077">timer_start()</a>, <a class="el" href="rtdal__timer_8c_source.html#l00088">timer_wait_period()</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00041">rtdal_timer_t::wait_futex</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__timer_8c_source.html#l00109">timer_run_thread()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00151">kernel_initialize_create_pipeline()</a>.</p>
 
 </div>
 </div>
@@ -272,14 +145,29 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00169">169</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__timer_8c_source.html#l00184">184</a> of file <a class="el" href="rtdal__timer_8c_source.html">rtdal_timer.c</a>.</p>
+
+</div>
+</div>
+<h2>Variable Documentation</h2>
+<a class="anchor" id="a0a054cd4bae72434b652293b11575dad"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int timeslot</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8c_source.html#l00018">18</a> of file <a class="el" href="pipeline__sync_8c_source.html">pipeline_sync.c</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

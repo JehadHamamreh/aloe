@@ -47,7 +47,8 @@
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">pipeline_sync.h File Reference</div>  </div>
 </div><!--header-->
@@ -61,13 +62,18 @@
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:aebac1913f3094aa1204303b3e18f51e6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#aebac1913f3094aa1204303b3e18f51e6">MAX_PIPELINES</a>&#160;&#160;&#160;30</td></tr>
 <tr class="memitem:ade0b131dfc1356dc7bb032c5593709c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#ade0b131dfc1356dc7bb032c5593709c0">SEM</a>&#160;&#160;&#160;1</td></tr>
 <tr class="memitem:a82192e5816ace2191e7d678cd2e2c697"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a82192e5816ace2191e7d678cd2e2c697">FUTEX</a>&#160;&#160;&#160;2</td></tr>
 <tr class="memitem:abd39f207af925a92f1d11dd1880bb196"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#abd39f207af925a92f1d11dd1880bb196">BARRIER</a>&#160;&#160;&#160;3</td></tr>
-<tr class="memitem:acfd0dd1c7f3b9f986834441b4f06e70b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#acfd0dd1c7f3b9f986834441b4f06e70b">PIPELINESYNC_MUTEX_TYPE</a>&#160;&#160;&#160;3</td></tr>
-<tr class="memitem:a1f1d4f00bb4b2286c05e59854f53b6bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a1f1d4f00bb4b2286c05e59854f53b6bd">pipeline_sync_initialize_</a></td></tr>
-<tr class="memitem:ad5159ca5b3cedcbb86e32ab3b278bcb9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#ad5159ca5b3cedcbb86e32ab3b278bcb9">pipeline_sync_thread_waits</a>(idx)&#160;&#160;&#160;pthread_barrier_wait(&amp;barrier)</td></tr>
-<tr class="memitem:a282cc7f3098c2e0dd3186218a7948203"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a282cc7f3098c2e0dd3186218a7948203">pipeline_sync_threads_wake</a>()&#160;&#160;&#160;pthread_barrier_wait(&amp;barrier)</td></tr>
+<tr class="memitem:a2b186b116ebf486d2558623afd90e5d8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a2b186b116ebf486d2558623afd90e5d8">CONDVAR</a>&#160;&#160;&#160;4</td></tr>
+<tr class="memitem:acfd0dd1c7f3b9f986834441b4f06e70b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#acfd0dd1c7f3b9f986834441b4f06e70b">PIPELINESYNC_MUTEX_TYPE</a>&#160;&#160;&#160;4</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a990e2748a3d520c93a998a9beac7374f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a990e2748a3d520c93a998a9beac7374f">pipeline_sync_initialize</a> (int num_pipelines)</td></tr>
+<tr class="memitem:a36100d77011c2dda66abffb744a9fbcb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a36100d77011c2dda66abffb744a9fbcb">pipeline_sync_thread_waits</a> (int idx)</td></tr>
+<tr class="memitem:a5f066d72c3e40325beaa6dcd426d1464"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline__sync_8h.html#a5f066d72c3e40325beaa6dcd426d1464">pipeline_sync_threads_wake</a> ()</td></tr>
 </table>
 <h2>Macro Definition Documentation</h2>
 <a class="anchor" id="abd39f207af925a92f1d11dd1880bb196"></a>
@@ -80,7 +86,21 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00029">29</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00031">31</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a2b186b116ebf486d2558623afd90e5d8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CONDVAR&#160;&#160;&#160;4</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00032">32</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
 
 </div>
 </div>
@@ -94,64 +114,23 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00028">28</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00030">30</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1f1d4f00bb4b2286c05e59854f53b6bd"></a>
+<a class="anchor" id="aebac1913f3094aa1204303b3e18f51e6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define pipeline_sync_initialize_</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">pthread_barrier_init(&amp;barrier, NULL, \</div>
-<div class="line">                (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>) num_pipelines+1)</div>
-</div><!-- fragment -->
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00052">52</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
-
-<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00041">pipeline_initialize()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ad5159ca5b3cedcbb86e32ab3b278bcb9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define pipeline_sync_thread_waits</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">idx</td><td>)</td>
-          <td>&#160;&#160;&#160;pthread_barrier_wait(&amp;barrier)</td>
+          <td class="memname">#define MAX_PIPELINES&#160;&#160;&#160;30</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00054">54</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00027">27</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
 
-<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00165">pipeline_run_thread()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a282cc7f3098c2e0dd3186218a7948203"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define pipeline_sync_threads_wake</td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td>&#160;&#160;&#160;pthread_barrier_wait(&amp;barrier)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00055">55</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
-
-<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00047">pipeline_sync_threads()</a>.</p>
+<p>Referenced by <a class="el" href="pipeline__sync_8c_source.html#l00083">pipeline_sync_initialize()</a>.</p>
 
 </div>
 </div>
@@ -160,12 +139,12 @@ Macros</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define PIPELINESYNC_MUTEX_TYPE&#160;&#160;&#160;3</td>
+          <td class="memname">#define PIPELINESYNC_MUTEX_TYPE&#160;&#160;&#160;4</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00030">30</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00034">34</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
 
 </div>
 </div>
@@ -179,14 +158,100 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00027">27</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__sync_8h_source.html#l00029">29</a> of file <a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>.</p>
+
+</div>
+</div>
+<h2>Function Documentation</h2>
+<a class="anchor" id="a990e2748a3d520c93a998a9beac7374f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pipeline_sync_initialize </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_pipelines</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8c_source.html#l00083">83</a> of file <a class="el" href="pipeline__sync_8c_source.html">pipeline_sync.c</a>.</p>
+
+<p>References <a class="el" href="pipeline__sync_8h_source.html#l00027">MAX_PIPELINES</a>.</p>
+
+<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00048">pipeline_initialize()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a36100d77011c2dda66abffb744a9fbcb"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pipeline_sync_thread_waits </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>idx</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8c_source.html#l00104">104</a> of file <a class="el" href="pipeline__sync_8c_source.html">pipeline_sync.c</a>.</p>
+
+<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00169">pipeline_run_thread()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a5f066d72c3e40325beaa6dcd426d1464"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pipeline_sync_threads_wake </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8c_source.html#l00120">120</a> of file <a class="el" href="pipeline__sync_8c_source.html">pipeline_sync.c</a>.</p>
+
+<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00054">pipeline_sync_threads()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

@@ -46,7 +46,9 @@
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:gad4464c3f3b8bfd7988e04fbcfd4b1a7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#gad4464c3f3b8bfd7988e04fbcfd4b1a7e">rtdal_machine</a> (<a class="el" href="structrtdal__machine__t.html">rtdal_machine_t</a> *machine)</td></tr>
-<tr class="memitem:ga3aa3576db287b77dbbcb8e49095ee0a2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#ga3aa3576db287b77dbbcb8e49095ee0a2">rtdal_sleep</a> (<a class="el" href="rtdal__types_8h.html#a7157cbb87d46be33f7f913fa09144900">time_t</a> *t)</td></tr>
+<tr class="memitem:ga3aa3576db287b77dbbcb8e49095ee0a2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#ga3aa3576db287b77dbbcb8e49095ee0a2">rtdal_sleep</a> (<a class="el" href="rtdal__types_8h.html#a7157cbb87d46be33f7f913fa09144900">time_t</a> *<a class="el" href="BoardIo_8cpp.html#af08842e1093c36a5c5a17a7b4441f106">t</a>)</td></tr>
+<tr class="memitem:ga528ed81adb8b09dada6d213d8c11d48a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#ga528ed81adb8b09dada6d213d8c11d48a">rtdal_rtcontrol_enable</a> (int enabled)</td></tr>
+<tr class="memitem:ga390dad7f63c4c62c59c180790afb6eaf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#ga390dad7f63c4c62c59c180790afb6eaf">rtdal_timeslot_set</a> (int ts_base_multiply)</td></tr>
 </table>
 <a name="details" id="details"></a><h2>Detailed Description</h2>
 <h2>Function Documentation</h2>
@@ -65,9 +67,30 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Writes the machine structure into the buffer pointed by *machine </p>
 
-<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00041">41</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00046">46</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
 
 <p>References <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ga528ed81adb8b09dada6d213d8c11d48a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void rtdal_rtcontrol_enable </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>enabled</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enables/Disables real-time control </p>
+
+<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00038">38</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
+
+<p>References <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__machine_8h_source.html#l00042">rtdal_machine_t::rt_fault_opts</a>, and <a class="el" href="rtdal__machine_8h_source.html#l00028">RT_FAULT_OPTS_HARD</a>.</p>
 
 </div>
 </div>
@@ -86,16 +109,37 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>sleep the calling thread for the time specified by the time_t structure. </p>
 
-<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00176">176</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00181">181</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
 
 <p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>, <a class="el" href="rtdal__error_8h_source.html#l00038">RTDAL_SYSERROR</a>, and <a class="el" href="rtdal__time_8c_source.html#l00115">rtdal_time_slot()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ga390dad7f63c4c62c59c180790afb6eaf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void rtdal_timeslot_set </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ts_base_multiply</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set timeslot to a multiple of the time slot defined platform-wide </p>
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00075">75</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>References <a class="el" href="defs_8h_source.html#l00056">aerror</a>, <a class="el" href="rtdal__machine_8h_source.html#l00051">rtdal_machine_t::clock_source</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="rtdal__timer_8h_source.html#l00039">rtdal_timer_t::multiple</a>, <a class="el" href="pipeline_8h_source.html#l00053">pipeline_t::mytimer</a>, <a class="el" href="rtdal__machine_8h_source.html#l00041">rtdal_machine_t::nof_cores</a>, <a class="el" href="rtdal__context_8h_source.html#l00047">rtdal_context_t::pipelines</a>, and <a class="el" href="rtdal__machine_8h_source.html#l00025">SINGLE_TIMER</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

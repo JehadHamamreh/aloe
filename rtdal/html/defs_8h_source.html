@@ -89,47 +89,52 @@
 <div class="line"><a name="l00037"></a><span class="lineno"><a class="code" href="defs_8h.html#a1bb343c7f8e901961da4d427ad5e21ae">   37</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define hdebug(_fmt, ...) \</span></div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">        do { if (DEBUG_rtdal) fprintf(debug_buffer,&quot;[debug-rtdal]\t[%s()]: &quot; _fmt, __func__,__VA_ARGS__);} while(0);</span></div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">/* debug spscq */</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno"><a class="code" href="defs_8h.html#a0991390e3e6af64e059c7b8d7ea8ab02">   42</a></span>&#160;<span class="preprocessor">#define DEBUG_spscq 0</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno"><a class="code" href="defs_8h.html#a0ce5e813942f8566345606c774dfb26c">   43</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define qdebug(_fmt, ...) \</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">        do { if (DEBUG_spscq) fprintf(debug_buffer,&quot;[debug-spscq-%d][ts=%d]\t[%s()]: &quot; _fmt, itf-&gt;parent.id,rtdal_time_slot(),__func__,__VA_ARGS__);} while(0);</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno"><a class="code" href="defs_8h.html#a6301667b4f3feb96a8f9a3e0b4ee371e">   47</a></span>&#160;<span class="preprocessor">#define WHERESTR  &quot;[%s():%d]: &quot;</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno"><a class="code" href="defs_8h.html#a516022a761afedf66380e77855fdffe5">   48</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define WHEREARG  __func__, __LINE__</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="code" href="defs_8h.html#adb42fa67b25b77e43d94262c70f72ee1">   49</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define DEBUGPRINT2(...)       fprintf(stderr, __VA_ARGS__)</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="code" href="defs_8h.html#af3478c32be97cb09109d3a5f1759f0b7">   50</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aerror_msg(_fmt, ...)  DEBUGPRINT2(WHERESTR _fmt, WHEREARG, __VA_ARGS__)</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno"><a class="code" href="defs_8h.html#a01fa3ae12c9c437ad6a8c57f815f13b7">   51</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aerror(a)  DEBUGPRINT2(WHERESTR a &quot;\n&quot;, WHEREARG)</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="code" href="defs_8h.html#ae04f14d4dc07790d7f54629c51bb81b9">   53</a></span>&#160;<span class="preprocessor">#define ainfo printf</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno"><a class="code" href="defs_8h.html#aa8130ec5c72eafb23f9705d344746f2c">   54</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define awarn printf</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00056"></a><span class="lineno"><a class="code" href="defs_8h.html#a51d7882587a01d4f2f2553f10472884d">   56</a></span>&#160;<span class="preprocessor">#define aassert(a) if (!(a)) return -1</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno"><a class="code" href="defs_8h.html#a88117664af8b21849e43a46f308c8180">   57</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aassert_p(a) if (!(a)) return NULL</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="code" href="defs_8h.html#ad2c15a5bc5ce0087bc04c07a83a1647a">   59</a></span>&#160;<span class="preprocessor">#define poserror(a,msg) fprintf(stderr, WHERESTR &quot;%s: \n&quot; msg, WHEREARG, strerror(a))</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">/* debug rtdal timing*/</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="code" href="defs_8h.html#a70a3f40093610e55d44ba13a7076181d">   41</a></span>&#160;<span class="preprocessor">#define DEBUG_TIME 0</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="code" href="defs_8h.html#aae2a0d03cf63e149674bb0d61c7aca3f">   42</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define tdebug(_fmt, ...) \</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">        do { if (DEBUG_TIME) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">/* debug spscq */</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="code" href="defs_8h.html#a0991390e3e6af64e059c7b8d7ea8ab02">   47</a></span>&#160;<span class="preprocessor">#define DEBUG_spscq 0</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="code" href="defs_8h.html#a0ce5e813942f8566345606c774dfb26c">   48</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define qdebug(_fmt, ...) \</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">        do { if (DEBUG_spscq == itf-&gt;parent.id) fprintf(debug_buffer,&quot;[debug-spscq-%d][ts=%d]\t[%s()]: &quot; _fmt, itf-&gt;parent.id,rtdal_time_slot(),__func__,__VA_ARGS__);} while(0);</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="code" href="defs_8h.html#a6301667b4f3feb96a8f9a3e0b4ee371e">   52</a></span>&#160;<span class="preprocessor">#define WHERESTR  &quot;[%s():%d]: &quot;</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno"><a class="code" href="defs_8h.html#a516022a761afedf66380e77855fdffe5">   53</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define WHEREARG  __func__, __LINE__</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="code" href="defs_8h.html#adb42fa67b25b77e43d94262c70f72ee1">   54</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define DEBUGPRINT2(...)       fprintf(stderr, __VA_ARGS__)</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="code" href="defs_8h.html#af3478c32be97cb09109d3a5f1759f0b7">   55</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aerror_msg(_fmt, ...)  DEBUGPRINT2(WHERESTR _fmt, WHEREARG, __VA_ARGS__)</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno"><a class="code" href="defs_8h.html#a01fa3ae12c9c437ad6a8c57f815f13b7">   56</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aerror(a)  DEBUGPRINT2(WHERESTR a &quot;\n&quot;, WHEREARG)</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="code" href="defs_8h.html#ae04f14d4dc07790d7f54629c51bb81b9">   58</a></span>&#160;<span class="preprocessor">#define ainfo printf</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="code" href="defs_8h.html#aa8130ec5c72eafb23f9705d344746f2c">   59</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define awarn printf</span></div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">#ifdef __GNUC__</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define SUPPRESS_NOT_USED_WARN __attribute__ ((unused))</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="code" href="defs_8h.html#a86d500a34c624c2cae56bc25a31b12f3">   65</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED(x) UNUSED_ ## x</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#ifdef __GNUC__</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED_FUNCTION(x) __attribute__((__unused__)) UNUSED_ ## x</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="code" href="defs_8h.html#a26aa3564d15ae9e56cce569a324df5da">   71</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED_FUNCTION(x) UNUSED_ ## x</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
-<div class="line"><a name="l00075"></a><span class="lineno"><a class="code" href="defs_8h.html#a76a58005fe6b9d3c5d5fdb9bed70d187">   75</a></span>&#160;<span class="preprocessor">#define CAST(dst,src,type) type dst = (type) src</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="code" href="defs_8h.html#a51d7882587a01d4f2f2553f10472884d">   61</a></span>&#160;<span class="preprocessor">#define aassert(a) if (!(a)) return -1</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="code" href="defs_8h.html#a88117664af8b21849e43a46f308c8180">   62</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define aassert_p(a) if (!(a)) return NULL</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="code" href="defs_8h.html#ad2c15a5bc5ce0087bc04c07a83a1647a">   64</a></span>&#160;<span class="preprocessor">#define poserror(a,msg) fprintf(stderr, WHERESTR &quot;%s: \n&quot; msg, WHEREARG, strerror(a))</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#ifdef __GNUC__</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define SUPPRESS_NOT_USED_WARN __attribute__ ((unused))</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="code" href="defs_8h.html#a86d500a34c624c2cae56bc25a31b12f3">   70</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED(x) UNUSED_ ## x</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#ifdef __GNUC__</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED_FUNCTION(x) __attribute__((__unused__)) UNUSED_ ## x</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno"><a class="code" href="defs_8h.html#a26aa3564d15ae9e56cce569a324df5da">   76</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  define UNUSED_FUNCTION(x) UNUSED_ ## x</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno"><a class="code" href="defs_8h.html#a76a58005fe6b9d3c5d5fdb9bed70d187">   80</a></span>&#160;<span class="preprocessor">#define CAST(dst,src,type) type dst = (type) src</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

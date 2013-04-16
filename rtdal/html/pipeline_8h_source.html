@@ -75,47 +75,50 @@
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="objects__max_8h.html">objects_max.h</a>&quot;</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="rtdal__process_8h.html">rtdal_process.h</a>&quot;</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="rtdal__timer_8h.html">rtdal_timer.h</a>&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
-<div class="line"><a name="l00027"></a><span class="lineno"><a class="code" href="pipeline_8h.html#ac3f5ae786ea023082d01a5d0d9503908">   27</a></span>&#160;<span class="preprocessor">#define PRINT_TIME</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno"><a class="code" href="structpipeline__t.html">   42</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00043"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a4d67080f7085c575d347d1ed5203a2ff">   43</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a4d67080f7085c575d347d1ed5203a2ff">id</a>;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="comment">/* pointer to the first process to execute */</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a6bb54a0cd8dde618972cdcd629503979">   46</a></span>&#160;        <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *<a class="code" href="structpipeline__t.html#a6bb54a0cd8dde618972cdcd629503979">first_process</a>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="comment">/* The pipeline runs in a thread when synchronizes to another timer */</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab506a10f907e26976e2784e7b4d3075d">   49</a></span>&#160;        pthread_t <a class="code" href="structpipeline__t.html#ab506a10f907e26976e2784e7b4d3075d">thread</a>;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="comment">/* The pipeline runs its own timer, which is synchronized at the beginning*/</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab49193f9dbfbddaee1b5327c2ece0fb8">   52</a></span>&#160;        <a class="code" href="structrtdal__timer__t.html">rtdal_timer_t</a> <a class="code" href="structpipeline__t.html#ab49193f9dbfbddaee1b5327c2ece0fb8">mytimer</a>;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab5d965c3c5c84d69165351e7d7b70e80">   54</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#ab5d965c3c5c84d69165351e7d7b70e80">stop</a>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a676e2ef00113a6da513d70007858628b">   58</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a676e2ef00113a6da513d70007858628b">finished</a>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="code" href="structpipeline__t.html#af1260ecb0c7e3429f031708d1eebaf04">   60</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#af1260ecb0c7e3429f031708d1eebaf04">nof_processes</a>;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ada6cb4fb46dcc2966c0237c2e24db1ed">   62</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#ada6cb4fb46dcc2966c0237c2e24db1ed">ts_counter</a>;</div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a8c842f2d27e3f3a3ff933d5a2ee409fa">   66</a></span>&#160;        <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *<a class="code" href="structpipeline__t.html#a8c842f2d27e3f3a3ff933d5a2ee409fa">running_process</a>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a09b2f4bb610224e4f5c9ddcbf81b7874">   67</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a09b2f4bb610224e4f5c9ddcbf81b7874">running_process_idx</a>;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}<a class="code" href="structpipeline__t.html">pipeline_t</a>;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#aa9b233cb90be7c46fe70942a92cc48a3">pipeline_run_from_timer</a>(<span class="keywordtype">void</span> *arg, <span class="keyword">struct</span> timespec *time);</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#adacbb7e165cf559489ff53309ed54bc6">pipeline_sync_threads</a>();</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#a644d25013c5885243e33edd9e7c61678">pipeline_initialize</a>(<span class="keywordtype">int</span> _num_pipelines);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keywordtype">void</span> *<a class="code" href="pipeline_8c.html#a767c65ec7777bc4199a77827f1e81a72">pipeline_run_thread</a>(<span class="keywordtype">void</span> *obj);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#aaa0d27030e4683b82ffe9d5651b5c97c">pipeline_recover_thread</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#a02037b265fa3ed27bf0a7d75d7813292">pipeline_rt_fault</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#a615ac86c6cff54ffa2edb1bf1606729c">pipeline_add</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *process);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#ae95c1483a8fa6f94477e280a52fdfe78">pipeline_remove</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *proc);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">#define PRINT_TIME</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="code" href="pipeline_8h.html#a10fb9e6e52ea3cc746d1fb17c4a0962a">   29</a></span>&#160;<span class="preprocessor">#define PRINT_RT_FAULT</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="code" href="structpipeline__t.html">   43</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00044"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a4d67080f7085c575d347d1ed5203a2ff">   44</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a4d67080f7085c575d347d1ed5203a2ff">id</a>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="comment">/* pointer to the first process to execute */</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a6bb54a0cd8dde618972cdcd629503979">   47</a></span>&#160;        <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *<a class="code" href="structpipeline__t.html#a6bb54a0cd8dde618972cdcd629503979">first_process</a>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="comment">/* The pipeline runs in a thread when synchronizes to another timer */</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab506a10f907e26976e2784e7b4d3075d">   50</a></span>&#160;        pthread_t <a class="code" href="structpipeline__t.html#ab506a10f907e26976e2784e7b4d3075d">thread</a>;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="comment">/* The pipeline runs its own timer, which is synchronized at the beginning*/</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab49193f9dbfbddaee1b5327c2ece0fb8">   53</a></span>&#160;        <a class="code" href="structrtdal__timer__t.html">rtdal_timer_t</a> <a class="code" href="structpipeline__t.html#ab49193f9dbfbddaee1b5327c2ece0fb8">mytimer</a>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ab5d965c3c5c84d69165351e7d7b70e80">   55</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#ab5d965c3c5c84d69165351e7d7b70e80">stop</a>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a676e2ef00113a6da513d70007858628b">   59</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a676e2ef00113a6da513d70007858628b">finished</a>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="code" href="structpipeline__t.html#af1260ecb0c7e3429f031708d1eebaf04">   61</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#af1260ecb0c7e3429f031708d1eebaf04">nof_processes</a>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a58588e7efc87faa46cc6c9d32d9b6883">   62</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a58588e7efc87faa46cc6c9d32d9b6883">rtfaults</a>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="code" href="structpipeline__t.html#ada6cb4fb46dcc2966c0237c2e24db1ed">   63</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#ada6cb4fb46dcc2966c0237c2e24db1ed">ts_counter</a>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a8c842f2d27e3f3a3ff933d5a2ee409fa">   67</a></span>&#160;        <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *<a class="code" href="structpipeline__t.html#a8c842f2d27e3f3a3ff933d5a2ee409fa">running_process</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a09b2f4bb610224e4f5c9ddcbf81b7874">   68</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a09b2f4bb610224e4f5c9ddcbf81b7874">running_process_idx</a>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="code" href="structpipeline__t.html#a22a0758e1468d1e7928cb202167aad3a">   70</a></span>&#160;        <span class="keywordtype">int</span> <a class="code" href="structpipeline__t.html#a22a0758e1468d1e7928cb202167aad3a">waiting</a>;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;}<a class="code" href="structpipeline__t.html">pipeline_t</a>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#aa9b233cb90be7c46fe70942a92cc48a3">pipeline_run_from_timer</a>(<span class="keywordtype">void</span> *arg, <span class="keyword">struct</span> timespec *time);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#adacbb7e165cf559489ff53309ed54bc6">pipeline_sync_threads</a>();</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline_8c.html#a644d25013c5885243e33edd9e7c61678">pipeline_initialize</a>(<span class="keywordtype">int</span> _num_pipelines);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keywordtype">void</span> *<a class="code" href="pipeline_8c.html#a767c65ec7777bc4199a77827f1e81a72">pipeline_run_thread</a>(<span class="keywordtype">void</span> *obj);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#aaa0d27030e4683b82ffe9d5651b5c97c">pipeline_recover_thread</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#a02037b265fa3ed27bf0a7d75d7813292">pipeline_rt_fault</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#a615ac86c6cff54ffa2edb1bf1606729c">pipeline_add</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *<a class="code" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline_8c.html#ae95c1483a8fa6f94477e280a52fdfe78">pipeline_remove</a>(<a class="code" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="code" href="struct__rtdal__process__t.html">rtdal_process_t</a> *proc);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

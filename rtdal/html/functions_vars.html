@@ -79,11 +79,12 @@
 : <a class="el" href="struct__rtdal__process__t.html#aa1cfbd6b6445c333fe1e354b8ddd33dc">_rtdal_process_t</a>
 </li>
 <li>address
-: <a class="el" href="structrtdal__dac__t.html#a61aaedfb5e9406837a83cfa0a57668bc">rtdal_dac_t</a>
+: <a class="el" href="structmain__conf.html#a38e1f72b6b52531451a5e2dbe8bb1779">main_conf</a>
+, <a class="el" href="structrtdal__dac__t.html#a61aaedfb5e9406837a83cfa0a57668bc">rtdal_dac_t</a>
 </li>
 <li>arg
-: <a class="el" href="structrtdal__timer__t.html#ac956640df81f13d496555dc5de7b1c80">rtdal_timer_t</a>
-, <a class="el" href="struct__rtdal__process__t.html#a599955d623bc30d0dbf8aca3189b1696">_rtdal_process_t</a>
+: <a class="el" href="struct__rtdal__process__t.html#a599955d623bc30d0dbf8aca3189b1696">_rtdal_process_t</a>
+, <a class="el" href="structrtdal__timer__t.html#ac956640df81f13d496555dc5de7b1c80">rtdal_timer_t</a>
 </li>
 <li>attributes
 : <a class="el" href="struct__rtdal__process__t.html#ab9d4fcf66abec2cf4495a7b6574fea52">_rtdal_process_t</a>
@@ -103,11 +104,21 @@
 : <a class="el" href="structrtdal__itf__t.html#a64be55b2d31d03289ec240ce3531f4d0">rtdal_itf_t</a>
 , <a class="el" href="structrtdal__periodic__t.html#a34f3cfcdf838e3d06f9e4dbdc3875156">rtdal_periodic_t</a>
 </li>
+<li>chain_is_tx
+: <a class="el" href="structmain__conf.html#ab71e3aa1726ebbde46131c7c9f5d2152">main_conf</a>
+, <a class="el" href="structdac__cfg.html#ad8694089a35cea598dda06bf2c611db3">dac_cfg</a>
+</li>
 <li>channels
 : <a class="el" href="structrtdal__dac__t.html#a89737e1e20878d8efc67ad8f47b72195">rtdal_dac_t</a>
 </li>
+<li>clock
+: <a class="el" href="structmain__conf.html#a46f9232166596350aa9d128b53f63dd8">main_conf</a>
+</li>
 <li>clock_source
 : <a class="el" href="structrtdal__machine__t.html#aec12eaf8d54297586aa5c2baa53a49a5">rtdal_machine_t</a>
+</li>
+<li>close
+: <a class="el" href="structdac__interface.html#ad7d34c5f777f80cdc277add3c159d444">dac_interface</a>
 </li>
 <li>code
 : <a class="el" href="structrtdal__error__t.html#afef22b8ccca8067d63155dc9d823cd88">rtdal_error_t</a>
@@ -128,12 +139,18 @@
 
 
 <h3><a class="anchor" id="index_d"></a>- d -</h3><ul>
+<li>dacinbuff
+: <a class="el" href="structdac__cfg.html#afc0e59a95e4016ce61326a3894cf4d9e">dac_cfg</a>
+</li>
+<li>dacoutbuff
+: <a class="el" href="structdac__cfg.html#a52597776f7d85d29b101b47fbfe9a531">dac_cfg</a>
+</li>
 <li>dacs
 : <a class="el" href="structrtdal__context__t.html#ae5e9258b89efd6790a20c761a6e12a35">rtdal_context_t</a>
 </li>
 <li>data
-: <a class="el" href="structr__pkt__t.html#a031b8fabbf383a6ab7ddef2b424918a7">r_pkt_t</a>
-, <a class="el" href="structrtdal__itfspscq__t.html#adc75f06ba07f4848a744a2ffb10ddb0e">rtdal_itfspscq_t</a>
+: <a class="el" href="structrtdal__itfspscq__t.html#adc75f06ba07f4848a744a2ffb10ddb0e">rtdal_itfspscq_t</a>
+, <a class="el" href="structr__pkt__t.html#a031b8fabbf383a6ab7ddef2b424918a7">r_pkt_t</a>
 </li>
 <li>delay
 : <a class="el" href="structrtdal__itf__t.html#ac8c1717c2f6c250ffb99b645c54060ea">rtdal_itf_t</a>
@@ -155,6 +172,9 @@
 
 
 <h3><a class="anchor" id="index_f"></a>- f -</h3><ul>
+<li>filename
+: <a class="el" href="structdac__cfg.html#a430e4aa64cf90300dbd38bf71cac018f">dac_cfg</a>
+</li>
 <li>finish_callback
 : <a class="el" href="structrtdal__process__attr.html#ae9b5f9e60d4117f1da3e8bcc09161a4b">rtdal_process_attr</a>
 </li>
@@ -183,18 +203,27 @@
 , <a class="el" href="structrtdal__itf__t.html#a454450582d66e41b8d7388cc00979227">rtdal_itf_t</a>
 , <a class="el" href="structrtdal__itfphysic__t.html#a970c448897d32b96adb1eba461dda7f6">rtdal_itfphysic_t</a>
 </li>
+<li>init
+: <a class="el" href="structdac__interface.html#a7f3bf5e2efd84fc264992fadf05a2e33">dac_interface</a>
+</li>
 <li>init_time
 : <a class="el" href="structrtdal__time__t.html#a30d11b555cefce5c8982f5d759d8d0b5">rtdal_time_t</a>
 </li>
 <li>init_time_is_shm
 : <a class="el" href="structrtdal__time__t.html#a13feacdb12d9a613582b8962634105b5">rtdal_time_t</a>
 </li>
+<li>inputFreq
+: <a class="el" href="structdac__cfg.html#ab9efa8a1969657f574293d818cb2698c">dac_cfg</a>
+</li>
+<li>inputRFFreq
+: <a class="el" href="structdac__cfg.html#a5f5e0a0a6853e2841fd5446caf071264">dac_cfg</a>
+</li>
 <li>is_blocking
 : <a class="el" href="structrtdal__itf__t.html#a46040cf579288e274af70c0f517ba70a">rtdal_itf_t</a>
 </li>
 <li>is_external
-: <a class="el" href="structh__itf__.html#a5f14435220765d8722f0cd55cadb7d5a">h_itf_</a>
-, <a class="el" href="structrtdal__itf__t.html#a7aa5980c8e478bc1ea1496a0be71091e">rtdal_itf_t</a>
+: <a class="el" href="structrtdal__itf__t.html#a7aa5980c8e478bc1ea1496a0be71091e">rtdal_itf_t</a>
+, <a class="el" href="structh__itf__.html#a5f14435220765d8722f0cd55cadb7d5a">h_itf_</a>
 </li>
 <li>is_running
 : <a class="el" href="struct__rtdal__process__t.html#a352c3d3dbdc8bec9b6177ab1fd0dddc2">_rtdal_process_t</a>
@@ -253,6 +282,9 @@
 <li>mopts
 : <a class="el" href="structrtdal__machine__t.html#ac62f1bb089d649bb9cf5ad2d1c2e9d50">rtdal_machine_t</a>
 </li>
+<li>multiple
+: <a class="el" href="structrtdal__timer__t.html#a470f1e5513afd8b458d403fcbaecb60a">rtdal_timer_t</a>
+</li>
 <li>mutex
 : <a class="el" href="structrtdal__context__t.html#a3d973ad68e1ace5e912e2d0c5486be0d">rtdal_context_t</a>
 </li>
@@ -264,11 +296,15 @@
 
 <h3><a class="anchor" id="index_n"></a>- n -</h3><ul>
 <li>name
-: <a class="el" href="structrtdal__machine__t.html#a13c3d54f7150506a281019950397e605">rtdal_machine_t</a>
+: <a class="el" href="structdac__interface.html#aa1a4a498878843ab25440017b6122297">dac_interface</a>
+, <a class="el" href="structrtdal__machine__t.html#a13c3d54f7150506a281019950397e605">rtdal_machine_t</a>
 </li>
 <li>next
-: <a class="el" href="struct__rtdal__process__t.html#a623279364fe34c5d8743b2e73124a070">_rtdal_process_t</a>
-, <a class="el" href="structrtdal__timer__t.html#a1224d0ece56f943b6afe4d7a5d8124a7">rtdal_timer_t</a>
+: <a class="el" href="structrtdal__timer__t.html#a1224d0ece56f943b6afe4d7a5d8124a7">rtdal_timer_t</a>
+, <a class="el" href="struct__rtdal__process__t.html#a623279364fe34c5d8743b2e73124a070">_rtdal_process_t</a>
+</li>
+<li>nof_channels
+: <a class="el" href="structdac__cfg.html#a97599896c321958ed1167881fbcec5cb">dac_cfg</a>
 </li>
 <li>nof_cores
 : <a class="el" href="structrtdal__machine__t.html#aac3563adebb6d638b13bc8ec653ee745">rtdal_machine_t</a>
@@ -279,12 +315,24 @@
 <li>nof_processes
 : <a class="el" href="structpipeline__t.html#af1260ecb0c7e3429f031708d1eebaf04">pipeline_t</a>
 </li>
+<li>NsamplesIn
+: <a class="el" href="structdac__cfg.html#a4f8d41033233a328c315db664c6c61bd">dac_cfg</a>
+</li>
+<li>NsamplesOut
+: <a class="el" href="structdac__cfg.html#a2aa668eeb362af219d9d8c574ab86197">dac_cfg</a>
+</li>
 </ul>
 
 
 <h3><a class="anchor" id="index_o"></a>- o -</h3><ul>
 <li>options
 : <a class="el" href="structrtdal__dac__t.html#aa224b5d176deb00b976d486140f750e9">rtdal_dac_t</a>
+</li>
+<li>outputFreq
+: <a class="el" href="structdac__cfg.html#ad98d0d4509723243cc1d94ce891f90c5">dac_cfg</a>
+</li>
+<li>outputRFFreq
+: <a class="el" href="structdac__cfg.html#a64801b33aa92d4788f02c20c91187630">dac_cfg</a>
 </li>
 </ul>
 
@@ -294,10 +342,9 @@
 : <a class="el" href="structrtdal__itfspscq__t.html#a08b1f24f2968b598c462a112a9bfd824">rtdal_itfspscq_t</a>
 </li>
 <li>parent
-: <a class="el" href="structrtdal__dacuhd__t.html#aec26b87f7f7c6ef85c415a4b0aa23027">rtdal_dacuhd_t</a>
-, <a class="el" href="structrtdal__itfphysic__t.html#a070c6f1daf71d41c5871fdb4bd81c124">rtdal_itfphysic_t</a>
+: <a class="el" href="structrtdal__dacx5__t.html#ae6fa4c012185aa153ef2898fbdcfe3ee">rtdal_dacx5_t</a>
 , <a class="el" href="structrtdal__itfspscq__t.html#aed92982a615adbe1ae3d1e149faf382f">rtdal_itfspscq_t</a>
-, <a class="el" href="structrtdal__dacx5__t.html#ae6fa4c012185aa153ef2898fbdcfe3ee">rtdal_dacx5_t</a>
+, <a class="el" href="structrtdal__itfphysic__t.html#a070c6f1daf71d41c5871fdb4bd81c124">rtdal_itfphysic_t</a>
 </li>
 <li>period
 : <a class="el" href="structrtdal__periodic__t.html#afe8337bd8b7d4b0abc130f9dfb723bf2">rtdal_periodic_t</a>
@@ -340,8 +387,14 @@
 <li>read
 : <a class="el" href="structrtdal__itfspscq__t.html#a8c184b2163d17ecbe3ebb4190314e427">rtdal_itfspscq_t</a>
 </li>
+<li>readcfg
+: <a class="el" href="structdac__interface.html#a7427b2601041f53434d3db65fa36bce6">dac_interface</a>
+</li>
 <li>rt_fault_opts
 : <a class="el" href="structrtdal__machine__t.html#a9b0cff836cea88c3b44359d928412737">rtdal_machine_t</a>
+</li>
+<li>rtfaults
+: <a class="el" href="structpipeline__t.html#a58588e7efc87faa46cc6c9d32d9b6883">pipeline_t</a>
 </li>
 <li>run_point
 : <a class="el" href="struct__rtdal__process__t.html#a95c19062dd6dc2a8b5d03adc03fa97df">_rtdal_process_t</a>
@@ -355,12 +408,19 @@
 <li>running_process_idx
 : <a class="el" href="structpipeline__t.html#a09b2f4bb610224e4f5c9ddcbf81b7874">pipeline_t</a>
 </li>
+<li>rx_bw
+: <a class="el" href="structdac__cfg.html#a131dbf6f35e26f3d14d477cb4efcf3d6">dac_cfg</a>
+</li>
+<li>rx_gain
+: <a class="el" href="structdac__cfg.html#a9955c71c9bf92fb6a78227568e5513ed">dac_cfg</a>
+</li>
 </ul>
 
 
 <h3><a class="anchor" id="index_s"></a>- s -</h3><ul>
 <li>sampleType
-: <a class="el" href="structrtdal__dac__t.html#a3eb33c0022d57c639dbb3e5c7b1efd57">rtdal_dac_t</a>
+: <a class="el" href="structdac__cfg.html#af151174604f694a83319462b693cf951">dac_cfg</a>
+, <a class="el" href="structrtdal__dac__t.html#a3eb33c0022d57c639dbb3e5c7b1efd57">rtdal_dac_t</a>
 </li>
 <li>slave_master
 : <a class="el" href="structrtdal__machine__t.html#a6933855be619cf21e0b2d4846179795e">rtdal_machine_t</a>
@@ -415,14 +475,20 @@
 , <a class="el" href="structpipeline__t.html#ada6cb4fb46dcc2966c0237c2e24db1ed">pipeline_t</a>
 </li>
 <li>ts_len_us
-: <a class="el" href="structrtdal__time__t.html#a7973db38c7e50480f7a2251a722b8661">rtdal_time_t</a>
-, <a class="el" href="structrtdal__machine__t.html#a3936ac0026875f5c55dee7beb42f851c">rtdal_machine_t</a>
+: <a class="el" href="structrtdal__machine__t.html#a3936ac0026875f5c55dee7beb42f851c">rtdal_machine_t</a>
+, <a class="el" href="structrtdal__time__t.html#a7973db38c7e50480f7a2251a722b8661">rtdal_time_t</a>
 </li>
 <li>ts_time
 : <a class="el" href="structrtdal__time__t.html#aa824a8a4634d0a302803df0694429cb0">rtdal_time_t</a>
 </li>
 <li>tstamp
 : <a class="el" href="structr__pkt__t.html#a0d4ff9e1354844e0d83eb14ebad1b309">r_pkt_t</a>
+</li>
+<li>tx_bw
+: <a class="el" href="structdac__cfg.html#ab36da1b59fd64941e230d373135d4a06">dac_cfg</a>
+</li>
+<li>tx_gain
+: <a class="el" href="structdac__cfg.html#a966bc08a4be994dcfb11c2a99c6ded17">dac_cfg</a>
 </li>
 </ul>
 
@@ -438,6 +504,9 @@
 <li>wait_futex
 : <a class="el" href="structrtdal__timer__t.html#a5f908aa671f7e3adffbc9096c1dc415a">rtdal_timer_t</a>
 </li>
+<li>waiting
+: <a class="el" href="structpipeline__t.html#a22a0758e1468d1e7928cb202167aad3a">pipeline_t</a>
+</li>
 <li>wake_tslot
 : <a class="el" href="structrtdal__context__t.html#abfb7860ff2fbfc31358676c27ec2fbce">rtdal_context_t</a>
 </li>
@@ -451,7 +520,7 @@
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

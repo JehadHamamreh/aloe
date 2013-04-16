@@ -90,7 +90,7 @@
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">struct </span>timespec x;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_MONOTONIC,&amp;x)) {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_REALTIME,&amp;x)) {</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                <a class="code" href="rtdal__error_8h.html#afc4eba3d5c8ffa4c6af31fbb2d28e963">RTDAL_SYSERROR</a>(<span class="stringliteral">&quot;clock_gettime&quot;</span>);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        }</div>
@@ -121,7 +121,7 @@
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <a class="code" href="rtdal__types_8h.html#a7157cbb87d46be33f7f913fa09144900">time_t</a> tact;</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keyword">struct </span>timespec x;</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_MONOTONIC,&amp;x)) {</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_REALTIME,&amp;x)) {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                <a class="code" href="rtdal__error_8h.html#afc4eba3d5c8ffa4c6af31fbb2d28e963">RTDAL_SYSERROR</a>(<span class="stringliteral">&quot;clock_gettime&quot;</span>);</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        }</div>
@@ -138,7 +138,7 @@
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <a class="code" href="rtdal__types_8h.html#a7157cbb87d46be33f7f913fa09144900">time_t</a> tact;</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keyword">struct </span>timespec x;</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_MONOTONIC,&amp;x)) {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">if</span> (clock_gettime(CLOCK_REALTIME,&amp;x)) {</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                <a class="code" href="rtdal__error_8h.html#afc4eba3d5c8ffa4c6af31fbb2d28e963">RTDAL_SYSERROR</a>(<span class="stringliteral">&quot;clock_gettime&quot;</span>);</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        }</div>
@@ -195,7 +195,7 @@
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

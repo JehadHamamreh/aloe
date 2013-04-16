@@ -54,16 +54,20 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga15698f3ab826d6d20ccb2fde7bc905fc"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga15698f3ab826d6d20ccb2fde7bc905fc">oesr_var_create</a> (void *context, char *name, void *ptr, int size)</td></tr>
+<tr class="memitem:ga6c04cbcdf1d0554bad6417d22c3de7f7"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga6c04cbcdf1d0554bad6417d22c3de7f7">oesr_var_param_create_remote</a> (void *context, int module_idx, char *name, int size)</td></tr>
 <tr class="memitem:ga82a201ed0020d45d3a7bb097774c33fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga82a201ed0020d45d3a7bb097774c33fe">oesr_var_close</a> (void *context, var_t var)</td></tr>
 <tr class="memitem:ga15942dcaa59766052d7e383e49487ad3"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga15942dcaa59766052d7e383e49487ad3">oesr_var_param_get</a> (void *context, char *name)</td></tr>
-<tr class="memitem:ga05296091361ad9e440617000e1c22e2f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga05296091361ad9e440617000e1c22e2f">oesr_var_param_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:ga08e495befecd08fb44a25ef27448303e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga08e495befecd08fb44a25ef27448303e">oesr_var_param_list</a> (void *context, var_t *parameters, int max_elems)</td></tr>
+<tr class="memitem:gab318ec593deae16f937418edfd605e30"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gab318ec593deae16f937418edfd605e30">oesr_var_param_get_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:ga0875f1b2d21baf023ee8458b38d7c527"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga0875f1b2d21baf023ee8458b38d7c527">oesr_var_param_set_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:gacde650cdf8d49f6edf2ef518058059b5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gacde650cdf8d49f6edf2ef518058059b5">oesr_var_param_set_value_idx</a> (void *context, int idx, void *value, int size)</td></tr>
 <tr class="memitem:gaf56dedd1bf2f5fc703b2597814388e72"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__var.html#ga4c606facff0f8d831d91ae1116bcf644">oesr_var_type_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gaf56dedd1bf2f5fc703b2597814388e72">oesr_var_param_type</a> (void *context, var_t parameter)</td></tr>
 </table>
 <a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>Variables and parameters are module variables accessible by other modules or from the OESR Manager API. For instance, a module may estimate the SNR and make the variable "public". Then another module can access it (not yet implemented). An external program that manages the ALOE modem may, for instance, reconfigure the waveform mode when the SNR is below certain threshold.</p>
 <p>Parameters are subset of variables which have an initialization value, specified in the waveform .app file. They are a subset in the sense that a parameter is also publicly accessible. Parameters are used to configure the functionality of the DSP module. For instance the DFT size or the length of the CRC are examples of parameters. They are specified in the module documentation, as the modrep_default/template example illustrates.</p>
 <p>This documentation has to define whether a change of a parameter can be done during the RUN phase or only during the INIT phase. If a parameter can be changed during the RUN phase, it implies that a reconfiguration can be done in real-time. That is, that the execution time of the module is unaffected by a change of parameter. On the other hand, a parameter can only be modified during the INIT phase if a change of its value implies an execution time longer that the specified in the model .app.</p>
-<p>A parameter value is obtained using the function <a class="el" href="group__var.html#ga05296091361ad9e440617000e1c22e2f">oesr_var_param_value()</a>. This function gives the value associated with the current <b>waveform mode</b>. The waveform mode is defined in the waveform .app file. It defines a value for each module parameter. Each parameter, on the other hand, has a different value for each different mode. This allows the dynamic reconfiguration of the waveform from one mode to another. </p>
+<p>A parameter value is obtained using the function oesr_var_param_value(). This function gives the value associated with the current <b>waveform mode</b>. The waveform mode is defined in the waveform .app file. It defines a value for each module parameter. Each parameter, on the other hand, has a different value for each different mode. This allows the dynamic reconfiguration of the waveform from one mode to another. </p>
 <h2>Enumeration Type Documentation</h2>
 <a class="anchor" id="ga4c606facff0f8d831d91ae1116bcf644"></a>
 <div class="memitem">
@@ -172,6 +176,44 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga6c04cbcdf1d0554bad6417d22c3de7f7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">var_t oesr_var_param_create_remote </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>module_idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="ga15942dcaa59766052d7e383e49487ad3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -195,7 +237,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Returns a handler for the parameter with name "name". This handler is then used by the functions <a class="el" href="group__var.html#ga05296091361ad9e440617000e1c22e2f">oesr_var_param_value()</a> and <a class="el" href="group__var.html#gaf56dedd1bf2f5fc703b2597814388e72">oesr_var_param_type()</a></p>
+<p>Returns a handler for the parameter with name "name". This handler is then used by the functions oesr_var_param_value() and <a class="el" href="group__var.html#gaf56dedd1bf2f5fc703b2597814388e72">oesr_var_param_type()</a></p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
@@ -207,46 +249,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaf56dedd1bf2f5fc703b2597814388e72"></a>
+<a class="anchor" id="gab318ec593deae16f937418edfd605e30"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="group__var.html#ga4c606facff0f8d831d91ae1116bcf644">oesr_var_type_t</a> oesr_var_param_type </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">var_t&#160;</td>
-          <td class="paramname"><em>parameter</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Returns the parameter variable type (see enum oesr_var_type_t) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
-    <tr><td class="paramname">parameter</td><td>Handler returned by the <a class="el" href="group__var.html#ga15942dcaa59766052d7e383e49487ad3">oesr_var_param_get()</a> function. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga05296091361ad9e440617000e1c22e2f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int oesr_var_param_value </td>
+          <td class="memname">int oesr_var_param_get_value </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>context</em>, </td>
@@ -290,10 +298,184 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga08e495befecd08fb44a25ef27448303e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_var_param_list </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">var_t *&#160;</td>
+          <td class="paramname"><em>parameters</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_elems</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fills the buffer parameters with up to max_elems module parameters defined in the app</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
+    <tr><td class="paramname">parameter</td><td>Pointer to a parameters buffer </td></tr>
+    <tr><td class="paramname">max_elems</td><td>Size of the parameters buffer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On success, returns a non-negative number indicating the number of parameters successfully copied to the buffer, on error returns -1 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga0875f1b2d21baf023ee8458b38d7c527"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_var_param_set_value </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">var_t&#160;</td>
+          <td class="paramname"><em>parameter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Sets up to size bytes of the value of the parameter to the value of the buffer pointed by ptr to the</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
+    <tr><td class="paramname">parameter</td><td>Handler returned by the <a class="el" href="group__var.html#ga15942dcaa59766052d7e383e49487ad3">oesr_var_param_get()</a> function. </td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to the user memory where the parameter value will be stored </td></tr>
+    <tr><td class="paramname">size</td><td>Size of user memory buffer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On success, returns a non-negative integer indicating the number of bytes written to value. On error returns -1 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gacde650cdf8d49f6edf2ef518058059b5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oesr_var_param_set_value_idx </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Sets up to size bytes of the value of the parameter to the value of the buffer pointed by ptr to the</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
+    <tr><td class="paramname">idx</td><td>Index of the parameter in the local database </td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to the user memory where the parameter value will be stored </td></tr>
+    <tr><td class="paramname">size</td><td>Size of user memory buffer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On success, returns a non-negative integer indicating the number of bytes written to value. On error returns -1 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf56dedd1bf2f5fc703b2597814388e72"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__var.html#ga4c606facff0f8d831d91ae1116bcf644">oesr_var_type_t</a> oesr_var_param_type </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">var_t&#160;</td>
+          <td class="paramname"><em>parameter</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the parameter variable type (see enum oesr_var_type_t) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">context</td><td>OESR context pointer </td></tr>
+    <tr><td class="paramname">parameter</td><td>Handler returned by the <a class="el" href="group__var.html#ga15942dcaa59766052d7e383e49487ad3">oesr_var_param_get()</a> function. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:22 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:02:58 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

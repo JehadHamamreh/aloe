@@ -53,7 +53,8 @@
 <div class="title">rtdal_process.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;dlfcn.h&gt;</code><br/>
+<div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br/>
+<code>#include &lt;dlfcn.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="defs_8h_source.html">defs.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal__error_8h_source.html">rtdal_error.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal__process_8h_source.html">rtdal_process.h</a>&quot;</code><br/>
@@ -65,11 +66,13 @@
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a59758f3099ae8b3e448b0243f2859413"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a59758f3099ae8b3e448b0243f2859413">lstrdef</a> (tmp)</td></tr>
+<tr class="memitem:acc6cc98e40558dc9f582798d69730ecb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#acc6cc98e40558dc9f582798d69730ecb">lstrdef</a> (tmp2)</td></tr>
+<tr class="memitem:a251f3eeab686004c33b48166e6d61273"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a251f3eeab686004c33b48166e6d61273">lstrdef</a> (tmp3)</td></tr>
 <tr class="memitem:a13457994932e34fee03619102b3b978d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a13457994932e34fee03619102b3b978d">rtdal_process_launch</a> (<a class="el" href="rtdal__process_8h.html#aae6bdd48dcdbb9e74bbfb3dd6cd72b2a">rtdal_process_t</a> *obj)</td></tr>
-<tr class="memitem:ga07991d97b2fdf23217553f20237fd1e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga07991d97b2fdf23217553f20237fd1e3">rtdal_process_remove</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> process)</td></tr>
-<tr class="memitem:a9c44b3f98cf2398922a185f4822c700a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a9c44b3f98cf2398922a185f4822c700a">rtdal_process_pid</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> process)</td></tr>
-<tr class="memitem:ga5c4d6fda8cbcf1f0721e894fde223173"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga5c4d6fda8cbcf1f0721e894fde223173">rtdal_process_run</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> process)</td></tr>
-<tr class="memitem:gace4d20da04ac45fbc04974ad0345f18b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#gace4d20da04ac45fbc04974ad0345f18b">rtdal_process_stop</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> process)</td></tr>
+<tr class="memitem:ga07991d97b2fdf23217553f20237fd1e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga07991d97b2fdf23217553f20237fd1e3">rtdal_process_remove</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> <a class="el" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>)</td></tr>
+<tr class="memitem:a9c44b3f98cf2398922a185f4822c700a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a9c44b3f98cf2398922a185f4822c700a">rtdal_process_pid</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> <a class="el" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>)</td></tr>
+<tr class="memitem:ga5c4d6fda8cbcf1f0721e894fde223173"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga5c4d6fda8cbcf1f0721e894fde223173">rtdal_process_run</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> <a class="el" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>)</td></tr>
+<tr class="memitem:gace4d20da04ac45fbc04974ad0345f18b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#gace4d20da04ac45fbc04974ad0345f18b">rtdal_process_stop</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> <a class="el" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>)</td></tr>
 <tr class="memitem:ga62e8e5fe2fcbd59cfaf533663588e220"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga62e8e5fe2fcbd59cfaf533663588e220">rtdal_process_seterror</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> proc, <a class="el" href="group__process.html#ga825233f1e8a1bd1e1eb99e1301f36a57">rtdal_processerrors_t</a> code)</td></tr>
 <tr class="memitem:ga7d0ff5bc88da30e358e83fcf8485ea45"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__process.html#ga825233f1e8a1bd1e1eb99e1301f36a57">rtdal_processerrors_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga7d0ff5bc88da30e358e83fcf8485ea45">rtdal_process_geterror</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> proc)</td></tr>
 <tr class="memitem:ga7aea1116fc59481d09d02adad13ec5db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__process.html#ga7aea1116fc59481d09d02adad13ec5db">rtdal_process_isrunning</a> (<a class="el" href="rtdal__types_8h.html#a9a6d36a76828ee198254e7084107ca38">r_proc_t</a> proc)</td></tr>
@@ -77,7 +80,9 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a8f31f5190c540105f09c8e26ca862920"><td class="memItemLeft" align="right" valign="top">pid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a8f31f5190c540105f09c8e26ca862920">kernel_pid</a></td></tr>
 <tr class="memitem:ad2d0f0a88b38967bbb6769a83b661a83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#ad2d0f0a88b38967bbb6769a83b661a83">pgroup_notified_failure</a> [<a class="el" href="group__process.html#ga8750318ceee0e6df68e379c778d9bc55">MAX_PROCESS_GROUP_ID</a>]</td></tr>
+<tr class="memitem:a766d61afeee83d416b78db7cc99ae855"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__process_8c.html#a766d61afeee83d416b78db7cc99ae855">libs_path</a> [255]</td></tr>
 </table>
 <h2>Function Documentation</h2>
 <a class="anchor" id="a59758f3099ae8b3e448b0243f2859413"></a>
@@ -88,6 +93,38 @@ Variables</h2></td></tr>
           <td class="memname">lstrdef </td>
           <td>(</td>
           <td class="paramtype">tmp&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acc6cc98e40558dc9f582798d69730ecb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">lstrdef </td>
+          <td>(</td>
+          <td class="paramtype">tmp2&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a251f3eeab686004c33b48166e6d61273"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">lstrdef </td>
+          <td>(</td>
+          <td class="paramtype">tmp3&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -118,11 +155,11 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success, -1 on error. </dd></dl>
 
-<p>Definition at line <a class="el" href="rtdal__process_8c_source.html#l00037">37</a> of file <a class="el" href="rtdal__process_8c_source.html">rtdal_process.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__process_8c_source.html#l00044">44</a> of file <a class="el" href="rtdal__process_8c_source.html">rtdal_process.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal__process_8h_source.html#l00033">_rtdal_process_t::dl_handle</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="str_8h_source.html#l00025">LSTR_LEN</a>, <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>, <a class="el" href="rtdal__error_8h_source.html#l00041">RTDAL_DLERROR</a>, and <a class="el" href="rtdal__process_8h_source.html#l00034">_rtdal_process_t::run_point</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00056">aerror</a>, <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal__process_8h_source.html#l00033">_rtdal_process_t::dl_handle</a>, <a class="el" href="sndcard__imp_8c_source.html#l00073">error()</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00060">kernel_pid</a>, <a class="el" href="rtdal__kernel__parse_8c_source.html#l00016">libs_path</a>, <a class="el" href="str_8h_source.html#l00025">LSTR_LEN</a>, <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>, <a class="el" href="rtdal__error_8h_source.html#l00041">RTDAL_DLERROR</a>, and <a class="el" href="rtdal__process_8h_source.html#l00034">_rtdal_process_t::run_point</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00312">rtdal_process_new()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00317">rtdal_process_new()</a>.</p>
 
 </div>
 </div>
@@ -148,13 +185,45 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>non-negative id on success, -1 on error </dd></dl>
 
-<p>Definition at line <a class="el" href="rtdal__process_8c_source.html#l00092">92</a> of file <a class="el" href="rtdal__process_8c_source.html">rtdal_process.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__process_8c_source.html#l00128">128</a> of file <a class="el" href="rtdal__process_8c_source.html">rtdal_process.c</a>.</p>
 
 <p>References <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, and <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>.</p>
 
 </div>
 </div>
 <h2>Variable Documentation</h2>
+<a class="anchor" id="a8f31f5190c540105f09c8e26ca862920"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pid_t kernel_pid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00060">60</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>, <a class="el" href="rtdal__process_8c_source.html#l00044">rtdal_process_launch()</a>, <a class="el" href="rtdal__process_8c_source.html#l00091">rtdal_process_remove()</a>, and <a class="el" href="rtdal__kernel__signals_8c_source.html#l00272">thread_signal_handler()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a766d61afeee83d416b78db7cc99ae855"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char libs_path[255]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel__parse_8c_source.html#l00016">16</a> of file <a class="el" href="rtdal__kernel__parse_8c_source.html">rtdal_kernel_parse.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>, and <a class="el" href="rtdal__process_8c_source.html#l00044">rtdal_process_launch()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ad2d0f0a88b38967bbb6769a83b661a83"></a>
 <div class="memitem">
 <div class="memproto">
@@ -165,16 +234,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00039">39</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00046">46</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__process_8c_source.html#l00168">rtdal_process_group_notified()</a>, and <a class="el" href="rtdal__base_8c_source.html#l00312">rtdal_process_new()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__process_8c_source.html#l00204">rtdal_process_group_notified()</a>, and <a class="el" href="rtdal__base_8c_source.html#l00317">rtdal_process_new()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

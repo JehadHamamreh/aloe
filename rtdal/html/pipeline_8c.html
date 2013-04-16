@@ -47,6 +47,7 @@
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -66,9 +67,14 @@
 <code>#include &quot;<a class="el" href="rtdal__time_8h_source.html">rtdal_time.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal__kernel_8h_source.html">rtdal_kernel.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="pipeline__sync_8h_source.html">pipeline_sync.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="defs_8h_source.html">defs.h</a>&quot;</code><br/>
 </div>
 <p><a href="pipeline_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a64491033b9e57e3f9ee2b970d3f23dd8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a64491033b9e57e3f9ee2b970d3f23dd8">NSEC_DEB_LEN</a>&#160;&#160;&#160;120000</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a644d25013c5885243e33edd9e7c61678"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a644d25013c5885243e33edd9e7c61678">pipeline_initialize</a> (int _num_pipelines)</td></tr>
@@ -77,13 +83,31 @@ Functions</h2></td></tr>
 <tr class="memitem:a767c65ec7777bc4199a77827f1e81a72"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a767c65ec7777bc4199a77827f1e81a72">pipeline_run_thread</a> (void *self)</td></tr>
 <tr class="memitem:aaa0d27030e4683b82ffe9d5651b5c97c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#aaa0d27030e4683b82ffe9d5651b5c97c">pipeline_recover_thread</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj)</td></tr>
 <tr class="memitem:a02037b265fa3ed27bf0a7d75d7813292"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a02037b265fa3ed27bf0a7d75d7813292">pipeline_rt_fault</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj)</td></tr>
-<tr class="memitem:a615ac86c6cff54ffa2edb1bf1606729c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a615ac86c6cff54ffa2edb1bf1606729c">pipeline_add</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="el" href="rtdal__process_8h.html#aae6bdd48dcdbb9e74bbfb3dd6cd72b2a">rtdal_process_t</a> *process)</td></tr>
+<tr class="memitem:a615ac86c6cff54ffa2edb1bf1606729c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a615ac86c6cff54ffa2edb1bf1606729c">pipeline_add</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="el" href="rtdal__process_8h.html#aae6bdd48dcdbb9e74bbfb3dd6cd72b2a">rtdal_process_t</a> *<a class="el" href="sndcard__imp_8c.html#a01271cc6cf692278ae35d0062935d7ae">process</a>)</td></tr>
 <tr class="memitem:ae95c1483a8fa6f94477e280a52fdfe78"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#ae95c1483a8fa6f94477e280a52fdfe78">pipeline_remove</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj, <a class="el" href="rtdal__process_8h.html#aae6bdd48dcdbb9e74bbfb3dd6cd72b2a">rtdal_process_t</a> *proc)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a6c8c7c81c1368a9aeb6de2f971374dd2"><td class="memItemLeft" align="right" valign="top">struct timespec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a6c8c7c81c1368a9aeb6de2f971374dd2">nsec_deb</a> [<a class="el" href="pipeline_8c.html#a64491033b9e57e3f9ee2b970d3f23dd8">NSEC_DEB_LEN</a>]</td></tr>
+<tr class="memitem:a52225e686f3460f94de1e394be398298"><td class="memItemLeft" align="right" valign="top">struct timespec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a52225e686f3460f94de1e394be398298">nsec_deb2</a> [<a class="el" href="pipeline_8c.html#a64491033b9e57e3f9ee2b970d3f23dd8">NSEC_DEB_LEN</a>]</td></tr>
+<tr class="memitem:a339f956f0f6c96e1c7ed2d53c48a0e20"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#a339f956f0f6c96e1c7ed2d53c48a0e20">timeslot_p</a> [<a class="el" href="pipeline__sync_8h.html#aebac1913f3094aa1204303b3e18f51e6">MAX_PIPELINES</a>]</td></tr>
 <tr class="memitem:ad2d0f0a88b38967bbb6769a83b661a83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pipeline_8c.html#ad2d0f0a88b38967bbb6769a83b661a83">pgroup_notified_failure</a> [<a class="el" href="group__process.html#ga8750318ceee0e6df68e379c778d9bc55">MAX_PROCESS_GROUP_ID</a>]</td></tr>
 </table>
+<h2>Macro Definition Documentation</h2>
+<a class="anchor" id="a64491033b9e57e3f9ee2b970d3f23dd8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NSEC_DEB_LEN&#160;&#160;&#160;120000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00035">35</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+
+</div>
+</div>
 <h2>Function Documentation</h2>
 <a class="anchor" id="a615ac86c6cff54ffa2edb1bf1606729c"></a>
 <div class="memitem">
@@ -118,11 +142,11 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>non-negative integer number indicating the position it has been inserted, or -1 on error. </dd></dl>
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00236">236</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00243">243</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal_8h_source.html#l00069">rtdal_process_attr::exec_position</a>, <a class="el" href="pipeline_8h_source.html#l00046">pipeline_t::first_process</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="rtdal__process_8h_source.html#l00041">_rtdal_process_t::next</a>, <a class="el" href="pipeline_8h_source.html#l00060">pipeline_t::nof_processes</a>, <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, <a class="el" href="rtdal__process_8h_source.html#l00029">_rtdal_process_t::pipeline</a>, and <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>.</p>
+<p>References <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal_8h_source.html#l00072">rtdal_process_attr::exec_position</a>, <a class="el" href="pipeline_8h_source.html#l00047">pipeline_t::first_process</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="rtdal__process_8h_source.html#l00041">_rtdal_process_t::next</a>, <a class="el" href="pipeline_8h_source.html#l00061">pipeline_t::nof_processes</a>, <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, <a class="el" href="rtdal__process_8h_source.html#l00029">_rtdal_process_t::pipeline</a>, <a class="el" href="sndcard__imp_8c_source.html#l00050">process()</a>, and <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00312">rtdal_process_new()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00317">rtdal_process_new()</a>.</p>
 
 </div>
 </div>
@@ -140,9 +164,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00041">41</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00048">48</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, and <a class="el" href="pipeline__sync_8h_source.html#l00052">pipeline_sync_initialize_</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, and <a class="el" href="pipeline__sync_8c_source.html#l00083">pipeline_sync_initialize()</a>.</p>
 
 </div>
 </div>
@@ -161,9 +185,9 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Called from the sigwait kernel thread after a pipeline thread has died. Set the process that caused the fault as non-runnable and create a new pipeline thread. </p>
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00186">186</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00190">190</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00051">aerror</a>, <a class="el" href="pipeline_8h_source.html#l00058">pipeline_t::finished</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00191">kernel_initialize_create_pipeline()</a>, <a class="el" href="rtdal__process_8c_source.html#l00131">rtdal_process_seterror()</a>, <a class="el" href="pipeline_8h_source.html#l00066">pipeline_t::running_process</a>, and <a class="el" href="rtdal_8h_source.html#l00057">SIG_RECV</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00056">aerror</a>, <a class="el" href="pipeline_8h_source.html#l00059">pipeline_t::finished</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="rtdal__process_8c_source.html#l00167">rtdal_process_seterror()</a>, <a class="el" href="pipeline_8h_source.html#l00067">pipeline_t::running_process</a>, and <a class="el" href="rtdal_8h_source.html#l00060">SIG_RECV</a>.</p>
 
 </div>
 </div>
@@ -200,11 +224,11 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success, -1 on error </dd></dl>
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00286">286</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00293">293</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal_8h_source.html#l00069">rtdal_process_attr::exec_position</a>, <a class="el" href="pipeline_8h_source.html#l00046">pipeline_t::first_process</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="rtdal__process_8h_source.html#l00041">_rtdal_process_t::next</a>, <a class="el" href="pipeline_8h_source.html#l00060">pipeline_t::nof_processes</a>, <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>, <a class="el" href="rtdal_8h_source.html#l00187">RTDAL_ERROR_NOTFOUND</a>, and <a class="el" href="rtdal__error_8h_source.html#l00044">RTDAL_SETERROR</a>.</p>
+<p>References <a class="el" href="rtdal__process_8h_source.html#l00031">_rtdal_process_t::attributes</a>, <a class="el" href="rtdal_8h_source.html#l00072">rtdal_process_attr::exec_position</a>, <a class="el" href="pipeline_8h_source.html#l00047">pipeline_t::first_process</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="rtdal__process_8h_source.html#l00041">_rtdal_process_t::next</a>, <a class="el" href="pipeline_8h_source.html#l00061">pipeline_t::nof_processes</a>, <a class="el" href="rtdal__process_8h_source.html#l00027">_rtdal_process_t::pid</a>, <a class="el" href="rtdal__error_8h_source.html#l00028">RTDAL_ASSERT_PARAM</a>, <a class="el" href="rtdal_8h_source.html#l00184">RTDAL_ERROR_NOTFOUND</a>, and <a class="el" href="rtdal__error_8h_source.html#l00044">RTDAL_SETERROR</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00312">rtdal_process_new()</a>, and <a class="el" href="rtdal__process_8c_source.html#l00070">rtdal_process_remove()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__base_8c_source.html#l00317">rtdal_process_new()</a>, and <a class="el" href="rtdal__process_8c_source.html#l00091">rtdal_process_remove()</a>.</p>
 
 </div>
 </div>
@@ -223,9 +247,9 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Called when there is an rtfault in the pipeline </p>
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00202">202</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00207">207</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00050">aerror_msg</a>, <a class="el" href="pipeline_8h_source.html#l00058">pipeline_t::finished</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="pipeline_8h_source.html#l00060">pipeline_t::nof_processes</a>, <a class="el" href="pipeline_8h_source.html#l00067">pipeline_t::running_process_idx</a>, <a class="el" href="pipeline_8h_source.html#l00049">pipeline_t::thread</a>, and <a class="el" href="pipeline_8h_source.html#l00062">pipeline_t::ts_counter</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00055">aerror_msg</a>, <a class="el" href="pipeline_8h_source.html#l00059">pipeline_t::finished</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="pipeline_8h_source.html#l00061">pipeline_t::nof_processes</a>, <a class="el" href="pipeline_8h_source.html#l00062">pipeline_t::rtfaults</a>, <a class="el" href="pipeline_8h_source.html#l00068">pipeline_t::running_process_idx</a>, <a class="el" href="pipeline_8h_source.html#l00050">pipeline_t::thread</a>, and <a class="el" href="pipeline_8h_source.html#l00063">pipeline_t::ts_counter</a>.</p>
 
 </div>
 </div>
@@ -253,11 +277,11 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00139">139</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00148">148</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00119">kernel_tslot_run()</a>, <a class="el" href="rtdal__time_8c_source.html#l00094">rtdal_time_get()</a>, <a class="el" href="rtdal__time_8c_source.html#l00056">rtdal_time_reset_realtime()</a>, and <a class="el" href="rtdal__types_8h_source.html#l00024">time_t</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__kernel__thread_8c_source.html#l00074">kernel_tslot_run()</a>, and <a class="el" href="rtdal__time_8c_source.html#l00056">rtdal_time_reset_realtime()</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00191">kernel_initialize_create_pipeline()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00151">kernel_initialize_create_pipeline()</a>.</p>
 
 </div>
 </div>
@@ -276,11 +300,11 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Runs one process after another (calling process[i].run_point()) and then sleeps waiting for the semaphore </p>
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00165">165</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00169">169</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="pipeline__sync_8h_source.html#l00054">pipeline_sync_thread_waits</a>, and <a class="el" href="pipeline_8h_source.html#l00054">pipeline_t::stop</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="pipeline__sync_8c_source.html#l00104">pipeline_sync_thread_waits()</a>, and <a class="el" href="pipeline_8h_source.html#l00055">pipeline_t::stop</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00191">kernel_initialize_create_pipeline()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00151">kernel_initialize_create_pipeline()</a>.</p>
 
 </div>
 </div>
@@ -305,13 +329,43 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00047">47</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00054">54</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>References <a class="el" href="pipeline__sync_8h_source.html#l00055">pipeline_sync_threads_wake</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, and <a class="el" href="pipeline__sync_8c_source.html#l00120">pipeline_sync_threads_wake()</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__thread_8c_source.html#l00092">kernel_cycle()</a>.</p>
 
 </div>
 </div>
 <h2>Variable Documentation</h2>
+<a class="anchor" id="a6c8c7c81c1368a9aeb6de2f971374dd2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct timespec nsec_deb[<a class="el" href="pipeline_8c.html#a64491033b9e57e3f9ee2b970d3f23dd8">NSEC_DEB_LEN</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00036">36</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a52225e686f3460f94de1e394be398298"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct timespec nsec_deb2[<a class="el" href="pipeline_8c.html#a64491033b9e57e3f9ee2b970d3f23dd8">NSEC_DEB_LEN</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00037">37</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ad2d0f0a88b38967bbb6769a83b661a83"></a>
 <div class="memitem">
 <div class="memproto">
@@ -322,16 +376,30 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00039">39</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
+<p>Definition at line <a class="el" href="pipeline_8c_source.html#l00046">46</a> of file <a class="el" href="pipeline_8c_source.html">pipeline.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__process_8c_source.html#l00168">rtdal_process_group_notified()</a>, and <a class="el" href="rtdal__base_8c_source.html#l00312">rtdal_process_new()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__process_8c_source.html#l00204">rtdal_process_group_notified()</a>, and <a class="el" href="rtdal__base_8c_source.html#l00317">rtdal_process_new()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a339f956f0f6c96e1c7ed2d53c48a0e20"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int timeslot_p[<a class="el" href="pipeline__sync_8h.html#aebac1913f3094aa1204303b3e18f51e6">MAX_PIPELINES</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="pipeline__sync_8c_source.html#l00019">19</a> of file <a class="el" href="pipeline__sync_8c_source.html">pipeline_sync.c</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

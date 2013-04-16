@@ -108,7 +108,7 @@ Functions</h2></td></tr>
 <p>Must be called before any other function.</p>
 <p>1) Parse configuration file and fill +machine attributes 2) Create interfaces. Call -createNodeInterfaces() 3) Setup synchronization:   3.1) If I am the synchronization master, set machine.clockSource=CLOCKSRC_TIMER if source="timer" or machine.clockSource=CLOCKSRC_DAC if source="dac:/"   3.2) If I am an slave node, set machine.clockSource=CLOCKSRC_TIMER if continuous_mode=FALSE or machine.clockSource=CLOCKSRC_SYNC if continuous_mode=TRUE   3.3) Set machine.syncContinuous boolean if continuous_mode=TRUE   3.4) Set machine.syncMaster boolean if I am the synchronization master reference   3.5) Set machine.syncPeriod to the synchronization period 4) setup DAC (if my node has a DAC). For each DAC, create an instance of the DAC type and:   4.1) Call DAC.openDAC(address,options,null) if machine.clockSource!=CLOCKSRC_DAC   4.2) Call DAC.setScheduler(tsBeginFnc, machine.kernelPrio) if machine.clockSource==CLOCKSRC_DAC 5) create max_spscqs_x_node +spscqs and max_modules_x_node +procs objects </p>
 
-<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00062">62</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__base_8c_source.html#l00067">67</a> of file <a class="el" href="rtdal__base_8c_source.html">rtdal_base.c</a>.</p>
 
 <p>References <a class="el" href="rtdal__context_8h_source.html#l00041">rtdal_context_t::error</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__error_8c_source.html#l00031">rtdal_error_set_context()</a>, <a class="el" href="rtdal__time_8c_source.html#l00040">rtdal_time_reset()</a>, <a class="el" href="rtdal__time_8c_source.html#l00035">rtdal_time_set_context()</a>, <a class="el" href="rtdal__context_8h_source.html#l00043">rtdal_context_t::time</a>, <a class="el" href="rtdal__time_8h_source.html#l00036">rtdal_time_t::ts_len_us</a>, and <a class="el" href="rtdal__machine_8h_source.html#l00036">rtdal_machine_t::ts_len_us</a>.</p>
 
@@ -117,7 +117,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

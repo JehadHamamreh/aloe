@@ -76,48 +76,26 @@
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="futex_8h.html">futex.h</a>&quot;</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="objects__max_8h.html">objects_max.h</a>&quot;</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
-<div class="line"><a name="l00027"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#ade0b131dfc1356dc7bb032c5593709c0">   27</a></span>&#160;<span class="preprocessor">#define SEM             1</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#a82192e5816ace2191e7d678cd2e2c697">   28</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define FUTEX           2</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#abd39f207af925a92f1d11dd1880bb196">   29</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define BARRIER         3</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#acfd0dd1c7f3b9f986834441b4f06e70b">   30</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define PIPELINESYNC_MUTEX_TYPE 3</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#if PIPELINESYNC_MUTEX_TYPE == SEM</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_initialize_ for (int i=0;i&lt;num_pipelines;i++) {\</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">        sem_init(&amp;semaphores[i], 0, 0); }</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_thread_waits(idx) sem_wait(&amp;semaphores[idx])</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_threads_wake() for (int i=0;i&lt;num_pipelines;i++) {\</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">        sem_post(&amp;semaphores[i]); }</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> num_pipelines;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">static</span> sem_t semaphores[10];</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#if PIPELINESYNC_MUTEX_TYPE == FUTEX</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_initialize_</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_thread_waits(idx) futex_wait(&amp;futex)</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_threads_wake() futex_wake(&amp;futex)</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> futex;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#if PIPELINESYNC_MUTEX_TYPE == BARRIER</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#a1f1d4f00bb4b2286c05e59854f53b6bd">   52</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_initialize_ pthread_barrier_init(&amp;barrier, NULL, \</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">                (unsigned int) num_pipelines+1)</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#ad5159ca5b3cedcbb86e32ab3b278bcb9">   54</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_thread_waits(idx) pthread_barrier_wait(&amp;barrier)</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#a282cc7f3098c2e0dd3186218a7948203">   55</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define pipeline_sync_threads_wake() pthread_barrier_wait(&amp;barrier)</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">static</span> pthread_barrier_t barrier;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#aebac1913f3094aa1204303b3e18f51e6">   27</a></span>&#160;<span class="preprocessor">#define MAX_PIPELINES 30</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#ade0b131dfc1356dc7bb032c5593709c0">   29</a></span>&#160;<span class="preprocessor">#define SEM             1</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#a82192e5816ace2191e7d678cd2e2c697">   30</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define FUTEX           2</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#abd39f207af925a92f1d11dd1880bb196">   31</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define BARRIER         3</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#a2b186b116ebf486d2558623afd90e5d8">   32</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define CONDVAR         4</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="code" href="pipeline__sync_8h.html#acfd0dd1c7f3b9f986834441b4f06e70b">   34</a></span>&#160;<span class="preprocessor">#define PIPELINESYNC_MUTEX_TYPE 4</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keywordtype">int</span> <a class="code" href="pipeline__sync_8c.html#a847733e35b0815e42a7e4cf605918369">pipeline_sync_initialize</a>(<span class="keywordtype">int</span> num_pipelines);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline__sync_8c.html#a36100d77011c2dda66abffb744a9fbcb">pipeline_sync_thread_waits</a>(<span class="keywordtype">int</span> idx);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keywordtype">void</span> <a class="code" href="pipeline__sync_8c.html#a5f066d72c3e40325beaa6dcd426d1464">pipeline_sync_threads_wake</a>();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

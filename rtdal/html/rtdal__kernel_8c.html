@@ -47,7 +47,6 @@
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -63,6 +62,7 @@
 <code>#include &lt;unistd.h&gt;</code><br/>
 <code>#include &lt;sys/types.h&gt;</code><br/>
 <code>#include &lt;sys/mman.h&gt;</code><br/>
+<code>#include &lt;semaphore.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="rtdal__kernel_8h_source.html">rtdal_kernel.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="str_8h_source.html">str.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="defs_8h_source.html">defs.h</a>&quot;</code><br/>
@@ -76,62 +76,55 @@
 </div>
 <p><a href="rtdal__kernel_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a2c9d44a9fa92ffd49381e37ea8b98923"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a2c9d44a9fa92ffd49381e37ea8b98923">KERNEL_SIG_THREAD_SPECIFIC</a>&#160;&#160;&#160;SIGRTMIN</td></tr>
-<tr class="memitem:a9675457fec2c74220d4630df0f0c5507"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a9675457fec2c74220d4630df0f0c5507">N_THREAD_SPECIFIC_SIGNALS</a>&#160;&#160;&#160;6</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0ff66c773d304b578d69496d0cb6a7dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a0ff66c773d304b578d69496d0cb6a7dc">kernel_tslot_run</a> ()</td></tr>
+<tr class="memitem:ga390dad7f63c4c62c59c180790afb6eaf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__other.html#ga390dad7f63c4c62c59c180790afb6eaf">rtdal_timeslot_set</a> (int ts_base_multiply)</td></tr>
 <tr class="memitem:ac38357048b30cf05db3695d29567f543"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#ac38357048b30cf05db3695d29567f543">kernel_initialize_create_pipeline</a> (<a class="el" href="structpipeline__t.html">pipeline_t</a> *obj, int *wait_futex)</td></tr>
+<tr class="memitem:ac2eb28c9075e3e4227502fa5658ed15f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#ac2eb28c9075e3e4227502fa5658ed15f">kernel_initialize_set_kernel_priority</a> ()</td></tr>
 <tr class="memitem:a26273ca4ee3346e5a0aa78ff0928a059"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a26273ca4ee3346e5a0aa78ff0928a059">open_debug_trace</a> ()</td></tr>
 <tr class="memitem:a46f3b7b0a49dcc119fc158a139ace557"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a46f3b7b0a49dcc119fc158a139ace557">write_debug_trace</a> ()</td></tr>
-<tr class="memitem:a52c92f67b8fa80901d1a8c3815571a2e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a52c92f67b8fa80901d1a8c3815571a2e">parse_cores_comma_sep</a> (char *str)</td></tr>
-<tr class="memitem:a2cb45f40a5c2ea40596ecc9691f585ef"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a2cb45f40a5c2ea40596ecc9691f585ef">parse_cores_single_array</a> (char *core_init, char *core_end)</td></tr>
-<tr class="memitem:a48010ad44cfb75d3a9736ff25a935b7d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a48010ad44cfb75d3a9736ff25a935b7d">parse_cores</a> (char *str)</td></tr>
+<tr class="memitem:ae81c5033bff45973c64b98d223327272"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#ae81c5033bff45973c64b98d223327272">kernel_exit</a> ()</td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a349740abec20c73ff7e70ed54841c7a6"><td class="memItemLeft" align="right" valign="top">const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a349740abec20c73ff7e70ed54841c7a6">thread_specific_signals</a> [<a class="el" href="rtdal__kernel_8c.html#a9675457fec2c74220d4630df0f0c5507">N_THREAD_SPECIFIC_SIGNALS</a>]</td></tr>
 <tr class="memitem:a41cd6ec9b53ae98e0eafeacaaa2c51a3"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a41cd6ec9b53ae98e0eafeacaaa2c51a3">core_mapping</a></td></tr>
 <tr class="memitem:a963897f83bd39432e5c50dee715eb2f9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a963897f83bd39432e5c50dee715eb2f9">nof_cores</a></td></tr>
+<tr class="memitem:a1217f3d3a7fcaddafdfb44c01372289a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a1217f3d3a7fcaddafdfb44c01372289a">using_uhd</a></td></tr>
+<tr class="memitem:af960c291af636d0c8d434e9a9e51964d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structrtdal__context__t.html">rtdal_context_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#af960c291af636d0c8d434e9a9e51964d">rtdal</a></td></tr>
+<tr class="memitem:a578d098a135015daadebf09f037a9b22"><td class="memItemLeft" align="right" valign="top">long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a578d098a135015daadebf09f037a9b22">timeslot_us</a></td></tr>
+<tr class="memitem:a5df047c716b52d540855950016c1f6ea"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="rtdal__machine_8h.html#ae3207ac3ee92ebabbedaf232dc628466">clock_source</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a5df047c716b52d540855950016c1f6ea">clock_source</a></td></tr>
+<tr class="memitem:afe40688131a2588db5360a0be02e6db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#afe40688131a2588db5360a0be02e6db6">sigwait_stops</a> = 0</td></tr>
+<tr class="memitem:a8f31f5190c540105f09c8e26ca862920"><td class="memItemLeft" align="right" valign="top">pid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a8f31f5190c540105f09c8e26ca862920">kernel_pid</a></td></tr>
+<tr class="memitem:a500bde5c37fccf3fb6032d21a831bec2"><td class="memItemLeft" align="right" valign="top">pthread_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a500bde5c37fccf3fb6032d21a831bec2">single_timer_thread</a></td></tr>
 <tr class="memitem:abd0a342fbf3ca1440dd41f34d06c6d07"><td class="memItemLeft" align="right" valign="top">FILE *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#abd0a342fbf3ca1440dd41f34d06c6d07">trace_buffer</a> = NULL</td></tr>
 <tr class="memitem:a8fe8a97db2250e73d61441632f950f5f"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a8fe8a97db2250e73d61441632f950f5f">debug_trace_addr</a></td></tr>
 <tr class="memitem:ab79c13782617d982dae3fdc114ac39d6"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#ab79c13782617d982dae3fdc114ac39d6">debug_trace_sz</a></td></tr>
 <tr class="memitem:a86a8d012600cf066725345344d40a5da"><td class="memItemLeft" align="right" valign="top">FILE *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a86a8d012600cf066725345344d40a5da">debug_trace_file</a></td></tr>
+<tr class="memitem:a25536ecd8616b672a7c1bf8dca02fdf6"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtdal__kernel_8c.html#a25536ecd8616b672a7c1bf8dca02fdf6">dac_sem</a></td></tr>
 </table>
-<h2>Macro Definition Documentation</h2>
-<a class="anchor" id="a2c9d44a9fa92ffd49381e37ea8b98923"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define KERNEL_SIG_THREAD_SPECIFIC&#160;&#160;&#160;SIGRTMIN</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00040">40</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a9675457fec2c74220d4630df0f0c5507"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define N_THREAD_SPECIFIC_SIGNALS&#160;&#160;&#160;6</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00041">41</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
-
-</div>
-</div>
 <h2>Function Documentation</h2>
+<a class="anchor" id="ae81c5033bff45973c64b98d223327272"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kernel_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00343">343</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>References <a class="el" href="rtdal__machine_8h_source.html#l00051">rtdal_machine_t::clock_source</a>, <a class="el" href="rtdal__kernel__thread_8c_source.html#l00014">dac_sem</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="pipeline_8h_source.html#l00053">pipeline_t::mytimer</a>, <a class="el" href="rtdal__machine_8h_source.html#l00041">rtdal_machine_t::nof_cores</a>, <a class="el" href="rtdal__context_8h_source.html#l00047">rtdal_context_t::pipelines</a>, <a class="el" href="rtdal__time_8c_source.html#l00115">rtdal_time_slot()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00058">sigwait_stops</a>, <a class="el" href="rtdal__timer_8h_source.html#l00040">rtdal_timer_t::stop</a>, <a class="el" href="pipeline_8h_source.html#l00055">pipeline_t::stop</a>, <a class="el" href="uhd__imp_8cpp_source.html#l00312">uhd_close()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00052">using_uhd</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__signals_8c_source.html#l00097">sigwait_loop()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ac38357048b30cf05db3695d29567f543"></a>
 <div class="memitem">
 <div class="memproto">
@@ -156,40 +149,28 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00191">191</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00151">151</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__timer_8h_source.html#l00042">rtdal_timer_t::arg</a>, <a class="el" href="rtdal__machine_8h_source.html#l00051">rtdal_machine_t::clock_source</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00046">core_mapping</a>, <a class="el" href="rtdal__task_8h_source.html#l00029">DETACHABLE</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00043">pipeline_t::id</a>, <a class="el" href="rtdal__machine_8h_source.html#l00043">rtdal_machine_t::kernel_prio</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__timer_8h_source.html#l00044">rtdal_timer_t::mode</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="pipeline_8h_source.html#l00052">pipeline_t::mytimer</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">NANOSLEEP</a>, <a class="el" href="rtdal__timer_8h_source.html#l00038">rtdal_timer_t::period</a>, <a class="el" href="rtdal__timer_8h_source.html#l00043">rtdal_timer_t::period_function</a>, <a class="el" href="pipeline_8c_source.html#l00139">pipeline_run_from_timer()</a>, <a class="el" href="pipeline_8c_source.html#l00165">pipeline_run_thread()</a>, <a class="el" href="rtdal_8h_source.html#l00194">rtdal_perror</a>, <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00040">rtdal_timer_t::thread</a>, <a class="el" href="pipeline_8h_source.html#l00049">pipeline_t::thread</a>, <a class="el" href="rtdal__timer_8c_source.html#l00109">timer_run_thread()</a>, <a class="el" href="rtdal__machine_8h_source.html#l00036">rtdal_machine_t::ts_len_us</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00041">rtdal_timer_t::wait_futex</a>.</p>
-
-<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00186">pipeline_recover_thread()</a>.</p>
+<p>References <a class="el" href="rtdal__timer_8h_source.html#l00043">rtdal_timer_t::arg</a>, <a class="el" href="rtdal__machine_8h_source.html#l00051">rtdal_machine_t::clock_source</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00048">core_mapping</a>, <a class="el" href="rtdal__task_8h_source.html#l00029">DETACHABLE</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="pipeline_8h_source.html#l00044">pipeline_t::id</a>, <a class="el" href="rtdal__machine_8h_source.html#l00043">rtdal_machine_t::kernel_prio</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__timer_8h_source.html#l00045">rtdal_timer_t::mode</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="pipeline_8h_source.html#l00053">pipeline_t::mytimer</a>, <a class="el" href="rtdal__timer_8h_source.html#l00029">NANOSLEEP</a>, <a class="el" href="rtdal__timer_8h_source.html#l00038">rtdal_timer_t::period</a>, <a class="el" href="rtdal__timer_8h_source.html#l00044">rtdal_timer_t::period_function</a>, <a class="el" href="pipeline_8c_source.html#l00148">pipeline_run_from_timer()</a>, <a class="el" href="pipeline_8c_source.html#l00169">pipeline_run_thread()</a>, <a class="el" href="rtdal_8h_source.html#l00191">rtdal_perror</a>, <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>, <a class="el" href="rtdal__timer_8h_source.html#l00041">rtdal_timer_t::thread</a>, <a class="el" href="pipeline_8h_source.html#l00050">pipeline_t::thread</a>, <a class="el" href="rtdal__timer_8c_source.html#l00114">timer_run_thread()</a>, <a class="el" href="rtdal__machine_8h_source.html#l00036">rtdal_machine_t::ts_len_us</a>, <a class="el" href="rtdal__timer_8h_source.html#l00042">rtdal_timer_t::wait_futex</a>, and <a class="el" href="rtdal__timer_8h_source.html#l00029">XENOMAI</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a0ff66c773d304b578d69496d0cb6a7dc"></a>
+<a class="anchor" id="ac2eb28c9075e3e4227502fa5658ed15f"></a>
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void kernel_tslot_run </td>
+          <td class="memname">int kernel_initialize_set_kernel_priority </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00119">119</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00211">211</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>References <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__time_8c_source.html#l00115">rtdal_time_slot()</a>, and <a class="el" href="rtdal__time_8c_source.html#l00065">rtdal_time_ts_inc()</a>.</p>
-
-<p>Referenced by <a class="el" href="pipeline_8c_source.html#l00139">pipeline_run_from_timer()</a>.</p>
+<p>References <a class="el" href="defs_8h_source.html#l00059">awarn</a>, <a class="el" href="defs_8h_source.html#l00037">hdebug</a>, <a class="el" href="rtdal__machine_8h_source.html#l00043">rtdal_machine_t::kernel_prio</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, and <a class="el" href="defs_8h_source.html#l00064">poserror</a>.</p>
 
 </div>
 </div>
@@ -217,9 +198,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00655">655</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00365">365</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>References <a class="el" href="group__runmain.html#ga6ce50c697f0f74a11ea71aa883360f12">_run_main()</a>, <a class="el" href="defs_8h_source.html#l00051">aerror</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="rtdal__machine_8h_source.html#l00041">rtdal_machine_t::nof_cores</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00047">nof_cores</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00542">open_debug_trace()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00634">parse_cores()</a>, <a class="el" href="rtdal_8h_source.html#l00194">rtdal_perror</a>, <a class="el" href="rtdal__task_8c_source.html#l00050">rtdal_task_new()</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">SINGLE_TIMER</a>, <a class="el" href="str_8h_source.html#l00035">strcmp</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00553">write_debug_trace()</a>.</p>
+<p>References <a class="el" href="group__runmain.html#ga6ce50c697f0f74a11ea71aa883360f12">_run_main()</a>, <a class="el" href="defs_8h_source.html#l00056">aerror</a>, <a class="el" href="defs_8h_source.html#l00055">aerror_msg</a>, <a class="el" href="rtdal__kernel_8h.html#a2c4cac8d6f9e667835fae74574029e36">dac_cycle()</a>, <a class="el" href="rtdal__kernel__thread_8c_source.html#l00014">dac_sem</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00060">kernel_pid</a>, <a class="el" href="rtdal__machine_8h_source.html#l00043">rtdal_machine_t::kernel_prio</a>, <a class="el" href="rtdal__context_8h_source.html#l00042">rtdal_context_t::machine</a>, <a class="el" href="rtdal__machine_8h_source.html#l00025">MULTI_TIMER</a>, <a class="el" href="rtdal__machine_8h_source.html#l00041">rtdal_machine_t::nof_cores</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00049">nof_cores</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00317">open_debug_trace()</a>, <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>, <a class="el" href="rtdal_8h_source.html#l00191">rtdal_perror</a>, <a class="el" href="rtdal__task_8c_source.html#l00050">rtdal_task_new()</a>, <a class="el" href="rtdal__kernel__signals_8c_source.html#l00097">sigwait_loop()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00055">timeslot_us</a>, <a class="el" href="rtdal__machine_8h_source.html#l00036">rtdal_machine_t::ts_len_us</a>, <a class="el" href="uhd__imp_8cpp_source.html#l00239">uhd_init()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00052">using_uhd</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
 
 </div>
 </div>
@@ -236,93 +217,11 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00542">542</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00317">317</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00066">debug_trace_addr</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00068">debug_trace_file</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00067">debug_trace_sz</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00065">trace_buffer</a>.</p>
+<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00067">debug_trace_addr</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00069">debug_trace_file</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00068">debug_trace_sz</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00066">trace_buffer</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00655">main()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a48010ad44cfb75d3a9736ff25a935b7d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int parse_cores </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Parses a string indicating which cores can be used to load modules Valid string formats are:</p>
-<ul>
-<li>"N" Just a number, without "," nor ":" means to use core id 0 to N-1</li>
-<li>"n1:n2" Indicates that core ids n1 to n2 will be used</li>
-<li>"n1,n2,n3" Indicates that core ids n1, n2 and n3 only will be used </li>
-</ul>
-
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00634">634</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00585">parse_cores_comma_sep()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00609">parse_cores_single_array()</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00655">main()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a52c92f67b8fa80901d1a8c3815571a2e"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int parse_cores_comma_sep </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00585">585</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00046">core_mapping</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00634">parse_cores()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a2cb45f40a5c2ea40596ecc9691f585ef"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int parse_cores_single_array </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>core_init</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>core_end</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00609">609</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
-
-<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00046">core_mapping</a>.</p>
-
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00634">parse_cores()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>.</p>
 
 </div>
 </div>
@@ -339,15 +238,29 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00553">553</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00328">328</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00066">debug_trace_addr</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00068">debug_trace_file</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00067">debug_trace_sz</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00065">trace_buffer</a>.</p>
+<p>References <a class="el" href="rtdal__kernel_8c_source.html#l00067">debug_trace_addr</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00069">debug_trace_file</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00068">debug_trace_sz</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00066">trace_buffer</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00655">main()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00343">kernel_exit()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>.</p>
 
 </div>
 </div>
 <h2>Variable Documentation</h2>
+<a class="anchor" id="a5df047c716b52d540855950016c1f6ea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="rtdal__machine_8h.html#ae3207ac3ee92ebabbedaf232dc628466">clock_source</a> <a class="el" href="rtdal__machine_8h.html#ae3207ac3ee92ebabbedaf232dc628466">clock_source</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00056">56</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a41cd6ec9b53ae98e0eafeacaaa2c51a3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -358,9 +271,25 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00046">46</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00048">48</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00191">kernel_initialize_create_pipeline()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00585">parse_cores_comma_sep()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00609">parse_cores_single_array()</a>, and <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00151">kernel_initialize_create_pipeline()</a>, <a class="el" href="rtdal__kernel__parse_8c_source.html#l00026">parse_cores_comma_sep()</a>, <a class="el" href="rtdal__kernel__parse_8c_source.html#l00050">parse_cores_single_array()</a>, and <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a25536ecd8616b672a7c1bf8dca02fdf6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">sem_t dac_sem</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel__thread_8c_source.html#l00014">14</a> of file <a class="el" href="rtdal__kernel__thread_8c_source.html">rtdal_kernel_thread.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__thread_8c_source.html#l00092">kernel_cycle()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00343">kernel_exit()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>.</p>
 
 </div>
 </div>
@@ -374,9 +303,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00066">66</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00067">67</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00542">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00553">write_debug_trace()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00317">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
 
 </div>
 </div>
@@ -390,9 +319,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00068">68</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00069">69</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00542">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00553">write_debug_trace()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00317">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
 
 </div>
 </div>
@@ -406,9 +335,25 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00067">67</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00068">68</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00542">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00553">write_debug_trace()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00317">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8f31f5190c540105f09c8e26ca862920"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pid_t kernel_pid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00060">60</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>, <a class="el" href="rtdal__process_8c_source.html#l00044">rtdal_process_launch()</a>, <a class="el" href="rtdal__process_8c_source.html#l00091">rtdal_process_remove()</a>, and <a class="el" href="rtdal__kernel__signals_8c_source.html#l00272">thread_signal_handler()</a>.</p>
 
 </div>
 </div>
@@ -422,25 +367,73 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00047">47</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00049">49</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00655">main()</a>, and <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>, <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>, and <a class="el" href="rtdal__task_8c_source.html#l00125">rtdal_task_new_thread()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a349740abec20c73ff7e70ed54841c7a6"></a>
+<a class="anchor" id="af960c291af636d0c8d434e9a9e51964d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const int thread_specific_signals[<a class="el" href="rtdal__kernel_8c.html#a9675457fec2c74220d4630df0f0c5507">N_THREAD_SPECIFIC_SIGNALS</a>]</td>
+          <td class="memname"><a class="el" href="structrtdal__context__t.html">rtdal_context_t</a> rtdal</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"></div>
-<div class="line">        {SIGSEGV, SIGBUS, SIGILL, SIGFPE, <a class="code" href="rtdal__kernel_8h.html#aed48f77dc5e5216a20599283994a8d5f">TASK_TERMINATION_SIGNAL</a>, SIGUSR1}</div>
-</div><!-- fragment -->
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00042">42</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00053">53</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="afe40688131a2588db5360a0be02e6db6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sigwait_stops = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00058">58</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00343">kernel_exit()</a>, and <a class="el" href="rtdal__kernel__signals_8c_source.html#l00097">sigwait_loop()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a500bde5c37fccf3fb6032d21a831bec2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pthread_t single_timer_thread</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00061">61</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__signals_8c_source.html#l00272">thread_signal_handler()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a578d098a135015daadebf09f037a9b22"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">long int timeslot_us</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00055">55</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>, and <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>.</p>
 
 </div>
 </div>
@@ -454,16 +447,32 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00065">65</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00066">66</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00542">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00553">write_debug_trace()</a>.</p>
+<p>Referenced by <a class="el" href="rtdal__kernel_8c_source.html#l00317">open_debug_trace()</a>, and <a class="el" href="rtdal__kernel_8c_source.html#l00328">write_debug_trace()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1217f3d3a7fcaddafdfb44c01372289a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int using_uhd</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="rtdal__kernel_8c_source.html#l00052">52</a> of file <a class="el" href="rtdal__kernel_8c_source.html">rtdal_kernel.c</a>.</p>
+
+<p>Referenced by <a class="el" href="rtdal__kernel__thread_8c_source.html#l00092">kernel_cycle()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00343">kernel_exit()</a>, <a class="el" href="rtdal__kernel_8c_source.html#l00365">main()</a>, and <a class="el" href="rtdal__kernel__parse_8c_source.html#l00095">parse_config()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:25 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:03:09 for ALOE++ RTDAL API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

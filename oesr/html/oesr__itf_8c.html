@@ -65,19 +65,22 @@
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga928f9703d5a3ce8da83bc98880cb1343"><td class="memItemLeft" align="right" valign="top">itf_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga928f9703d5a3ce8da83bc98880cb1343">oesr_itf_create</a> (void *context, int port_idx, <a class="el" href="group__itf.html#ga7f097e43c8deaa91df5ac04f6e774016">oesr_itf_mode_t</a> mode, int size)</td></tr>
+<tr class="memitem:gabc513f792e34c6c8c7c81af22a4e3f7a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#gabc513f792e34c6c8c7c81af22a4e3f7a">oesr_itf_nofinputs</a> (void *context)</td></tr>
+<tr class="memitem:ga5fc2818d089fc1dd0af377ecfed23e42"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga5fc2818d089fc1dd0af377ecfed23e42">oesr_itf_nofoutputs</a> (void *context)</td></tr>
+<tr class="memitem:ga863936341ae6b26f26869f9f455771ea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga863936341ae6b26f26869f9f455771ea">oesr_itf_delay_set</a> (void *context, int port_idx, int mode, int delay)</td></tr>
 <tr class="memitem:ga8ef4df01532194c90b85149429c7680d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga8ef4df01532194c90b85149429c7680d">oesr_itf_close</a> (itf_t itf)</td></tr>
-<tr class="memitem:gab01376afdd65f1b4e9ea04584e79705b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#gab01376afdd65f1b4e9ea04584e79705b">oesr_itf_write</a> (itf_t itf, void *buffer, int size)</td></tr>
-<tr class="memitem:ga43e3b33e38b8fca4bcec601f083a71fb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga43e3b33e38b8fca4bcec601f083a71fb">oesr_itf_read</a> (itf_t itf, void *buffer, int size)</td></tr>
+<tr class="memitem:gaf8b3ec21ee1496215560c37d7cd6c18e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#gaf8b3ec21ee1496215560c37d7cd6c18e">oesr_itf_write</a> (itf_t itf, void *buffer, int size, int tstamp)</td></tr>
+<tr class="memitem:ga3b6ffbf2b27eb5683aa73b41d53dc652"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga3b6ffbf2b27eb5683aa73b41d53dc652">oesr_itf_read</a> (itf_t itf, void *buffer, int size, int tstamp)</td></tr>
 <tr class="memitem:ga5a955fed4a85add4824cd2966e742124"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga5a955fed4a85add4824cd2966e742124">oesr_itf_status</a> (itf_t itf)</td></tr>
 <tr class="memitem:ga7a7c53b325a1a904682d4ffc07771f06"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga7a7c53b325a1a904682d4ffc07771f06">oesr_itf_ptr_request</a> (itf_t itf, void **ptr)</td></tr>
 <tr class="memitem:ga3275f85a616402b3108ad418ef0bc5ea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga3275f85a616402b3108ad418ef0bc5ea">oesr_itf_ptr_release</a> (itf_t itf)</td></tr>
-<tr class="memitem:gade3bcfe877fdebce50643e692240e62d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#gade3bcfe877fdebce50643e692240e62d">oesr_itf_ptr_put</a> (itf_t itf, int len)</td></tr>
-<tr class="memitem:gab57a810a4e00dd0ed18fb667c430f701"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#gab57a810a4e00dd0ed18fb667c430f701">oesr_itf_ptr_get</a> (itf_t itf, void **ptr, int *len)</td></tr>
+<tr class="memitem:ga555c431cd72290be940df8834ccab75e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga555c431cd72290be940df8834ccab75e">oesr_itf_ptr_put</a> (itf_t itf, int len, int tstamp)</td></tr>
+<tr class="memitem:ga04ff48a51d9a2c5f63248b0b166f9c1d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itf.html#ga04ff48a51d9a2c5f63248b0b166f9c1d">oesr_itf_ptr_get</a> (itf_t itf, void **ptr, int *len, int tstamp)</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:22 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:02:58 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

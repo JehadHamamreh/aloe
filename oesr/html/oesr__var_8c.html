@@ -53,6 +53,7 @@
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stddef.h&gt;</code><br/>
+<code>#include &quot;rtdal.h&quot;</code><br/>
 <code>#include &quot;<a class="el" href="oesr_8h_source.html">oesr.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="oesr__context_8h_source.html">oesr_context.h</a>&quot;</code><br/>
 <code>#include &quot;nod_waveform.h&quot;</code><br/>
@@ -60,7 +61,11 @@
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga15698f3ab826d6d20ccb2fde7bc905fc"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga15698f3ab826d6d20ccb2fde7bc905fc">oesr_var_create</a> (void *context, char *name, void *ptr, int size)</td></tr>
-<tr class="memitem:ga05296091361ad9e440617000e1c22e2f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga05296091361ad9e440617000e1c22e2f">oesr_var_param_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:ga6c04cbcdf1d0554bad6417d22c3de7f7"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga6c04cbcdf1d0554bad6417d22c3de7f7">oesr_var_param_create_remote</a> (void *context, int module_idx, char *name, int size)</td></tr>
+<tr class="memitem:gab318ec593deae16f937418edfd605e30"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gab318ec593deae16f937418edfd605e30">oesr_var_param_get_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:ga0875f1b2d21baf023ee8458b38d7c527"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga0875f1b2d21baf023ee8458b38d7c527">oesr_var_param_set_value</a> (void *context, var_t parameter, void *value, int size)</td></tr>
+<tr class="memitem:gacde650cdf8d49f6edf2ef518058059b5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gacde650cdf8d49f6edf2ef518058059b5">oesr_var_param_set_value_idx</a> (void *context, int idx, void *value, int size)</td></tr>
+<tr class="memitem:ga08e495befecd08fb44a25ef27448303e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga08e495befecd08fb44a25ef27448303e">oesr_var_param_list</a> (void *context, var_t *parameters, int max_elems)</td></tr>
 <tr class="memitem:ga15942dcaa59766052d7e383e49487ad3"><td class="memItemLeft" align="right" valign="top">var_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga15942dcaa59766052d7e383e49487ad3">oesr_var_param_get</a> (void *context, char *name)</td></tr>
 <tr class="memitem:gaf56dedd1bf2f5fc703b2597814388e72"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__var.html#ga4c606facff0f8d831d91ae1116bcf644">oesr_var_type_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#gaf56dedd1bf2f5fc703b2597814388e72">oesr_var_param_type</a> (void *context, var_t parameter)</td></tr>
 <tr class="memitem:ga82a201ed0020d45d3a7bb097774c33fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__var.html#ga82a201ed0020d45d3a7bb097774c33fe">oesr_var_close</a> (void *context, var_t var)</td></tr>
@@ -68,7 +73,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 11 2012 19:37:22 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 14:02:58 for ALOE++ OESR API by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>
