@@ -6,7 +6,7 @@ modules:
 		binary="modrep_default/libsource.so";	
 		mopts=8;
 		variables=(
-			{name="block_length";value=24},{name="generator";value=0}
+			{name="block_length";value=15344},{name="generator";value=0}
 		);
 	};
 
@@ -18,19 +18,11 @@ modules:
 		variables=({name="long_crc";value=16;});
 	};	
 	
-	bit_pack:
-	{
-		binary="modrep_default/libbitpacker.so";	
-		mopts=8;
-		variables=({name="direction";value=1}); 
-	};
-	
-	
 	sink:
 	{
 		binary="modrep_default/libudp_sink.so";
 		mopts=5;
-		variables=({name="address";value="127.0.0.1"},{name="port";value=10000;}
+		variables=({name="address";value="192.168.0.1"},{name="port";value=10000;},{name="nof_pkts";value=15}
 			); 
 	};	
 	
@@ -40,7 +32,6 @@ modules:
 interfaces:
 (
 	{src="source";dest="crc"},
-	{src="crc";dest="bit_pack"},
-	{src="bit_pack";dest="sink"}
+	{src="crc";dest="sink"}
 );
 

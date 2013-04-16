@@ -48,8 +48,8 @@ addpath('/home/vuk/DATOS/workspace/lte_crc_scrambling');    % CRC Scrambling/Des
 % Symbolic constants
 TX = 0;     % transmission mode (forward processing)
 RX = 1;     % reception mode (reverse processing)
-QPSK = 2;   % QPSK modulation
-FRAMES = 1; % number of radio frames to simulate
+QPSK = 1;   % QPSK modulation
+FRAMES = 6; % number of radio frames to simulate
 INPUT = 1;  % 0: random input bits, 1: master information block (MIB)
 
 % information size in bits (each 4 radio frames)
@@ -99,7 +99,7 @@ S = 3*D;            % RM parameter at the Rx
 
 %% PBCH Tx
 
-for i=1:1
+for i=0:10*FRAMES-1
     
     subframe = i;
     
@@ -181,16 +181,16 @@ for i=1:1
 
     % Layer Mapping (MIMO) (return 0 - done)
     %layered_pdcch = lte_PDSCH_layer_mapper(modulated_pdcch, 0, v, nof_q, style);
-    %layered_pdcchx = lte_PDSCH_layer_mapper(modulated_pdcchx, 0, v, nof_q, style);
+    layered_pdcchx = lte_PDSCH_layer_mapper(modulated_pdcchx, 0, v, nof_q, style);
 
     % Precoding (MIMO) (return 0 - done)
     %precoded_pdcch = lte_PDSCH_precoding(layered_pdcch, p, style);
-   % precoded_pdcchx = lte_PDSCH_precoding(layered_pdcchx, p, style);
+    precoded_pdcchx = lte_PDSCH_precoding(layered_pdcchx, p, style);
 
     %% Channel
     
     %channel_in = precoded_pdcch;
-    channel_inx = modulated_pdcchx;
+    channel_inx = precoded_pdcchx;
 
     %channel_out = channel_in;
     channel_outx = channel_inx;
@@ -199,17 +199,16 @@ for i=1:1
     
     % Layer Demapping (MIMO) (return 0 - done)
     %unprecoded_pdcch = lte_PDSCH_unprecoding(channel_out, v, style);
-    %unprecoded_pdcchx = lte_PDSCH_unprecoding(channel_outx, v, style);
+    unprecoded_pdcchx = lte_PDSCH_unprecoding(channel_outx, v, style);
 
     % Un-precoding (MIMO) (return 0 - done)
     %unlayered_pdcch = lte_PDSCH_layer_demapper(unprecoded_pdcch, v, nof_q, style);
-   % unlayered_pdcchx = lte_PDSCH_layer_demapper(unprecoded_pdcchx, v, nof_q, style);
+    unlayered_pdcchx = lte_PDSCH_layer_demapper(unprecoded_pdcchx, v, nof_q, style);
 
     % Soft Demodulation (return 0 - done)
     %demodulated_pdcch = soft_demapper(unlayered_pdcch, QPSK, LLR_approx, 0, 1, sigma2, 0);
-    demodulated_pdcchx = am_gen_soft_demod(channel_outx, {{'soft',int32(LLR_approx_mex)},{'modulation',int32(QPSK)},{'sigma2',sigma2}});
+    demodulated_pdcchx = am_gen_soft_demod(unlayered_pdcchx, {{'soft',int32(LLR_approx_mex)},{'modulation',int32(QPSK)},{'sigma2',sigma2}});
 
-    binary=demodulated_pdcchx>0;
     if (length(demodulated_pdcchx)==0)
         demodulated_pdcchx = {};
     end

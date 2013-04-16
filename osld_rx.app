@@ -14,7 +14,8 @@ modules:
 	{
 		binary="modrep_default/libudp_source.so";	
 		mopts=8;
-		variables=({name="address";value="127.0.0.1"},{name="port";value=10000;}
+		variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
+				,{name="block_length";value=15360}
 			); 
 	};
 

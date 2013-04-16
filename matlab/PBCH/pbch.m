@@ -36,7 +36,6 @@
 %% Paths to m and MEX files
 % m-files:
 addpath('../common functions');
-addpath('../common functions/modulation');
 
 % MEX-files:
 addpath('/usr/local/mex');
@@ -48,7 +47,7 @@ addpath('/home/vuk/DATOS/workspace/lte_crc_scrambling');    % CRC Scrambling/Des
 % Symbolic constants
 TX = 0;     % transmission mode (forward processing)
 RX = 1;     % reception mode (reverse processing)
-QPSK = 2;   % QPSK modulation
+QPSK = 1;   % QPSK modulation
 FRAME_WISE = 1; % if set, splits the execution of PBCH-Tx and PBCH-Rx into 4 frames (once, per frame) according to the Res. Mapping
 INPUT = 1;  % 0: random input bits, 1: master information block (MIB)
 
@@ -124,7 +123,7 @@ crc_out = [input, zeros(1,L)==ones(1,L)];
 
 % CRC Scrambling
 scrambled_crc = crc_scrambling(crc_out, 0, 0, 0, 0, nof_antenna_ports, 1);
-scrambled_crcx = am_lte_crc_scrambling(crc_out', {{'direction',int32(TX)},{'channel',int32(1)},{'nof_ports',int32(nof_antenna_ports)}});
+scrambled_crcx = am_lte_crc_scrambling(crc_out, {{'direction',int32(TX)},{'channel',int32(1)},{'nof_ports',int32(nof_antenna_ports)}});
 
 if (FRAME_WISE)
     frame_size = 10;
@@ -151,15 +150,15 @@ for i=0:i_top-1
 
     % Rate Matching
     rmatched_pddch = ctrl_ratematching(coded_pdcch, turbo, E);
-    rmatched_pddchx = am_lte_ctrl_ratematching(coded_pdcchx', {{'direction',int32(TX)},{'E',int32(E)}});
+    rmatched_pddchx = am_lte_ctrl_ratematching(coded_pdcchx, {{'direction',int32(TX)},{'E',int32(E)}});
 
     % Scrambling
-    scrambled_pdcch = pbch_scrambling(rmatched_pddch, sample+1, TX);
-    scrambled_pdcchx = am_lte_scrambling(rmatched_pddchx', {{'channel',int32(3)},{'sample',int32(sample)}});
+    scrambled_pdcch = pbch_scrambling(rmatched_pddch, frame, sample+1, TX);
+    scrambled_pdcchx = am_lte_scrambling(rmatched_pddchx, {{'channel',int32(3)},{'sample',int32(sample)}});
 
     % Modulation
     modulated_pdcch = qpsk_modulation(scrambled_pdcch);
-    modulated_pdcchx = am_gen_modulator(scrambled_pdcchx', {{'modulation',int32(QPSK)}});
+    modulated_pdcchx = am_gen_modulator(scrambled_pdcchx, {{'modulation',int32(QPSK)}});
 
     % Layer Mapping (MIMO)
     layered_pdcch = lte_PDSCH_layer_mapper(modulated_pdcch, 0, v, nof_q, style);
@@ -190,15 +189,15 @@ for i=0:i_top-1
 
     % Soft Demodulation
     demodulated_pdcch = soft_demapper(unlayered_pdcch, QPSK, LLR_approx, 0, 1, sigma2, 0);
-    demodulated_pdcchx = am_gen_soft_demod(unlayered_pdcchx', {{'soft',int32(LLR_approx_mex)},{'modulation',int32(QPSK)},{'sigma2',sigma2}});
+    demodulated_pdcchx = am_gen_soft_demod(unlayered_pdcchx, {{'soft',int32(LLR_approx_mex)},{'modulation',int32(QPSK)},{'sigma2',sigma2}});
 
     % Descrambling
-    descrambled_pdcch = pbch_scrambling(demodulated_pdcch, sample+1, RX);
-    descrambled_pdcchx = am_lte_scrambling(demodulated_pdcchx', {{'sample',int32(sample)},{'channel',int32(3)},{'hard',int32(0)}});
+    descrambled_pdcch = pbch_scrambling(demodulated_pdcch, i, sample+1, RX);
+    descrambled_pdcchx = am_lte_scrambling(demodulated_pdcchx, {{'sample',int32(sample)},{'channel',int32(3)},{'hard',int32(0)}});
 
     % Rate Matching @Rx
     unrmatched_pdcch = ctrl_unratematching(descrambled_pdcch, turbo, S);
-    unrmatched_pdcchx = am_lte_ctrl_ratematching(descrambled_pdcchx', {{'direction',int32(RX)},{'S',int32(S)}});
+    unrmatched_pdcchx = am_lte_ctrl_ratematching(descrambled_pdcchx, {{'direction',int32(RX)},{'S',int32(S)}});
 
     % Decoding
     % The model assumes repetition decoding, should be convolutional decoding
@@ -219,7 +218,7 @@ output_vx = reshape(outputx',1,BITS+L)==1;
     
 % CRC Descrambling
 descrambled_crc = crc_scrambling(output_v, 0, 0, 0, 0, nof_antenna_ports, 1);
-descrambled_crcx = am_lte_crc_scrambling(output_vx', {{'direction',int32(RX)},{'channel',int32(1)},{'nof_ports',int32(nof_antenna_ports)}});
+descrambled_crcx = am_lte_crc_scrambling(output_vx, {{'direction',int32(RX)},{'channel',int32(1)},{'nof_ports',int32(nof_antenna_ports)}});
 
 
 % CRC detachment: removes the last L samples

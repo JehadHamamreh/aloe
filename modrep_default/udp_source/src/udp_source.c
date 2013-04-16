@@ -120,36 +120,43 @@ int work(void **inp, void **out) {
 	struct sockaddr_in other;
 	socklen_t addrsz = sizeof(other);
 	int n;
-	int block_length=0,b=0;
+	int block_length,rcv_len,i;
+	output_t *output = out[0];
 
 	if (!out[0]) {
 		moderror("output buffer not ready\n");
 		return 0;
 	}
 
+	block_length=1;
 	param_get_int(blen_id,&block_length);
 
-	if (!block_length) {
-		block_length = OUTPUT_MAX_SAMPLES;
-		b=1;
-	}
-
-	n = recvfrom(fd,out[0],block_length,MSG_DONTWAIT,(struct sockaddr*) &other, &addrsz);
-	if (n == -1) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			n=0;
-		} else {
-			perror("recvfrom");
+	rcv_len = 0;
+	n=1;
+	while(rcv_len<block_length && n) {
+		n = recvfrom(fd,&output[rcv_len],OUTPUT_MAX_SAMPLES-rcv_len,
+				MSG_DONTWAIT,(struct sockaddr*) &other, &addrsz);
+		if (n == -1) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				n=0;
+			} else {
+				perror("recvfrom");
+				return -1;
+			}
+		} else if (n == 0) {
+			moderror("connection lost\n");
 			return -1;
 		}
-	} else if (n == 0) {
-		moderror("connection lost\n");
-		return -1;
+		rcv_len += n;
 	}
 
-	moddebug("received %d bytes\n",n);
+	if (rcv_len<block_length) {
+		modinfo_msg("Received only %d/%d bytes\n",rcv_len,block_length);
+	}
 
-	return n;
+	moddebug("received %d bytes\n",rcv_len);
+
+	return rcv_len;
 }
 
 /**  Deallocates resources created during initialize().

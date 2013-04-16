@@ -34,6 +34,8 @@
 static int fd;
 struct sockaddr_in servaddr;
 
+pmid_t blen_id;
+
 int create_client_upd(char *address, int port, struct sockaddr_in *server) {
 	int sockfd,n;
 
@@ -65,6 +67,8 @@ int initialize() {
 	var_t pm;
 	int i;
 	int port;
+
+	blen_id = param_id("nof_pkts");
 
 	if (param_get_int_name("port",&port)) {
 		moderror("Port undefined\n");
@@ -104,18 +108,31 @@ int work(void **inp, void **out) {
 	int rcv_samples;
 	int n;
 	char tmp[16];
+	int nof_pkts,pkt_len,i;
+	input_t *input = inp[0];
 
 	rcv_samples = get_input_samples(0);
 	if (!rcv_samples) {
 		return 0;
 	}
 
-	moddebug("Sending %d bytes\n",rcv_samples);
+	nof_pkts=1;
+	param_get_int(blen_id,&nof_pkts);
 
-	n = sendto(fd,inp[0],rcv_samples,0,(struct sockaddr *) &servaddr, sizeof (servaddr));
-	if (n == -1) {
-		perror("sendto");
-		return -1;
+	if (rcv_samples % nof_pkts) {
+		modinfo_msg("Warning received packet len %d not multiple of %d packets\n",
+				rcv_samples,nof_pkts);
+	}
+	pkt_len = rcv_samples/nof_pkts;
+
+	modinfo_msg("Sending %d packets of %d bytes\n",nof_pkts,pkt_len);
+
+	for (i=0;i<nof_pkts;i++) {
+		n = sendto(fd,&input[i*pkt_len],pkt_len,0,(struct sockaddr *) &servaddr, sizeof (servaddr));
+		if (n == -1) {
+			perror("sendto");
+			return -1;
+		}
 	}
 
 	return 0;

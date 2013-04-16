@@ -39,6 +39,7 @@
 
 function output = soft_demapper(in, modulation, soft, zero, one, sigma2, debug)
 
+addpath('../common functions/modulation');
 M = length(in);
 if (M == 0)
     output = [];

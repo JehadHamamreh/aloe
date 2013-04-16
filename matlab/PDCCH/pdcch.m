@@ -42,7 +42,7 @@ addpath('../common functions');
 addpath('/usr/local/mex');
 addpath('/home/vuk/DATOS/workspace/lte_ctrl_ratematching'); % Rate Matching (Tx & Rx)
 addpath('/home/vuk/DATOS/workspace/lte_crc_scrambling');    % CRC Scrambling/Descrambling
-addpath('/home/vuk/DATOS/workspace/lte_scrambling');        % Scrambling/Descrambling
+%addpath('/home/vuk/DATOS/workspace/lte_scrambling');        % Scrambling/Descrambling
 
 %% Parameters
 % Symbolic constants
@@ -222,5 +222,7 @@ X = length(uncrc_out);
 XX = length(uncrc_outx);
 subplot(2,1,1), plot(1:X, in_out_diff);
 title('Input-output difference of Tx-Rx-model based on m files');
+axis tight;
 subplot(2,1,2), plot(1:XX, in_out_diffx);
 title('Input-output difference of Tx-Rx-model based on MEX files');
+axis tight;

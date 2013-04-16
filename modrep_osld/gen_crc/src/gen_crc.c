@@ -30,8 +30,8 @@ static int long_crc;
 static int mode;
 static unsigned int poly;
 
-/*#define CHECK_ZEROS
-*/
+#define CHECK_ZEROS
+
 #define PRINT_BLER
 #define EXEC_MIN_INTERVAL_MS 1000
 int interval_ts;

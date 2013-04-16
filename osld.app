@@ -109,7 +109,7 @@ modules:
 
 	channel:
 	{
-		binary="modrep_default/libgen_channel.so";
+		binary="modrep_default/libchannel.so";
 		mopts=7;
 		variables=(
 			{name="variance";value=0.0},{name="gain_re";value=1.0},{name="gain_im";value=0.0},

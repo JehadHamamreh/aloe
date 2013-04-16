@@ -31,6 +31,12 @@ static char tmp_binary[RANDOM_BITS];
 
 static int cnt = 0;
 
+#define RAND 0
+#define FIXED 1
+#define SEQ 2
+
+#define TYPE RAND
+
 void generator_init_random() {
 	int i;
 	for (i=0;i<RANDOM_NUMBERS;i++) {
@@ -71,9 +77,19 @@ void random_bits(char *output, int len) {
 int work_binary(char *output, int block_size) {
 	int i,j;
 
-	random_bits(tmp_binary,block_size);
 	for (j=0;j<block_size;j++) {
-		output[j] = j%2;//(rand()%2)?1:0;//tmp_binary[j];
+		switch(TYPE) {
+		case RAND:
+			output[j] = rand()%2;
+			break;
+		case FIXED:
+			output[j] = j%2;
+			break;
+		case SEQ:
+			random_bits(tmp_binary,block_size);
+			output[j] = tmp_binary[j];
+			break;
+		}
 	}
 	return block_size;
 }

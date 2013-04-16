@@ -94,7 +94,8 @@ modules:
 	{
 		binary="modrep_default/libudp_sink.so";
 		mopts=4;
-		variables=({name="address";value="0.0.0.0"},{name="port";value=10000});
+		variables=({name="address";value="192.168.0.1"},{name="port";value=10000},
+				{name="nof_pkts";value=15});
 	};	
 	
 	
