@@ -85,6 +85,11 @@ int work(void **inp, void **out) {
 				out_len = (get_input_samples(i)-TOTALTAIL)/RATE;
 				input_llr = (Tdec*) input;
 
+				if (out_len < 0 || out_len > 5114) {
+					modinfo_msg("Maximum supported block length is %d\n",5114);
+					return 0;
+				}
+
 				ccfg.Long_CodeBlock=out_len;
 				ccfg.Turbo_Dt=100000;
 				ccfg.Turbo_iteracions = 1;

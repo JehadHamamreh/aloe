@@ -76,7 +76,7 @@ int initialize() {
 	grid.debug = 0;
 	refsignal.port_id = 0;
 
-	if (lte_grid_init_params(&grid)) {
+	if (lte_grid_init_params(&grid) != 1) {
 		moderror("Initiating grid\n");
 		return -1;
 	}
@@ -109,6 +109,9 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 
+	param_get_int(subframe_idx_id,&subframe_idx);
+
+
 	if (rcv_samples != grid.nof_osymb_x_subf*grid.fft_size) {
 		modinfo_msg("WARNING: The number of input samples (%d) is different than expected (%d).\n",
 				rcv_samples, grid.nof_osymb_x_subf*grid.fft_size);
@@ -119,6 +122,12 @@ int work(void **inp, void **out) {
 
 	equalizer (&refsignal, subframe_idx,input, output, &filter,&grid);
 
+	if (!subframe_idx_id) {
+		subframe_idx++;
+		if (subframe_idx == 10) {
+			subframe_idx = 0;
+		}
+	}
 	return snd_samples;
 }
 

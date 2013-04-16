@@ -26,7 +26,7 @@
 #include "equalizer.h"
 
 /* Uncomment next line to enable debug mode */
-//#define DEBUG
+#define DEBUG 0
 
 /* Useful macros */
 #define intfloor(X, Y) ((X%Y>0)?((X-X%Y)/Y):(X/Y))
@@ -49,13 +49,13 @@ int filter2d_init (filter2d_t* filter)
 	for (i=0; i<ntime; i++){
 		for (j=0; j<nfreq; j++){
 			if (j < nfreq/2)
-				filter->mesh[i][j]=(j+1.0)/(4.0*intceil(nfreq, 2));
+				filter->mesh[i][j]=(j+1.0)/(2.0*intceil(nfreq, 2));
 
 			else if (j == intfloor(nfreq, 2))
-				filter->mesh[i][j] = 0.25;
+				filter->mesh[i][j] = 0.5;
 
 			else if (j > nfreq/2)
-				filter->mesh[i][j]=(nfreq-j)/(4.0*intceil(nfreq, 2));
+				filter->mesh[i][j]=(nfreq-j)/(2.0*intceil(nfreq, 2));
 		}
 	}
 
@@ -63,17 +63,16 @@ int filter2d_init (filter2d_t* filter)
 		memset(filter->channel[i],0,sizeof(complex_t)*MAX_FFT_SIZE);
 	}
 
-#ifdef DEBUG
-	/* Print 2-D filter */
-	printf("2-D Filter: \n");
-	for (i=0; i<ntime; i++){
-		for (j=0; j<nfreq; j++){
-			printf("%.3f ", filter[nfreq*i+j]);
+	if (DEBUG) {
+		/* Print 2-D filter */
+		printf("2-D Filter: \n");
+		for (i=0; i<ntime; i++){
+			for (j=0; j<nfreq; j++){
+				printf("%.3f ", filter->mesh[i][j]);
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
-	printf("\n")
-#endif
 	
 	return 0;
 }
@@ -82,15 +81,15 @@ void filter2d_reset(int symbol_sz, int nof_symbols, filter2d_t *filter) {
 	int l;
 
 	for (l=0;l<filter->ntime;l++) {
-		memcpy(filter->channel[l],
-				filter->channel[nof_symbols],sizeof(complex_t)*symbol_sz);
+		memcpy(&filter->channel[l][0],
+				&filter->channel[nof_symbols+l][0],sizeof(complex_t)*(symbol_sz+filter->nfreq));
 	}
 	for (;l<filter->ntime+nof_symbols;l++) {
-		memset(&filter->channel[l], 0, sizeof(complex_t)*symbol_sz);
+		memset(&filter->channel[l][0], 0, sizeof(complex_t)*(symbol_sz+filter->nfreq));
 	}
 }
 
-void filter2d_work(int k, int l, complex_t h, filter2d_t *filter) {
+void filter2d_add(int k, int l, complex_t h, filter2d_t *filter) {
 	int i,j;
 
 	int ntime = filter->ntime;	// 2-D Filter size in time domain (number of ofdm symbols)
@@ -127,9 +126,12 @@ void equalizer (refsignal_t *refsignal,
 
 	filter2d_reset(config->fft_size,config->nof_osymb_x_subf,filter);
 
-	printf("a=[");
+	if (DEBUG) {
+		printf("a=[");
+	}
 	/* Estimate the channel */
 	for (l=0;l<config->nof_osymb_x_subf;l++) {
+
 
 		if (lte_symbol_has_refsig(refsignal->port_id, l, config)) {
 			lte_symbol.subframe_id = subframe_idx;
@@ -150,23 +152,32 @@ void equalizer (refsignal_t *refsignal,
 					__real__ h = 0.0;
 					__imag__ h = 0.0;
 				}
-				printf("%g+%gi, ",__real__ h, __imag__ h);
+				if (DEBUG) {
+					printf("%g+%gi, ",__real__ h, __imag__ h);
+				}
 
-				filter2d_work(k,l,h,filter);
+				filter2d_add(k,l,h,filter);
 			}
 		}
 	}
-	printf("];\n");
+	if (DEBUG) {
+		printf("];\n");
+	}
 
 	/* Equalize the channel */
-	printf("c=[");
+	if (DEBUG) {
+		printf("c=[");
+	}
 	for (l=0;l<config->nof_osymb_x_subf;l++) {
 		for (k=0; k<config->fft_size; k++){
 			output[l*config->fft_size+k] =
 					input[l*config->fft_size+k]*filter->channel[l][k];
-			printf("%g+%gi, ",__real__ filter->channel[l][k], __imag__ filter->channel[l][k]);
+			if (DEBUG) {
+				printf("%g+%gi, ",__real__ filter->channel[l][k], __imag__ filter->channel[l][k]);
+			}
 		}
 	}
-	printf("];\n");
-
+	if (DEBUG) {
+		printf("];\n");
+	}
 }

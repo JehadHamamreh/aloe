@@ -148,7 +148,8 @@ int generate_input_signal(void *in, int *lengths)
 	/* Generate testing channel */
 	for (i=0; i<fftsize; i++){
 			/*arg = 2*PI*((float)(i%fftsize)/(float)fftsize);
-			*/realchannel [i] = i;/*cosf(arg)+I*sinf(arg);*/
+			cosf(arg)+I*sinf(arg);*/
+			realchannel[i] = -1.0+1.0*I;
 	}
 	modinfo_msg("Test: testing channel has been generated.\n", NULL);
 

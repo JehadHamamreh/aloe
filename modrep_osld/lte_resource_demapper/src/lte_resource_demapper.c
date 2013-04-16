@@ -134,7 +134,7 @@ int work(void **inp, void **out) {
 
 	if (channels_init_grid(channel_ids, nof_channels)) {
 		moderror("Initiating resource grid\n");
-		return -1;
+		return 0;
 	}
 
 	if (deallocate_all_channels(channel_ids, nof_channels, inp[0],out)) {

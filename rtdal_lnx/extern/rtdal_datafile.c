@@ -50,6 +50,13 @@ void rtdal_datafile_close(FILE *f) {
 	fclose(f);
 }
 
+int rtdal_datafile_write_bin(FILE *f, void *buf, int size) {
+	return fwrite(buf,1,size,f);
+}
+
+int rtdal_datafile_read_bin(FILE *f, void *buf, int size) {
+	return fread(buf,1,size,f);
+}
 
 /**
  * Writes up to size real values from the buffer pointed by buf to the

@@ -12,11 +12,15 @@ modules:
 {
 	rx:
 	{
-		binary="modrep_default/libudp_source.so";	
+		binary="modrep_default/libfile_source.so";	
 		mopts=8;
+		/*
 		variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
 				,{name="block_length";value=15360}
 			); 
+		*/
+		variables=({name="file_name";value="osld_tx_out.bin"},{name="block_length";value=15360});
+		
 	};
 
 	/* muxes all control messages from other modules */

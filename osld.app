@@ -112,7 +112,7 @@ modules:
 		binary="modrep_default/libchannel.so";
 		mopts=7;
 		variables=(
-			{name="variance";value=0.0},{name="gain_re";value=1.0},{name="gain_im";value=0.0},
+			{name="variance";value=0.0},{name="gain_re";value=-1.0},{name="gain_im";value=1.0},
 		/*	{name="snr_min";value=3.0},{name="snr_max";value=9.0},{name="snr_step";value=0.1}, 
 			{name="num_realizations";value=10000},*/
 			{name="noise_scale";value=1.778}
@@ -126,7 +126,7 @@ modules:
 		variables=({name="bypass";value=1},{name="FFTsize";value=128},
 		{name="LTEframe_structtype";value=1;});
 	};
-
+	
 	symb_rx:
 	{
 		include="./symb_rx.app";	
@@ -138,7 +138,13 @@ modules:
 		mopts=11;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
-
+		
+	equalizer:
+	{
+		binary="modrep_osld/liblte_equalizer.so";
+		mopts=5;
+	};
+	
 	resdemapp_pbch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
@@ -239,7 +245,7 @@ join_stages=
 	("symb_rx_remcyclic_10","symb_rx_fft_12"),
 	("symb_rx_remcyclic_11","symb_rx_fft_13"),
 
-	("mux_rx","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
+	("mux_rx","equalizer","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
 	("resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
 	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check","pdcch_rx_unpack"),
 	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink")
@@ -295,7 +301,8 @@ interfaces:
 	{src=("symb_rx",12);dest=("mux_rx",12)},
 	{src=("symb_rx",13);dest=("mux_rx",13)},
 	
-	{src="mux_rx";dest="resdemapp_pbch"},	
+	{src="mux_rx";dest="equalizer"},	
+	{src="equalizer";dest="resdemapp_pbch"},	
 
 	{src=("resdemapp_pbch",0);dest="pbch_rx"},
 	{src=("resdemapp_pbch",1);dest="resdemapp_pcfich"},

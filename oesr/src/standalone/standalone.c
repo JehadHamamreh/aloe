@@ -176,6 +176,8 @@ int main(int argc, char **argv)
 	if (dat_input) {
 		if (param_get_int_name("block_length",&file_read_sz)) {
 			file_read_sz=input_max_samples;
+		} else {
+			file_read_sz*=run_times;
 		}
 		if (input_sample_sz == sizeof(float)) {
 			input_lengths[0] = rtdal_datafile_read_real(dat_input,
@@ -203,16 +205,20 @@ int main(int argc, char **argv)
 			printf("Warning input interface %d has zero length\n",i);
 		}
 	}
-
 	for (i=0;i<nof_input_itf;i++) {
 		input_ptr[i] = &input_data[i*input_max_samples*input_sample_sz];
 	}
+
 	for (i=0;i<nof_output_itf;i++) {
 		output_ptr[i] = &output_data[i*output_max_samples*output_sample_sz];
 	}
 	ret = 0;
 	clock_gettime(CLOCK_MONOTONIC,&tdata[1]);
 	for (i=0;i<run_times;i++) {
+		if (dat_input && nof_input_itf == 1) {
+			input_lengths[0] = file_read_sz/run_times;
+			input_ptr[0] = &input_data[input_sample_sz*i*file_read_sz/run_times];
+		}
 		ret = work(input_ptr, output_ptr);
 	}
 	clock_gettime(CLOCK_MONOTONIC,&tdata[2]);

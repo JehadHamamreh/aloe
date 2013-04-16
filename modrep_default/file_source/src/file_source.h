@@ -17,30 +17,33 @@
  */
 
 
+
 /**
- * @defgroup lte_scrambling lte_scrambling
- * Document here your module
+ * @defgroup file_source file_source
+ * This module writes the received samples to a file.
+ *
  * @{
  */
 #ifndef DEFINE_H
 #define DEFINE_H
 
-typedef float input_t;
-typedef float output_t;
+typedef char output_t;
 
+#define INPUT_MAX_SAMPLES 	0
 #define OUTPUT_MAX_SAMPLES 	14*2048
-#define INPUT_MAX_SAMPLES 	14*2048
 
-#define NOF_INPUT_ITF		1
+#define NOF_INPUT_ITF		0
 #define NOF_OUTPUT_ITF		1
 
 #endif
 
 /**@} */
 
-#define GENERATE_COMPLEX
+
+
 
 /********* do not need to modify beyond here */
+
 
 #ifndef INCLUDE_DEFS_ONLY
 
@@ -49,7 +52,7 @@ const int input_max_samples = INPUT_MAX_SAMPLES;
 const int output_max_samples = OUTPUT_MAX_SAMPLES;
 
 /* leave these two lines unmodified */
-int input_sample_sz = sizeof(input_t);
+const int input_sample_sz = 0;
 int output_sample_sz = sizeof(output_t);
 
 /* Number of I/O interfaces. All have the same maximum size */

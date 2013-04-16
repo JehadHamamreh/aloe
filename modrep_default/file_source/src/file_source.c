@@ -24,20 +24,22 @@
 #include <params.h>
 #include <skeleton.h>
 #include <complex.h>
-#include "file_sink.h"
+#include "file_source.h"
 
 FILE *fd;
 
-static int last_rcv_samples;
+static int last_snd_samples;
 static int data_type;
+static int block_length;
 
-extern int input_sample_sz;
+extern int output_sample_sz;
 
 /**
- * @ingroup file_sink
+ * @ingroup file_source
  *
- * \param data_type If specified, formats data in text mode:
+ * \param data_type If specified, reads formated data in text mode:
  * 0 for float, 1 for _Complex float and 2 for _Complex short
+ * \param block_length Number of samples to read per timeslot, or bytes
  * \param file_name Name of the *.mat file to save the signal
  */
 int initialize() {
@@ -51,16 +53,21 @@ int initialize() {
 
 	switch(data_type) {
 	case 0:
-		input_sample_sz = sizeof(float);
+		output_sample_sz = sizeof(float);
 		break;
 	case 1:
-		input_sample_sz = sizeof(_Complex float);
+		output_sample_sz = sizeof(_Complex float);
 		break;
 	case 2:
-		input_sample_sz = sizeof(_Complex short);
+		output_sample_sz = sizeof(_Complex short);
 		break;
 	case -1:
-		input_sample_sz=sizeof(char);
+		output_sample_sz=sizeof(char);
+	}
+
+	if (param_get_int_name("block_length", &block_length)) {
+		moderror("Parameter block_length not specified\n");
+		return -1;
 	}
 
 #ifdef _COMPILE_ALOE
@@ -76,55 +83,51 @@ int initialize() {
 	}
 #endif
 
-	modinfo_msg("Opening file %s for writing\n",name);
-	fd = rtdal_datafile_open(name,"w");
+	modinfo_msg("Opening file %s for reading\n",name);
+	fd = rtdal_datafile_open(name,"r");
 	if (!fd) {
 		moderror_msg("Error opening file %s\n",name);
 		return -1;
 	}
 
-	last_rcv_samples = 0;
-
 	return 0;
 }
 
 /**
- * @ingroup file_sink
+ * @ingroup file_source
  *
  *  Writes the received samples to the dac output buffer
  *
  */
 int work(void **inp, void **out) {
-	int rcv_samples;
-	input_t *buffer = inp[0];
-
-	rcv_samples = get_input_samples(0);
-
-#ifdef _COMPILE_ALOE
-	if (rcv_samples != last_rcv_samples) {
-		last_rcv_samples = rcv_samples;
-		modinfo_msg("Receiving %d samples at tslot %d\n",
-				rcv_samples,oesr_tstamp(ctx));
-	}
-#endif
+	int n;
+	output_t *output = out[0];
 
 	switch(data_type) {
 	case 0:
-		rtdal_datafile_write_real(fd,(float*) buffer,rcv_samples);
+		n = rtdal_datafile_read_real(fd,(float*) output,block_length);
 		break;
 	case 1:
-		rtdal_datafile_write_complex(fd,
-				(_Complex float*) buffer,rcv_samples);
+		n = rtdal_datafile_read_complex(fd,
+				(_Complex float*) output,block_length);
 		break;
 	case 2:
-		rtdal_datafile_write_complex_short(fd,
-				(_Complex short*) buffer,rcv_samples);
+		n = rtdal_datafile_read_complex_short(fd,
+				(_Complex short*) output,block_length);
 		break;
 	case -1:
-		rtdal_datafile_write_bin(fd,buffer,rcv_samples);
+		n = rtdal_datafile_read_bin(fd,output,block_length);
 	}
 
-	return 0;
+#ifdef _COMPILE_ALOE
+	if (n != last_snd_samples) {
+		last_snd_samples = n;
+		modinfo_msg("Sending %d samples at tslot %d\n",
+				n,oesr_tstamp(ctx));
+	}
+#endif
+
+	return n;
 }
 
 /**  Deallocates resources created during initialize().
