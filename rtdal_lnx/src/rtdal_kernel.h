@@ -23,7 +23,7 @@
 
 #define KERNEL_RT_PRIO sched_get_priority_max(SCHED_FIFO)
 
-#define ALOE_VERSION "ALOE++-0.4"
+#define ALOE_VERSION "ALOE++-0.6"
 #define ALOE_YEAR 2013
 
 #include "pipeline.h"
