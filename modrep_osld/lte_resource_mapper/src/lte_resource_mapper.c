@@ -65,7 +65,7 @@ int initialize() {
 	grid.pdcch[0].nof_cce = 2;
 	grid.nof_pdsch = 1;
 	grid.pdsch[0].rbg_mask=0xFFFF;
-	grid.verbose = 1;
+	grid.verbose = 0;
 
 	if (lte_grid_init(&grid)) {
 		moderror("Initiating channels grid\n");

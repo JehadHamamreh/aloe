@@ -59,10 +59,14 @@ int nod_waveform_load(nod_waveform_t *w) {
 	ndebug("waveform_id=%d, nof_modules=%d\n",w->id, w->nof_modules);
 	aassert(w);
 	int i, j;
+
+	printf("Loading %d modules",w->nof_modules);
+
 	for (i=0;i<w->nof_modules;i++) {
 		if (nod_module_load(&w->modules[i])) {
 			return -1;
 		}
+		printf(".");fflush(0);
 	}
 	if (nod_waveform_run(w,1)) {
 		ndebug("error running waveform %s. Removing\n",w->name);
@@ -221,6 +225,7 @@ void* nod_waveform_status_init_thread(void *arg) {
 	}
 
 	i = nof_trials = nof_initiated = 0;
+	printf("Initiating %d modules",waveform->nof_modules);
 	while(nof_initiated < waveform->nof_modules) {
 		if (waveform->modules[i].parent.status != INIT) {
 			n = nod_module_init(&waveform->modules[i]);
@@ -229,6 +234,7 @@ void* nod_waveform_status_init_thread(void *arg) {
 				return NULL;
 			} else if (n > 0) {
 				nof_initiated++;
+				printf(".");fflush(0);
 			}
 		}
 		i++;
@@ -369,6 +375,7 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 	default:
 		rtdal_timeslot_set(1);
 		if (waveform->status.cur_status == STEP) {
+			printf("Stepping...");fflush(0);
 			for (i=0;i<waveform->nof_modules;i++) {
 				if (waveform->modules[i].parent.status != STEP) {
 					aerror_msg("Caution module %s did not step correctly\n",
@@ -377,6 +384,8 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 				waveform->modules[i].parent.status = PAUSE;
 				waveform->modules[i].changing_status = 0;
 			}
+		} else {
+			printf("Running...");fflush(0);
 		}
 		nod_waveform_run(waveform,1);/* let modules run in pipeline */
 		for (i=0;i<waveform->nof_modules;i++) {

@@ -99,37 +99,37 @@ int initialize() {
 
 	/* get parameters and assign defaults if not (correctly) recevied */
 	if (param_get_int_name("hard", &hard)) {
-		moderror_msg("Scrambling type not specified. Assuming "
+		moddebug("Scrambling type not specified. Assuming "
 		  "bit-scrambling: hard = %d.\n",1);
 		hard = 1;
 	}
 	if (param_get_int_name("q", &params.q)) {
-		moderror_msg("Codeword index not specified. Assuming default "
+		moddebug("Codeword index not specified. Assuming default "
 			"value %d.\n",q_default);
 		params.q = q_default;
 	}
 	if (param_get_int_name("cell_gr", &params.cell_gr)) {
-		moderror_msg("Cell ID group index (cell_gr) not specified. "
+		moddebug("Cell ID group index (cell_gr) not specified. "
 		  "Assuming default value %d.\n", cell_gr_default);
 		params.cell_gr = cell_gr_default;
 	}
 	if (param_get_int_name("cell_sec", &params.cell_sec)) {
-		moderror_msg("Cell ID sector index (cell_sec) not specified. "
+		moddebug("Cell ID sector index (cell_sec) not specified. "
 		  "Assuming default value %d.\n", cell_sec_default);
 		params.cell_sec = cell_sec_default;
 	}
 	if (param_get_int_name("nrnti", &params.nrnti)) {
-		moderror_msg("Radio network temporary identifier (nrnti) not "
+		moddebug("Radio network temporary identifier (nrnti) not "
 		  "specified. Assuming default value %d.\n", nrnti_default);
 		params.nrnti = nrnti_default;
 	}
 	if (param_get_int_name("nMBSFN", &params.nMBSFN)) {
-		moderror_msg("nMBSFN not specified. Assuming default value %d."
+		moddebug("nMBSFN not specified. Assuming default value %d."
 		  "\n", nMBSFN_default);
 		params.nMBSFN = nMBSFN_default;
 	}
 	if (param_get_int_name("channel", &params.channel)) {
-		moderror_msg("Physical channel type (channel) not specified. "
+		moddebug("Physical channel type (channel) not specified. "
 		  "Choose 0 for PDSCH or PUSCH, 1 for PCFICH, 2 for PDCCH, 3 "
 		  "for PBCH, 4 for PMCH, 5 for PUCCH. Assuming default value "
 		  "%d.\n", channel_default);
@@ -137,12 +137,12 @@ int initialize() {
 	}
 	params.Nc = Nc_default;	/* fixed value */
 	if (param_get_int_name("ul", &ul)) {
-		moderror_msg("Parameter 'ul' not set. Assuming downlink "
+		moddebug("Parameter 'ul' not set. Assuming downlink "
 		  "operation (%d).\n", 0);
 		ul = 0;
 	}
 	if (param_get_int_name("direct", &direct)) {
-		moderror_msg("Direct parameter not set (%d). This transforms "
+		moddebug("Direct parameter not set (%d). This transforms "
 		  "input bits from chars to integers, performs descrambling and "
 		  "converts result back to chars. Set if processing short "
 		  "input sequences to directly scramble input samples.\n", 0);

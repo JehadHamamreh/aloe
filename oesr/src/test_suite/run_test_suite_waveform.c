@@ -79,21 +79,22 @@ void *_run_main(void *arg) {
 		return NULL;
 	}
 	c=0;
+	printf("\n\nList of commands:\n"
+			"\t<l>\tLoad waveform\n"
+			"\t<i>\tSet INIT\n"
+			"\t<r>\tSet RUN\n"
+			"\t<p>\tSet PAUSE\n"
+			"\t<t>\tSet STEP\n"
+			"\t<s>\tStop waveform\n"
+			"\t<m>\tSet waveform mode\n"
+			"\t<e>\tView execution time\n"
+			"\n<Ctr+C>\tExit\n");
 	waveform_status_t new_status;
 	do {
-		fflush(stdout);
 		if (c != '\n') {
-			printf("\n\nType new command:\n"
-					"\t<l>\tLoad waveform\n"
-					"\t<i>\tSet INIT\n"
-					"\t<r>\tSet RUN\n"
-					"\t<p>\tSet PAUSE\n"
-					"\t<t>\tSet STEP\n"
-					"\t<s>\tStop waveform\n"
-					"\t<m>\tSet waveform mode\n"
-					"\t<e>\tView execution time\n"
-					"\n<Ctr+C>\tExit\n");
+			printf("\n>> ");
 		}
+		fflush(stdout);
 		c = getchar();
 		new_status.cur_status = LOADED;
 		switch((char) c) {
@@ -117,7 +118,7 @@ void *_run_main(void *arg) {
 				break;
 			}
 			fflush(stdout);
-			printf("Waveform LOADED!\n");
+			printf("OK!\n");
 			break;
 		case 'i':
 			new_status.cur_status=INIT;
@@ -155,7 +156,7 @@ void *_run_main(void *arg) {
 			if (waveform_status_set(&waveform,&new_status)) {
 				printf("DID NOT CHANGE!\n");
 			} else {
-				printf("DONE!\n");
+				printf("OK!\n");
 			}
 		}
 	} while(1);

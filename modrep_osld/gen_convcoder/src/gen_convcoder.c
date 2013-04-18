@@ -46,8 +46,8 @@ int initialize() {
 
 	padding_id = param_id("padding");
 	if (!padding_id) {
-		modinfo("Parameter padding not configured. Setting to 0\n");
 		padding = 0;
+		moddebug("Parameter padding not configured. Setting to %d\n",padding);
 	}
 	if (param_get_int_name("constraint_length",&constraint_length)) {
 		moderror("Parameter constraint_length not specified\n");

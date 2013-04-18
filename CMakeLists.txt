@@ -18,7 +18,7 @@ else()
 	set(CFDEB "-O2")
 endif()
 
-set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-format -std=c99 -D_GNU_SOURCE -fPIC")
+set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-unused-result -Wno-format -std=c99 -D_GNU_SOURCE -fPIC")
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(RTDAL_INCLUDE "")

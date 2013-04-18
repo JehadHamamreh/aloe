@@ -92,7 +92,7 @@ int init_interfaces(void *ctx) {
 			outputs[i] = oesr_itf_create(ctx, i, ITF_WRITE, output_max_samples*output_sample_sz);
 			if (outputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTFOUND) {
-					modinfo_msg("Caution output port %d not connected,\n",i);
+					moddebug("Caution output port %d not connected,\n",i);
 				} else {
 					moderror_msg("Error creating output port %d\n",i);
 					oesr_perror("oesr_itf_create\n");
@@ -109,7 +109,7 @@ int init_interfaces(void *ctx) {
 			/* try to create control interface */
 			ctrl_in = oesr_itf_create(ctx, oesr_itf_nofinputs(ctx)-1, ITF_READ, CTRL_IN_BUFFER_SZ);
 			if (ctrl_in) {
-				modinfo("Created control port\n");
+				moddebug("Created control port\n",0);
 			}
 		}
 	}
@@ -120,7 +120,7 @@ int init_interfaces(void *ctx) {
 			inputs[i] = oesr_itf_create(ctx, i, ITF_READ, input_max_samples*input_sample_sz);
 			if (inputs[i] == NULL) {
 				if (oesr_error_code(ctx) == OESR_ERROR_NOTREADY) {
-					modinfo_msg("input %d not ready\n",i);
+					moddebug("input %d not ready\n",i);
 					return 0;
 				} else {
 					oesr_perror("creating input interface\n");
@@ -324,7 +324,6 @@ int process_ctrl_packet(void) {
 int Run(void *_ctx) {
 	ctx = _ctx;
 	int tstamp = oesr_tstamp(ctx);
-	moddebug("enter ts=%d\n",oesr_tstamp(ctx));
 	int i;
 	int n;
 
@@ -375,16 +374,7 @@ int Run(void *_ctx) {
 
 	memset(snd_len,0,sizeof(int)*nof_output_itf);
 
-#if MOD_DEBUG==1
-	if (counter)
-		oesr_counter_start(counter);
-#endif
 	n = work(input_ptr,output_ptr);
-#if MOD_DEBUG==1
-	if (counter)
-		oesr_counter_stop(counter);
-	moddebug("work exec time: %d us\n",oesr_counter_usec(counter));
-#endif
 	if (n<0) {
 		return -1;
 	}
@@ -420,7 +410,7 @@ int Run(void *_ctx) {
 		}
 	}
 
-	moddebug("exit ts=%d\n",oesr_tstamp(ctx));
+	moddebug("exit Run\n",0);
 	return 0;
 }
 
@@ -466,7 +456,7 @@ int param_remote_set_ptr(void *out_ptr, int param_idx, void *value, int value_sz
 		return -1;
 	}
 	if (!pkt) {
-		printf("output packet not ready, remote parameter %d won't be sent\n",param_idx);
+		moddebug("output packet not ready, remote parameter %d won't be sent\n",param_idx);
 		return -1;
 	}
 	pkt->pm_idx = param_idx;

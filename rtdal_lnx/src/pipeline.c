@@ -222,6 +222,8 @@ int pipeline_rt_fault(pipeline_t *obj) {
 #ifdef PRINT_RT_FAULT
 	printf("+++[ts=%d]+++ RT-Fault: Process %d/%d still running in pipeline %d\n",
 			obj->ts_counter, obj->running_process_idx, obj->nof_processes, obj->id);
+#else
+	write(0,"!",1);
 #endif
 #endif
 	return 0;

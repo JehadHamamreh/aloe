@@ -281,6 +281,7 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 #endif
 
 	signal_received++;
+	thread_id = -1;
 
 	hdebug("[ts=%d] signal %d received\n",rtdal_time_slot(),signum);
 
@@ -337,7 +338,7 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	}
 
 cancel_and_exit:
-	if (signum != SIGABRT) {
+	if (signum != SIGABRT || thread_id == -1) {
 		pthread_exit(NULL);
 	} else {
 		rtdal.pipelines[thread_id].waiting=1;

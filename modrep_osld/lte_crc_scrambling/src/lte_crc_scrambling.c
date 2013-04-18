@@ -89,17 +89,17 @@ int initialize() {
 
 	/* get parameters and assign defaults if not (correctly) recevied */
 	if (param_get_int_name("direction", &direction)) {
-		moderror_msg("Scrambling direction not specified. Assuming "
+		moddebug("Scrambling direction not specified. Assuming "
 		  "%d: transmitter.\n", 0);
 		direction = 0;
 	}
 	if (param_get_int_name("crc_length", &L)) {
-		moderror_msg("Number of parity bits not specified. Assuming "
+		moddebug("Number of parity bits not specified. Assuming "
 		  "default value %d.\n", L_default);
 		L = L_default;
 	}
 	if (param_get_int_name("channel", &channel)) {
-		moderror_msg("LTE channel not specified. Assuming (%d) - "
+		moddebug("LTE channel not specified. Assuming (%d) - "
 		  "PDCCH.\n", PDCCH);
 		channel = channel_default;
 	}

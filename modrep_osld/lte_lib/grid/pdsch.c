@@ -45,13 +45,7 @@ int lte_pdsch_init_params_ch(int ch_id, struct lte_grid_config *config) {
 	char tmp[64];
 
 	snprintf(tmp,64,"pdsch_rbgmask_%d",ch_id);
-	if (param_get_int_name(tmp,&config->pdsch[ch_id].rbg_mask)) {
-		if (config->nof_pdsch == 1) {
-			config->pdsch[ch_id].rbg_mask = 0xFFFFFFFF;
-		} else {
-			config->pdsch[ch_id].rbg_mask = 1<<ch_id;
-		}
-	}
+	param_get_int_name(tmp,&config->pdsch[ch_id].rbg_mask);
 	return 0;
 }
 

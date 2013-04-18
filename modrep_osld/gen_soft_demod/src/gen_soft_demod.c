@@ -59,9 +59,9 @@ int initialize() {
 
 	/* use this function to print formatted messages */
 	if (soft == 0) {
-		modinfo_msg("Soft Demodulation mode %d (exact LLR).\n", soft);
+		moddebug("Soft Demodulation mode %d (exact LLR).\n", soft);
 	} else {
-		modinfo_msg("Soft Demodulation mode %d (approximate LLR)\n",soft);
+		moddebug("Soft Demodulation mode %d (approximate LLR)\n",soft);
 	}
 	/* Only approximate LLR soft demodulation algorithm implemented so far */
 	if ((soft < 0) || (soft > 1)) {

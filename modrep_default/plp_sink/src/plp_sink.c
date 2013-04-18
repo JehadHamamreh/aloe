@@ -132,7 +132,6 @@ int initialize() {
 	if (param_get_int_name("print_not_received",&print_not_received)!=1) {
 		print_not_received = 0;
 	}
-	modinfo_msg("print_not_received=%d\n",print_not_received);
 
 	mode_id = param_id("mode");
 	if (mode_id == NULL) {
@@ -180,7 +179,7 @@ int initialize() {
 		interval_ts = 1;
 	} else {
 		interval_ts = (EXEC_MIN_INTERVAL_MS*1000)/tslen;
-		modinfo_msg("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
+		moddebug("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
 	}
 	last_tstamp = 0;
 #endif

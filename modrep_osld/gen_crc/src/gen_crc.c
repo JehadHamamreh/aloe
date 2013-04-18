@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <oesr.h>
 #include <params.h>
@@ -30,13 +31,16 @@ static int long_crc;
 static int mode;
 static unsigned int poly;
 
-#define CHECK_ZEROS
+/*#define CHECK_ZEROS
+*/
+
+#define POINT_PRINT_INTERVAL	100
 
 #define PRINT_BLER
 #define EXEC_MIN_INTERVAL_MS 1000
 int interval_ts;
 int tscnt;
-int total_errors, total_pkts;
+unsigned total_errors, total_pkts;
 int print_nof_pkts,print_nof_pkts_cnt;
 
 /** @ingroup gen_crc gen_crc
@@ -60,7 +64,7 @@ int initialize() {
 
 	long_crc_id = param_id("long_crc");
 	if (param_get_int(long_crc_id,&long_crc) != 1) {
-		modinfo_msg("Parameter long_crc not configured. Set to %d\n",
+		moddebug("Parameter long_crc not configured. Set to %d\n",
 				DEFAULT_LONG_CRC);
 		long_crc = DEFAULT_LONG_CRC;
 		long_crc_id = NULL;
@@ -80,7 +84,7 @@ int initialize() {
 		interval_ts = 1;
 	} else {
 		interval_ts = (EXEC_MIN_INTERVAL_MS*1000)/tslen;
-		modinfo_msg("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
+		moddebug("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
 	}
 #endif
 	total_errors=0;
@@ -93,8 +97,7 @@ int initialize() {
  * Adds a CRC to every received packet from each interface
  */
 int work(void **inp, void **out) {
-	int i,j;
-	char checkzero;
+	int i;
 	unsigned int n;
 	int rcv_samples;
 	input_t *input;
@@ -115,6 +118,8 @@ int work(void **inp, void **out) {
 
 			if (mode==MODE_CHECK) {
 #ifdef CHECK_ZEROS
+				int j;
+				char checkzero;
 				checkzero=0;
 				for (j=0;j<rcv_samples;j++) {
 					checkzero+=input[j];
@@ -128,22 +133,14 @@ int work(void **inp, void **out) {
 				if (n) {
 					total_errors++;
 #ifdef _COMPILE_ALOE
-					modinfo_msg("error at packet %d ts=%d len=%d\n",total_pkts,oesr_tstamp(ctx),rcv_samples);
+					moddebug("error at packet %d ts=%d len=%d\n",total_pkts,oesr_tstamp(ctx),rcv_samples);
 #endif
+					printf("X");
 				}
 				total_pkts++;
 				set_output_samples(i,rcv_samples-long_crc);
 
-				if (!print_nof_pkts) {
-					tscnt++;
-					if (tscnt==interval_ts) {
-						tscnt=0;
-						#ifdef PRINT_BLER
-						modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
-								total_pkts,total_errors,(float)total_errors/total_pkts);
-						#endif
-					}
-				} else {
+				if (print_nof_pkts) {
 					print_nof_pkts_cnt++;
 					if (print_nof_pkts_cnt == print_nof_pkts) {
 						print_nof_pkts_cnt=0;
@@ -152,6 +149,9 @@ int work(void **inp, void **out) {
 					}
 				}
 
+				if (!(total_pkts%POINT_PRINT_INTERVAL)) {
+					write(0,".",1);
+				}
 			} else {
 				set_output_samples(i,rcv_samples+long_crc);
 			}

@@ -25,9 +25,9 @@
 #include "rtdal_timer.h"
 /*
 #define PRINT_TIME
-*/
-#define PRINT_RT_FAULT
 
+#define PRINT_RT_FAULT
+*/
 /**
  * A ProcThread is a POSIX-thread that runs in a single processor core with
  * real-time priority and FIFO-scheduling (non-preemptable).

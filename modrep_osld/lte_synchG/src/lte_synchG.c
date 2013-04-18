@@ -184,7 +184,7 @@ int initialize() {
 	if (sf_pm_idx < 0) {
 		moderror("Error getting remote parameter subframe_rx\n");
 	}
-	modinfo_msg("Remote subframe_rx parameter is a at %d\n",sf_pm_idx)
+	moddebug("Remote subframe_rx parameter is a at %d\n",sf_pm_idx)
 #endif
 
 

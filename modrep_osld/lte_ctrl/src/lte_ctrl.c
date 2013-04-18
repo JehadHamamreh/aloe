@@ -28,6 +28,67 @@ int mode_is_rx() {
 	return (x_mode==1 || x_mode==2);
 }
 
+void print_config(struct lte_grid_config *config,struct remote_parameters *params) {
+	int i;
+	int total_re;
+	char *modulation_str;
+
+	printf("\n\n-------- LTE Setup ---------\n");
+	printf(" BW:\t\t%d PRB\n", config->nof_prb);
+	printf(" CFI:\t\t%d\n",config->cfi);
+	printf(" Ports:\t\t%d\n", config->nof_ports);
+	printf(" CP mode:\t%s\n",config->nof_osymb_x_subf==14?"Normal":"Extended");
+	printf(" Cell ID:\t%d\n",config->cell_id);
+	for (i=0;i<config->nof_pdcch;i++) {
+		printf(" PDCCH #%d:\t%d CE, %d REGs\n",i,config->pdcch[i].nof_cce,config->pdcch[i].nof_regs);
+	}
+	printf("\n");
+	for (i=0;i<config->nof_pdsch;i++) {
+		printf(" --- PDSCH #%d: --- \n",i);
+		printf(" Num RBG:\t%d RBG\n",config->pdsch[i].nof_rbg);
+		printf(" RBG_Mask:\t0x%x\n",config->pdsch[i].rbg_mask);
+		printf(" TBS size:\t%d bits\n",params->tbs);
+		printf(" MCS:\t\t%d\n",params->mcs);
+		printf(" Net bitrate:\t%.2f Mbps\n",(float) params->tbs/1000);
+		total_re=0;
+		for (i=0;i<10;i++) {
+			total_re+=lte_pdsch_get_re(0,i,config);
+		}
+		printf(" Avg. SE:\t%.2f bits/symbol\n",(float) 10*params->tbs/total_re);
+		switch(params->modulation) {
+		case 1:
+			modulation_str="BPSK";
+			break;
+		case 2:
+			modulation_str="QPSK";
+			break;
+		case 4:
+			modulation_str="QAM16";
+			break;
+		case 6:
+			modulation_str="QAM64";
+			break;
+		default:
+			modulation_str="N/A";
+			break;
+		}
+		printf(" Modulation:\t%s\n",modulation_str);
+	}
+	printf("\n");
+}
+
+int grid_changed(char *mode) {
+	static int first_time=0;
+	if (!strcmp(mode,"rx")) {
+		return 0;
+	}
+	if (!first_time) {
+		first_time=1;
+		return 1;
+	}
+	return 0;
+}
+
 int ctrl_init() {
 	if (param_get_int_name("mode",&x_mode)) {
 		printf("mode undefined\n");
@@ -139,6 +200,11 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 
 	params->bits_x_slot = lte_pdsch_get_re(0,grid->subframe_idx%NOF_SUBFRAMES_X_FRAME,grid)*
 			params->modulation;
+
+	if (grid_changed(mode)) {
+		print_config(grid,params);
+	}
+
 
 	/* check code rate and if exceeds 0.93, do not transmit */
 	if (params->bits_x_slot && grid->subframe_idx >= 0) {

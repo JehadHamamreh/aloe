@@ -133,7 +133,7 @@ int init_ctrl_input(void *ctx) {
 			return -1;
 		}
 	} else {
-		modinfo("Created control port\n");
+		moddebug("Created control port\n",0);
 	}
 	return 1;
 }
@@ -152,7 +152,7 @@ int init_remote_variables(void *ctx) {
 				(char*) remote_params_db[i].module_name,
 				(char*) remote_params_db[i].variable_name);
 		if (remote_variables[i].variable_idx == -1) {
-			modinfo_msg("Variable %s not found in module %s. "
+			moddebug("Variable %s not found in module %s. "
 					"Creating...\n",remote_params_db[i].variable_name,
 					remote_params_db[i].module_name);
 
@@ -167,7 +167,7 @@ int init_remote_variables(void *ctx) {
 			}
 			remote_variables[i].variable_idx = new_var->id-1;
 		}
-		modinfo_msg("Init remote parameter %s:%s (%d,%d)\n",remote_params_db[i].module_name,
+		moddebug("Init remote parameter %s:%s (%d,%d)\n",remote_params_db[i].module_name,
 				remote_params_db[i].variable_name,remote_variables[i].module_idx,
 				remote_variables[i].variable_idx);
 	}
@@ -265,7 +265,7 @@ int init_remote_itf(void *ctx, int nof_itf) {
 		if (j < nof_remote_variables) {
 			snprintf(tmp,64,"delay_%s",remote_params_db[j].module_name);
 			if (!param_get_int_name(tmp,&delay)) {
-				modinfo_msg("Setting a delay of %d slots to port %d, module %s\n",delay,port,
+				moddebug("Setting a delay of %d slots to port %d, module %s\n",delay,port,
 					remote_params_db[j].module_name);
 				if (oesr_itf_delay_set(ctx,port,ITF_WRITE,delay)) {
 					moderror_msg("Setting delay to port %d\n",port);
