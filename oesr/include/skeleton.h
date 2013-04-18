@@ -89,8 +89,8 @@ int generate_input_signal(void *input, int *input_length);
 #define ERRSTR "[error at "
 
 #ifdef _COMPILE_ALOE
-	#define WHERESTR  "%s]: "
-	#define WHEREARG  oesr_module_name(ctx)
+	#define WHERESTR  "%s\t%d]: "
+	#define WHEREARG  oesr_module_name(ctx),oesr_tstamp(ctx)
 #else
 	#define WHERESTR  "file %s, line %d]: "
 	#define WHEREARG  __FILE__, __LINE__

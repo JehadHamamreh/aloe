@@ -713,6 +713,7 @@ int join_stages(waveform_t *w, config_setting_t *cfg) {
 	return 0;
 }
 
+
 /** Fills the contents of the object w with the configuration of file w->model_file.
  * waveform_parse() allocates memory for modules, interfaces and variables as required by the model file.
  * It also generates the waveform resource model (c,b) and saves it in w->c and w->b.

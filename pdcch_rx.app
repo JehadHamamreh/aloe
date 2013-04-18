@@ -41,7 +41,8 @@ modules:
 		binary="modrep_osld/libgen_crc.so";
 		mopts=5;
 		variables=({name="direction";value=1},{name="long_crc";value=16;}
-			/*,{name="print_nof_pkts";value=10000} */ 
+				,{name="point_interval";value=0} 
+				,{name="print_interval";value=0}  
 			); 
 	};	
 	

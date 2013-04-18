@@ -48,7 +48,9 @@ void *pool_realloc(void *ptr, int nof_elems, size_t size) {
  */
 int pool_free(void *ptr) {
 	memdebug("ptr=0x%x\n",ptr);
-	free(ptr);
+	if (ptr) {
+		free(ptr);
+	}
 	return 0;
 }
 

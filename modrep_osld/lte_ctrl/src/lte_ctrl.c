@@ -30,7 +30,7 @@ int mode_is_rx() {
 
 void print_config(struct lte_grid_config *config,struct remote_parameters *params) {
 	int i;
-	int total_re;
+	int total_re,total_tbs,nof_re;
 	char *modulation_str;
 
 	printf("\n\n-------- LTE Setup ---------\n");
@@ -49,12 +49,17 @@ void print_config(struct lte_grid_config *config,struct remote_parameters *param
 		printf(" RBG_Mask:\t0x%x\n",config->pdsch[i].rbg_mask);
 		printf(" TBS size:\t%d bits\n",params->tbs);
 		printf(" MCS:\t\t%d\n",params->mcs);
-		printf(" Net bitrate:\t%.2f Mbps\n",(float) params->tbs/1000);
 		total_re=0;
+		total_tbs=0;
 		for (i=0;i<10;i++) {
-			total_re+=lte_pdsch_get_re(0,i,config);
+			nof_re=lte_pdsch_get_re(0,i,config);
+			if ((params->tbs+16)/(nof_re*params->modulation) < 0.93) {
+				total_re+=nof_re;
+				total_tbs+=params->tbs;
+			}
 		}
-		printf(" Avg. SE:\t%.2f bits/symbol\n",(float) 10*params->tbs/total_re);
+		printf(" Avg bitrate:\t%.2f Mbps\n",(float) total_tbs/10000);
+		printf(" Avg SE:\t%.2f bits/symbol\n",(float) total_tbs/total_re);
 		switch(params->modulation) {
 		case 1:
 			modulation_str="BPSK";

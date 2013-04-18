@@ -54,8 +54,6 @@ void *_run_main(void *arg) {
 	int tslen;
 	int mode;
 	rtdal_machine_t machine;
-	strcpy(waveform.model_file,arg);
-	strcpy(waveform.name,arg);
 
 	rtdal_machine(&machine);
 	tslen = machine.ts_len_us;
@@ -74,10 +72,8 @@ void *_run_main(void *arg) {
 		return NULL;
 	}
 
-	if (waveform_parse(&waveform,1)) {
-		aerror("parsing waveform\n");
-		return NULL;
-	}
+	memset(&waveform,0,sizeof(waveform_t));
+
 	c=0;
 	printf("\n\nList of commands:\n"
 			"\t<l>\tLoad waveform\n"
@@ -113,6 +109,16 @@ void *_run_main(void *arg) {
 			}
 			break;
 		case 'l':
+			waveform_delete(&waveform);
+
+			strcpy(waveform.model_file,arg);
+			strcpy(waveform.name,arg);
+
+			if (waveform_parse(&waveform,1)) {
+				aerror("parsing waveform\n");
+				return NULL;
+			}
+
 			if (waveform_load(&waveform)) {
 				aerror("loading waveform\n");
 				break;

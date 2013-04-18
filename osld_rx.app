@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=false;
+	precach_pipeline=true;
 	auto_ctrl_module="ctrl";
 };
 
@@ -12,9 +12,12 @@ modules:
 {
 	rx:
 	{
-		binary="modrep_default/libudp_source.so";	
+		binary="modrep_default/libfile_source.so";	
 		mopts=8;
+		/*
 		variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
+		*/
+		variables=({name="file_name";value="output.bin"}
 				,{name="block_length";value=15360}
 			); 
 	};
@@ -68,7 +71,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_synchG.so";
 		mopts=5;
-		variables=({name="bypass";value=0},{name="FFTsize";value=128},
+		variables=({name="bypass";value=1},{name="FFTsize";value=128},
 		{name="LTEframe_structtype";value=1;});
 	};
 

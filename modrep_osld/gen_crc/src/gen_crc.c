@@ -34,14 +34,8 @@ static unsigned int poly;
 /*#define CHECK_ZEROS
 */
 
-#define POINT_PRINT_INTERVAL	100
-
-#define PRINT_BLER
-#define EXEC_MIN_INTERVAL_MS 1000
-int interval_ts;
-int tscnt;
 unsigned total_errors, total_pkts;
-int print_nof_pkts,print_nof_pkts_cnt;
+int print_interval,point_interval;
 
 /** @ingroup gen_crc gen_crc
  *
@@ -56,10 +50,12 @@ int initialize() {
 		mode = MODE_ADD;
 	}
 
-	if (param_get_int_name("print_nof_pkts",&print_nof_pkts)) {
-		print_nof_pkts = 0;
-	} else {
-		print_nof_pkts_cnt = 0;
+	if (param_get_int_name("print_interval",&print_interval)) {
+		print_interval = 0;
+	}
+
+	if (param_get_int_name("point_interval",&point_interval)) {
+		point_interval = 0;
 	}
 
 	long_crc_id = param_id("long_crc");
@@ -76,20 +72,8 @@ int initialize() {
 		poly_id = NULL;
 	}
 
-
-#ifdef _COMPILE_ALOE
-	int tslen;
-	tslen = oesr_tslot_length(ctx);
-	if (tslen > EXEC_MIN_INTERVAL_MS*1000) {
-		interval_ts = 1;
-	} else {
-		interval_ts = (EXEC_MIN_INTERVAL_MS*1000)/tslen;
-		moddebug("Timeslot is %d usec, refresh interval set to %d tslots\n",tslen,interval_ts);
-	}
-#endif
 	total_errors=0;
 	total_pkts=0;
-	tscnt=0;
 	return 0;
 }
 
@@ -135,21 +119,18 @@ int work(void **inp, void **out) {
 #ifdef _COMPILE_ALOE
 					moddebug("error at packet %d ts=%d len=%d\n",total_pkts,oesr_tstamp(ctx),rcv_samples);
 #endif
-					printf("X");
+					write(0,"X",1);
 				}
+
 				total_pkts++;
 				set_output_samples(i,rcv_samples-long_crc);
 
-				if (print_nof_pkts) {
-					print_nof_pkts_cnt++;
-					if (print_nof_pkts_cnt == print_nof_pkts) {
-						print_nof_pkts_cnt=0;
-						modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+				if (print_interval && !(total_pkts%print_interval)) {
+					modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 								total_pkts,total_errors,(float)total_errors/total_pkts);
-					}
 				}
 
-				if (!(total_pkts%POINT_PRINT_INTERVAL)) {
+				if (point_interval && !(total_pkts%point_interval)) {
 					write(0,".",1);
 				}
 			} else {
@@ -161,6 +142,10 @@ int work(void **inp, void **out) {
 }
 
 int stop() {
+	if (mode==MODE_CHECK) {
+		modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+						total_pkts,total_errors,(float)total_errors/total_pkts);
+	}
 	return 0;
 }
 

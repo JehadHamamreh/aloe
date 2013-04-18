@@ -24,9 +24,27 @@
 #include "serializable.h"
 #include "man_platform.h"
 #include "oesr_man.h"
-
+#include "mempool.h"
 
 static mapping_t map;
+
+
+void waveform_delete(waveform_t *w) {
+	int i,j,k;
+	for (i=0;i<w->nof_modules;i++) {
+		pool_free(w->modules[i].inputs);
+		pool_free(w->modules[i].outputs);
+		for (j=0;j<w->modules[i].nof_variables;j++) {
+			for (k=0;k<w->modules[i].variables[j].nof_modes;k++) {
+				pool_free(w->modules[i].variables[j].cur_value);
+				pool_free(w->modules[i].variables[j].init_value);
+			}
+		}
+		pool_free(w->modules[i].variables);
+	}
+	pool_free(w->modules);
+	memset(w,0,sizeof(waveform_t));
+}
 
 /**  Serializes a waveform and sends the packet to each of node it has modules allocated
  * to. Waits for the ACK from each node and returns 0 on success, -1 on error.
