@@ -148,10 +148,11 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 
 	for (i=0;i<waveform->nof_modules;i++) {
 		if (waveform->modules[i].parent.status != STOP) {
-			if (rtdal_process_isrunning(waveform->modules[i].process)) {
+			/*if (rtdal_process_isrunning(waveform->modules[i].process)) {
 				aerror_msg("module %s is still running\n",waveform->modules[i].parent.name);
 				return NULL;
 			}
+			*/
 			if (nod_module_stop(&waveform->modules[i])) {
 				aerror_msg("stopping module %s of waveform %s\n",waveform->modules[i].parent.name,
 						waveform->name);
@@ -173,6 +174,13 @@ int nod_waveform_status_stop(nod_waveform_t *waveform) {
 	int trials=0;
 	int n;
 
+	if (nod_waveform_run(waveform,0)) {
+		return -1;
+	}
+	t.tv_sec = 0;
+	t.tv_usec = DEFAULT_SLEEP_US;
+	rtdal_sleep(&t);
+
 	waveform->status.cur_status = STOP;
 
 	if (rtdal_task_new(&task,nod_waveform_status_stop_thread,waveform)) {
@@ -184,10 +192,7 @@ int nod_waveform_status_stop(nod_waveform_t *waveform) {
 		ndebug("trial=%d\n",trials);
 		t.tv_sec = 0;
 		t.tv_usec = DEFAULT_SLEEP_US;
-		if (rtdal_sleep(&t)) {
-			rtdal_error_print("rtdal_sleep");
-			return -1;
-		}
+		rtdal_sleep(&t);
 
 		n = rtdal_task_wait_nb(task,&ret_val);
 		trials++;
