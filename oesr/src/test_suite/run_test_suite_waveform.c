@@ -89,8 +89,8 @@ void *_run_main(void *arg) {
 	do {
 		if (c != '\n') {
 			printf("\n>> ");
+			fflush(0);
 		}
-		fflush(stdout);
 		c = getchar();
 		new_status.cur_status = LOADED;
 		switch((char) c) {
