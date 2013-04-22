@@ -17,7 +17,7 @@
  */
 
 #include <stdlib.h>
-
+#include <string.h>
 #include "defs.h"
 #include "mempool.h"
 

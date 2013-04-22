@@ -192,6 +192,7 @@ int oesr_itf_close(itf_t itf) {
 int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
+	assert(x->hw_itf);
 	return rtdal_itf_send(x->hw_itf,buffer,size,tstamp);
 }
 

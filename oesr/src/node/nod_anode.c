@@ -73,6 +73,7 @@ void nod_anode_initialize_waveforms(int max_waveforms) {
 	anode.max_waveforms = max_waveforms;
 
 	for (i=0;i<max_waveforms;i++) {
+		memset(&anode.loaded_waveforms[i],0,sizeof(nod_waveform_t));
 		anode.loaded_waveforms[i].status.cur_status = STOP;
 	}
 }

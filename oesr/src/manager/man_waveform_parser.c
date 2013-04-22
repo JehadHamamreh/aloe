@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <libconfig.h>
+#include <string.h>
 
 #if (((LIBCONFIG_VER_MAJOR < 1) || (LIBCONFIG_VER_MINOR < 4) \
 	   || (LIBCONFIG_VER_REVISION < 8)))
@@ -650,6 +651,7 @@ int waveform_main_config(waveform_t *w, config_setting_t *maincfg) {
 			aerror("allocating memory\n");
 			return 0;
 		}
+		memset(&ctrl->outputs[ctrl->nof_outputs],0,sizeof(interface_t)*w->nof_modules);
 		for (i=ctrl->index+1;i<w->nof_modules;i++) {
 			pardebug("ctrl module port %d dest %s:%d\n",ctrl->nof_outputs,w->modules[i].name,w->modules[i].nof_inputs);
 			ctrl->outputs[ctrl->nof_outputs].remote_module_id = w->modules[i].id;
@@ -852,13 +854,13 @@ int waveform_parse(waveform_t* w, int is_mainwaveform) {
 		}
 	}
 
+
 	if (is_mainwaveform) {
 		maincfg = config_lookup(&config, "main");
 		if (waveform_main_config(w,maincfg)) {
 			aerror("Parsing section main\n");
 			goto destroy;
 		}
-
 		for (i=0;i<w->nof_modules;i++) {
 			pardebug("checking and reallocing module %d\n",i);
 			check_interfaces(&w->modules[i]);
@@ -868,6 +870,8 @@ int waveform_parse(waveform_t* w, int is_mainwaveform) {
 		}
 		w->id = waveform_id++;
 	}
+
+
 	pardebug("done, waveform_id=%d\n",w->id);
 	ret = 0;
 destroy:

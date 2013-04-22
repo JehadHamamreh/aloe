@@ -26,6 +26,7 @@ else()
 	set(COMPILE_DAC "")
 	set(LINK_DAC "")	
 	set(DAC_SOURCES "")
+	set(UHD_LIBRARIES "")
 endif()
 
 # find Xenomai Library
