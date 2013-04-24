@@ -22,6 +22,9 @@
 #include <params.h>
 #include <skeleton.h>
 
+#include <math.h>
+#include <complex.h>
+
 #include "dft/dft.h"
 #include "gen_dft.h"
 
@@ -38,6 +41,124 @@ dft_plan_t extra_plans[MAX_EXTRA_PLANS];
 static int direction;
 static int options;
 
+
+#define MAX_DFT_SIZE	8192
+#define twopi		6.28318530718
+#define df_lte		7500
+
+_Complex float precomputed_shift_reg[2048];
+_Complex float precomputed_shift_1536[1536];
+_Complex float computed_shift[MAX_DFT_SIZE];
+_Complex float *shift;
+int shift_increment;
+
+pmid_t df_id, fs_id;
+int previous_df, previous_fs;
+
+void calculate_shift_vector(_Complex float *comp_shift, int df, int fs, int dft_size);
+void precalculate_shift_vectors(_Complex float *shift_reg, _Complex float *shift_1536);
+int process_shift_params(int df, int fs, int dft_size);
+
+/**@ingroup Frequency shift vector calculation 
+ * Calculates dft_size samples of the complex phasor for any freqeuncy shift df 
+ * and sampling frequency fs.
+ * \param comp_shift Pointer to samples of complex phasor (carrier)
+ * \param df Frequency shift in Hz (positive for upconversion, negative for downconversion)
+ * \param fs Sampling rate in Hz
+ * \param dft_size Number of DFT/IDFT points
+ */
+void calculate_shift_vector(_Complex float *comp_shift, int df, int fs, int dft_size)
+{
+	int t;
+
+	for (t=0;t<dft_size;t++) {
+		comp_shift[t] = cos(twopi*df*t/fs) + _Complex_I*sin(twopi*df*t/fs);
+	}
+}
+
+/**@ingroup Frequency shift vector precalculation
+ * Calculates two complex phasors for a frequency shift of 7.5 kHz: 
+ * 1) 1536 samples for sampling frequency 23.04 MHz (LTE 15 MHz UL mode) 
+ * 2) 2048 samples for sampling frequency 30.72 MHz (LTE 20 MHz UL mode)
+ * Note that 2) serves for the LTE UL modes 1.4, 3, 5, and 10 MHz.
+ * \param shift_reg Pointer to 2048 samples of complex phasor at frequency 
+ * df=7.5 kHz and a sampling rate fs2=30.72 MHz (2048-point fft, 20 MHz LTE mode)
+ * \param shift_1536 Pointer to 1536 samples of complex phasor at frequency 
+ * df=7.5 kHZ and a sampling rate fs1=23.04 MHz (1536-point fft, 15 MHz LTE mode)
+ */
+void precalculate_shift_vectors(_Complex float *shift_1536, _Complex float *shift_reg)
+{
+	int t;
+	int fs1 = 23040000;	/* sampling rate for 15 MHz LTE RF Bw*/
+	int fs2 = 30720000;	/* sampling rate for 20 MHz LTE RF Bw*/
+
+	for (t=0;t<1536;t++) {
+		shift_1536[t] = cos(twopi*df_lte*t/fs1) + _Complex_I*sin(twopi*df_lte*t/fs1);
+	}
+	for (t=0;t<2048;t++) {
+		shift_reg[t] = cos(twopi*df_lte*t/fs2) + _Complex_I*sin(twopi*df_lte*t/fs2);
+	}
+}
+
+/**@ingroup Process shift parameters
+ * Processes the configuration parameters that define the shift pointer and index 
+ * increment (shift_increment).
+ * \param df Frequency shift in Hz (positive for upconversion, negative for downconversion)
+ * \param fs Sampling rate in Hz
+ * \param dft_size Number of DFT/IDFT points
+ */
+int process_shift_params(int df, int fs, int dft_size)
+{
+	if (df == df_lte) {
+		switch (fs) {
+			case 1920000:	/* 1.4 MHz LTE mode */
+				shift = precomputed_shift_reg;
+				shift_increment = 16;
+				break;
+			case 3840000:	/* 3 MHz LTE mode */
+				shift = precomputed_shift_reg;
+				shift_increment = 8;
+				break;
+			case 7680000:	/* 5 MHz LTE mode */
+				shift = precomputed_shift_reg;
+				shift_increment = 4;
+				break;
+			case 15360000:	/* 10 MHz LTE mode */
+				shift = precomputed_shift_reg;
+				shift_increment = 2;
+				break;
+			case 23040000:	/* 15 MHz LTE mode */
+				shift = precomputed_shift_1536;
+				shift_increment = 1;
+				break;
+			case 30720000:	/* 20 MHz LTE mode */
+				shift = precomputed_shift_reg;
+				shift_increment = 1;
+				break;
+			default:
+				if (dft_size > MAX_DFT_SIZE) {
+					moderror_msg("Too large DFT size %d. Maximum "
+					"supported size is %d\n", dft_size, MAX_DFT_SIZE);
+					return -1;
+				}
+				calculate_shift_vector(computed_shift, df, fs, dft_size);
+				shift = computed_shift;
+				shift_increment = 1;
+				break;
+		} 
+	} else {
+		if (dft_size > MAX_DFT_SIZE) {
+			moderror_msg("Too large DFT size %d. Maximum supported size "
+			"is %d\n", dft_size, MAX_DFT_SIZE);
+			return -1;
+		}
+		calculate_shift_vector(computed_shift, df, fs, dft_size);
+		shift = computed_shift;
+		shift_increment = 1;
+	}
+	return 0;
+}
+
 /**@ingroup gen_dft
  * \param direction Direction of the dft: 0 computes a dft and 1 computes an idft (default is 0)
  * \param mirror 0 computes a normal dft, 1 swaps the two halfes of the input signal before computing
@@ -46,6 +167,9 @@ static int options;
  * \param psd Set to 1 to compute the power spectral density (untested) (default is 0)
  * \param out_db Set to 1 to produce the output results in dB (untested) (default is 0)
  * \param dft_size Number of DFT points. This parameter is mandatory.
+ * \param df Frequency shift (choose a positive value for upconversion and a negative value for 
+ * downconversion) (default is 0--no frequency shift)
+ * \param fs Sampling rate. This parameter is mandatory if df!=0.
  */
 int initialize() {
 	int tmp;
@@ -105,6 +229,16 @@ int initialize() {
 		plans[i].options = options;
 	}
 
+	df_id = param_id("df");
+	fs_id = param_id("fs");
+	precalculate_shift_vectors(precomputed_shift_1536, precomputed_shift_reg);
+
+	/* assume 1.4 MHz LTE UL Tx (fs = 1.92 MHz, 128 IFFT, df = 7.5 kHz) */
+	shift = precomputed_shift_reg;
+	previous_df = df_lte;
+	previous_fs = 1920000;
+	shift_increment = 16;
+
 	return 0;
 }
 
@@ -136,12 +270,14 @@ dft_plan_t* generate_new_plan(int dft_size) {
 
 
 int work(void **inp, void **out) {
-	int i, j, nof_fft;
+	int i, j, k, nof_fft;
+	int df, fs;
+	int e;
 	int dft_size;
 	input_t *input;
 	output_t *output;
 	dft_plan_t *plan;
-
+	
 	if (param_get_int(dft_size_id,&dft_size) != 1) {
 		moderror("Getting parameter dft_size\n");
 		return -1;
@@ -152,6 +288,28 @@ int work(void **inp, void **out) {
 		if ((plan = generate_new_plan(dft_size)) == NULL) {
 			moderror("Generating plan.\n");
 			return -1;
+		}
+	}
+	
+	if (param_get_int(df_id, &df) != 1) {
+		df = 0;
+	}
+	if (df != 0) {
+		if (param_get_int(fs_id, &fs) != 1) {
+			moderror("Parameter fs not defined.\n");
+			return -1;
+		}
+		if (fs <= 0) {
+			moderror("Sampling rate fs must be larger than 0.\n");
+			return -1;
+		}
+		if ((df != previous_df) || (fs != previous_fs)) {
+			e = process_shift_params(df, fs, dft_size);
+			if (e < 0) {
+				return -1;
+			}
+			previous_df = df;
+			previous_fs = fs;
 		}
 	}
 
@@ -169,11 +327,24 @@ int work(void **inp, void **out) {
 		nof_fft = get_input_samples(i)/dft_size;
 
 		for (j=0;j<nof_fft;j++) {
+			if ((df != 0) && (direction == FORWARD)) { /* Rx: shift before FFT */
+				for (k=0;k<dft_size;k++) {
+					input[j*dft_size+k] *= shift[k*shift_increment];
+				}
+			}
+
 			dft_run_c2c(plan, &input[j*dft_size], &output[j*dft_size]);
+
+			if ((df !=0) && (direction == BACKWARD)) { /* Tx: shift after IFFT */
+				for (k=0;k<dft_size;k++) {
+					output[j*dft_size+k] *= shift[k*shift_increment];
+				}
+			}
 		}
 
 		set_output_samples(i,dft_size*nof_fft);
 	}
+
 	return 0;
 }
 
