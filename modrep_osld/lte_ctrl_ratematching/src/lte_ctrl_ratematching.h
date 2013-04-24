@@ -18,8 +18,12 @@
 
 
 /**
- * @defgroup template template
- * Document here your module
+ * @defgroup LTE control rate matching
+ * This module implements the rate matching operation for LTE
+ * control channels, associated with convolutional coding. It is configurable 
+ * to operate in transmitter or receiver mode and includes interleaving, 
+ * merging/splitting and punturing/repetition of bit streams, as specified by 
+ * 3GPP.
  * @{
  */
 #ifndef DEFINE_H
