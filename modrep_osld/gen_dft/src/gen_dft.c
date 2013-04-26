@@ -29,8 +29,8 @@
 #include "gen_dft.h"
 
 /** List of dft lengths (dft points) for which dft plans are precomputed during init */
-const int precomputed_dft_len[] = {128};
-#define NOF_PRECOMPUTED_DFT 1
+const int precomputed_dft_len[] = {128, 72};
+#define NOF_PRECOMPUTED_DFT 2
 
 #define MAX_EXTRA_PLANS	5
 
@@ -249,14 +249,20 @@ dft_plan_t* find_plan(int dft_size) {
 			return &plans[i];
 		}
 	}
+	for (i=0;i<MAX_EXTRA_PLANS;i++) {
+		if (extra_plans[i].size == dft_size) {
+			return &plans[i];
+		}
+	}
 	return NULL;
 }
 
 dft_plan_t* generate_new_plan(int dft_size) {
 	int i;
+	static int oldest_extra_plan = 0;
 
 	modinfo_msg("Warning, no plan was precomputed for size %d. Generating.\n",dft_size);
-	for (i=0;i<MAX_EXTRA_PLANS;i++) {
+	for (i=0;i<(MAX_EXTRA_PLANS-1);i++) {
 		if (!extra_plans[i].size) {
 			if (dft_plan_c2c(dft_size, (!direction)?FORWARD:BACKWARD, &extra_plans[i])) {
 				return NULL;
@@ -265,7 +271,19 @@ dft_plan_t* generate_new_plan(int dft_size) {
 			return &extra_plans[i];
 		}
 	}
-	return NULL;
+
+	if (oldest_extra_plan == (MAX_EXTRA_PLANS-1)) {
+		oldest_extra_plan = 0;
+	} else {
+		oldest_extra_plan++;
+	}
+	if (dft_plan_c2c(dft_size, (!direction)?FORWARD:BACKWARD, &extra_plans[oldest_extra_plan])) {
+		return NULL;
+	}
+	extra_plans[oldest_extra_plan].options = options;
+	return &extra_plans[oldest_extra_plan];
+	/*modinfo_msg("Maximum number of extra plans (%d) surpassed.\n",MAX_EXTRA_PLANS);
+	return NULL;*/
 }
 
 
