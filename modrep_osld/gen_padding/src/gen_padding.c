@@ -25,7 +25,7 @@
 #include "gen_padding.h"
 
 pmid_t pre_padding_id, post_padding_id, nof_packets_id;
-static int pre_padding, post_padding, nof_packets;
+static int direction, pre_padding, post_padding, nof_packets;
 
 int get_input_sample_sz(int data_type) {
 	switch(data_type) {
@@ -39,6 +39,23 @@ int get_input_sample_sz(int data_type) {
 	return -1;
 }
 
+
+/**
+ * @ingroup Zero padding/unpadding
+ * This module has two operational modes.
+ * Mode A (direction = 0): Pads pre_padding and post_padding zeros to
+ * each of the nof_packets data packets
+ * Mode B (direction != 0): Eliminates pre_padding and post_padding zeros
+ * from each of the nof_packets data packets
+ *
+ * \param data_type Specify data type: 0 for _Complex float, 1 for real, 2 for char (default: 0)
+ * \param direction Padding if 0 and unpadding otherwise (default: 0)
+ * \param pre_padding Number of samples to be added to/ eliminated from the beginning of the packet
+ * \param post_padding Number of samples to be added to/ eliminated from the end of the packet
+ * \param nof_packets Number of data packets that the input stream contains
+ *
+ * \returns This function returns 0 on success or -1 on error
+ */
 int initialize() {
 	int data_type;
 
@@ -47,10 +64,14 @@ int initialize() {
 		data_type = DATA_TYPE_COMPLEX;
 	}
 
-
 	input_sample_sz = get_input_sample_sz(data_type);
 	output_sample_sz = input_sample_sz;
 	modinfo_msg("Chosed data type %d sample_sz=%d\n",data_type, input_sample_sz);
+
+	if (param_get_int(param_id("direction"),&direction) != 1) {
+		modinfo("Parameter direction undefined. Assuming padding.\n");
+		direction = 0;
+	}
 
 	pre_padding_id = param_id("pre_padding");
 	if (!pre_padding_id) {
@@ -76,6 +97,12 @@ int initialize() {
 #define inaddr(a) &input[(j*in_pkt_len+a)*input_sample_sz]
 #define outaddr(a) &output[(j*out_pkt_len+a)*input_sample_sz]
 
+/**
+ * @ingroup lte_ratematching
+ *
+ * Main DSP function
+ *
+ */
 int work(void **inp, void **out) {
 	int i, in_pkt_len, out_pkt_len, j;
 
@@ -97,13 +124,23 @@ int work(void **inp, void **out) {
 		}
 
 		in_pkt_len = get_input_samples(i) / nof_packets;
-		out_pkt_len = in_pkt_len + pre_padding+post_padding;
+		if (direction) {
+			out_pkt_len = in_pkt_len - pre_padding - post_padding;
+		} else {
+			out_pkt_len = in_pkt_len + pre_padding + post_padding;
+		}
 
 		if (in_pkt_len) {
-			for (j=0;j<nof_packets;j++) {
-				memset(outaddr(0),0,input_sample_sz*pre_padding);
-				memcpy(outaddr(pre_padding),inaddr(0),input_sample_sz*in_pkt_len);
-				memset(outaddr(pre_padding+in_pkt_len),0,input_sample_sz*post_padding);
+			if (direction) {
+				for (j=0;j<nof_packets;j++) {
+					memcpy(outaddr(0),inaddr(pre_padding),input_sample_sz*out_pkt_len);
+				}
+			} else {
+				for (j=0;j<nof_packets;j++) {
+					memset(outaddr(0),0,input_sample_sz*pre_padding);
+					memcpy(outaddr(pre_padding),inaddr(0),input_sample_sz*in_pkt_len);
+					memset(outaddr(pre_padding+in_pkt_len),0,input_sample_sz*post_padding);
+				}
 			}
 			set_output_samples(i,out_pkt_len*nof_packets);
 		}
@@ -112,6 +149,9 @@ int work(void **inp, void **out) {
 	return 0;
 }
 
+/**  Deallocates resources created during initialize().
+ * @return 0 on success -1 on error
+ */
 int stop() {
 	return 0;
 }

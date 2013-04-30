@@ -17,6 +17,15 @@
  */
 
 
+/**
+ * @defgroup Zero padding/ sample unpadding
+ * This module pads zeros to the beginning and end of each data packet or
+ * eliminates samples from the beginning and end of each packet.
+ * The number of pre_padding and post_padding samples and the number of
+ * data packets is configurable.
+ * @{
+ */
+
 /* Define here module interfaces */
 
 #ifndef DEFINE_H
@@ -36,15 +45,6 @@ typedef char output_t;
 #define DATA_TYPE_BITS		2
 
 #endif
-
-/** Define here module constants shared with test_generate.c fie */
-#define PI			3.14159265359	/* pi approximation */
-#define PIx2		6.28318530718
-#define SIZE		1000000
-
-
-
-
 
 
 
