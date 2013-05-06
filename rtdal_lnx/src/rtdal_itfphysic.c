@@ -17,13 +17,18 @@
  */
 
 #include <stddef.h>
-#include "defs.h"
-#include "str.h"
 #include "rtdal_itf.h"
 #include "rtdal_itfphysic.h"
 #include "rtdal.h"
+#include "defs.h"
+#include "str.h"
 
 int rtdal_itfphysic_create(r_itf_t obj, string address) {
+	aerror("Not yet implemented");
+	return -1;
+}
+
+int rtdal_itfphysic_reset(r_itf_t obj) {
 	aerror("Not yet implemented");
 	return -1;
 }

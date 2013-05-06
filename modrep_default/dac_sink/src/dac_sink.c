@@ -29,8 +29,10 @@ extern int input_sample_sz;
 static int data_type;
 static void *buffer;
 pmid_t freq_id, gain_id;
+#ifdef _COMPILE_ALOE
 static float last_freq=0;
 static int last_rcv_samples = 0;
+#endif
 float max=-9999;
 float min=9999;
 
@@ -80,7 +82,7 @@ int work(void **inp, void **out) {
 	int i,j;
 	float freq;
 	float gain;
-	float x=0;
+
 	float *buffer_rf = buffer;
 	_Complex float *buffer_f = buffer;
 	_Complex short *buffer_s = buffer;
@@ -123,7 +125,6 @@ int work(void **inp, void **out) {
 #endif
 
 		rtdal_uhd_set_block_len(rcv_samples);
-		x=0;
 		for (j=0;j<rcv_samples;j++) {
 			switch(data_type) {
 			case 0:

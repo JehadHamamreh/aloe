@@ -92,13 +92,18 @@ modules:
 	
 	sink:
 	{
-		binary="modrep_default/libfile_sink.so";
+		binary="modrep_default/libdac_sink.so";
 		mopts=4;
-		/*
-		variables=({name="address";value="192.168.0.1"},{name="port";value=10000},
-				{name="nof_pkts";value=15});
-		*/
-		variables=({name="file_name";value="output.bin"});
+		
+		// variables for udp_sink 
+		//variables=({name="address";value="192.168.0.1"},{name="port";value=10000},{name="nof_pkts";value=15});
+				
+		// variables for file_sink 
+		//variables=({name="file_name";value="output.bin"});
+		
+		
+		// variables for dac_sink 
+		variables=({name="freq_samp";value=1920000.0},{name="gain";value=0.1});
 	};	
 	
 	

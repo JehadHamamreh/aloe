@@ -75,7 +75,7 @@ int work(void **inp, void **out) {
 		output = out[i];
 		moddebug("rcv_len=%d\n",get_input_samples(i));
 
-		if (get_input_samples(i)) {
+		if (get_input_samples(i) && output) {
 			if (!direction) {
 				out_len = RATE*get_input_samples(i)+TOTALTAIL;
 				if (turbo_coder(input,output,get_input_samples(i))<0) {

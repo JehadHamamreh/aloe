@@ -27,6 +27,11 @@
 #include <sys/mman.h>
 #include <semaphore.h>
 
+#ifdef __XENO__
+#include <rtdk.h>
+#endif
+
+
 #include "rtdal_kernel.h"
 #include "str.h"
 #include "defs.h"
@@ -38,22 +43,8 @@
 #include "rtdal_timer.h"
 #include "futex.h"
 
-#ifdef HAVE_UHD
-#include "dac_cfg.h"
-#include "uhd.h"
-struct dac_cfg dac_cfg;
-#endif
-
-
-int *core_mapping;
-int nof_cores;
-
-
-int using_uhd;
 rtdal_context_t rtdal;
 static rtdal_timer_t kernel_timer;
-long int timeslot_us;
-enum clock_source clock_source;
 
 int sigwait_stops = 0;
 static int multi_timer_futex;
@@ -63,12 +54,14 @@ static char UNUSED(sigmsg[1024]);
 
 static void print_license();
 
-FILE *trace_buffer = NULL;
-char *debug_trace_addr;
-size_t debug_trace_sz;
-FILE *debug_trace_file;
-
 extern sem_t dac_sem;
+
+r_log_t rtdal_log;
+
+#ifdef HAVE_UHD
+	struct dac_cfg dac_cfg;
+#endif
+
 
 /** Set timeslot to a multiple of the time slot defined platform-wide
 */
@@ -90,9 +83,6 @@ void rtdal_timeslot_set(int ts_base_multiply) {
 
 inline static int kernel_initialize_setup_clock() {
 	struct timespec start_time;
-#ifdef HAVE_UHD
-	struct sched_param param;
-#endif
 
 	/* access to kernel sync function is not allowed */
 	rtdal.machine.slave_sync_kernel = NULL;
@@ -111,6 +101,15 @@ inline static int kernel_initialize_setup_clock() {
 		kernel_timer.wait_futex = NULL;
 		kernel_timer.thread = &single_timer_thread;
 		hdebug("creating single_timer_thread period %d\n",(int) kernel_timer.period);
+
+		if (rtdal.machine.logs_cfg.timing_en) {
+			kernel_timer.log = rtdal_log_new("timer.time",UINT32,0);
+			if (!kernel_timer.log) {
+				aerror("Creating timer log\n");
+				return -1;
+			}
+		}
+
 		if (rtdal_task_new_thread(&single_timer_thread, timer_run_thread,
 				&kernel_timer, DETACHABLE,
 				rtdal.machine.kernel_prio, 0,0)) {
@@ -129,13 +128,6 @@ inline static int kernel_initialize_setup_clock() {
 		futex_wake(&multi_timer_futex);
 		break;
 	case DAC:
-#ifdef HAVE_UHD
-		param.sched_priority = rtdal.machine.kernel_prio-2;
-		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
-		uhd_init(&dac_cfg, &rtdal.machine.ts_len_us,dac_cycle);
-		param.sched_priority = rtdal.machine.kernel_prio;
-		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
-#endif
 		break;
 	case SYNC_SLAVE:
 		/* enable access to kernel_cycle function */
@@ -174,12 +166,34 @@ int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex) {
 	} else {
 		tmp_thread_fnc = pipeline_run_thread;
 		tmp_thread_arg = obj;
-		prio = rtdal.machine.kernel_prio-1;
+		prio = rtdal.machine.kernel_prio-10;
+	}
+
+	if (rtdal.machine.logs_cfg.timing_en) {
+		char tmp[64];
+		snprintf(tmp,64,"pipe_in_%d.time",obj->id);
+		obj->log_in = rtdal_log_new(tmp,UINT32,0);
+		if (!obj->log_in) {
+			aerror_msg("Creating %s log\n",tmp);
+			return -1;
+		}
+		snprintf(tmp,64,"pipe_out_%d.time",obj->id);
+		obj->log_out = rtdal_log_new(tmp,UINT32,0);
+		if (!obj->log_out) {
+			aerror_msg("Creating %s log\n",tmp);
+			return -1;
+		}
+		snprintf(tmp,64,"exec_%d.time",obj->id);
+		obj->log_exec = rtdal_log_new(tmp,UINT32,0);
+		if (!obj->log_exec) {
+			aerror("Creating kernel execution log\n");
+			return -1;
+		}
 	}
 
 	if (rtdal_task_new_thread(&obj->thread,
 			tmp_thread_fnc, tmp_thread_arg, DETACHABLE,
-			prio, core_mapping[obj->id],0)) {
+			prio, rtdal.machine.core_mapping[obj->id],0)) {
 		rtdal_perror();
 		return -1;
 	}
@@ -191,7 +205,6 @@ int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex) {
  * @return
  */
 static int kernel_initialize_create_pipelines() {
-
 
 	pipeline_initialize(rtdal.machine.nof_cores);
 	hdebug("creating %d pipeline threads\n",rtdal.machine.nof_cores);
@@ -247,15 +260,28 @@ int kernel_initialize_set_kernel_priority() {
  */
 static int kernel_initialize(void) {
 
-	/* Initialize rtdal_base library */
-	rtdal.machine.clock_source = clock_source;
-	rtdal.machine.ts_len_us = timeslot_us;
-	rtdal.machine.kernel_prio = KERNEL_RT_PRIO;
-	rtdal.machine.rt_fault_opts = RT_FAULT_OPTS_HARD;
+
 	rtdal_initialize_node(&rtdal, NULL, NULL);
 
 	pthread_mutex_init(&rtdal.mutex,NULL);
 
+	/* create logging service */
+	if (rtdal.machine.logs_cfg.enabled) {
+		if (rtdal_log_init(rtdal.machine.logs_cfg.base_path,200,4*1024,
+				rtdal.machine.logs_cfg.log_length_mb*1024*1024,
+				rtdal.machine.logs_cfg.log_to_stout?stdout:NULL)) {
+			aerror("Creating logs\n");
+			return -1;
+		}
+	}
+	/* and create kernel log */
+	if (rtdal.machine.logs_cfg.kernel_en) {
+		rtdal_log = rtdal_log_new_opts("kernel.log",TEXT,0,RTDAL_LOG_OPTS_EXCL);
+		if (!rtdal_log) {
+			aerror("Creating kernel log\n");
+			return -1;
+		}
+	}
 
 	/* Set self priority to rtdal.machine.kernel_prio */
 #ifdef KERNEL_SIGWAIT_RT_PRIO
@@ -287,7 +313,6 @@ static int kernel_initialize(void) {
 
 static void check_threads() {
 	int i;
-	hdebug("nof_cores=%d, timer=%d\n",rtdal.machine.nof_cores,single_timer_thread);
 	if (single_timer_thread) {
 		if (!pthread_kill(single_timer_thread,0)) {
 			aerror("kernel timer still running, killing\n");
@@ -295,7 +320,6 @@ static void check_threads() {
 		}
 	}
 	for (i=0;i<rtdal.machine.nof_cores;i++) {
-		hdebug("thread_%d=%d\n",i,rtdal.pipelines[i].thread);
 		if (rtdal.pipelines[i].thread) {
 			if (!pthread_kill(rtdal.pipelines[i].thread,0)) {
 				aerror_msg("pipeline thread %d still running, killing\n",i);
@@ -303,46 +327,17 @@ static void check_threads() {
 			}
 		} else {
 			if (rtdal.pipelines[i].waiting) {
-				hdebug("setting wait to zero\n",0);
 				rtdal.pipelines[i].waiting = 0;
 				usleep(20000);
-				hdebug("done",0);
 			}
 		}
 	}
-	hdebug("i=%d\n",i);
 }
-
-
-void open_debug_trace() {
-	trace_buffer = open_memstream(&debug_trace_addr, &debug_trace_sz);
-	if (!trace_buffer) {
-		perror("opening debug_trace\n");
-	}
-	debug_trace_file = fopen("./out.trace","w");
-	if (debug_trace_file) {
-		perror("fopen");
-	}
-}
-
-void write_debug_trace() {
-	if (trace_buffer) {
-		fclose(trace_buffer);
-		trace_buffer = NULL;
-	}
-	if (debug_trace_addr == NULL) {
-		return;
-	}
-	if (fwrite(debug_trace_addr,1,debug_trace_sz,debug_trace_file) == -1) {
-		perror("fwrite");
-	}
-	debug_trace_addr = NULL;
-}
-
 
 void kernel_exit() {
-	write_debug_trace();
-	hdebug("tslot=%d\n",rtdal_time_slot());
+
+	rtdal_log_flushall();
+
 	sigwait_stops = 1;
 	sem_post(&dac_sem);
 	kernel_timer.stop = 1;
@@ -354,7 +349,7 @@ void kernel_exit() {
 		}
 	}
 #ifdef HAVE_UHD
-	if (using_uhd) {
+	if (rtdal.machine.using_uhd) {
 		uhd_close();
 	}
 #endif
@@ -376,24 +371,20 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	if (parse_config(argv[2])) {
+	if (parse_config(argv[2],&rtdal.machine)) {
 		aerror_msg("Error parsing file config %s\n",argv[2]);
 		exit(0);
 	}
 
-#ifdef DEBUG_TRACE
-	open_debug_trace();
-	atexit(write_debug_trace);
-#endif
-
 #ifdef __XENO__
+	if (LOGS_ENABLED) {
+		rt_print_auto_init(1);
+	}
 	pthread_set_mode_np(0, PTHREAD_WARNSW);
 #endif
 	kernel_pid = getpid();
 
-	rtdal.machine.nof_cores = nof_cores;
-
-	if (using_uhd) {
+	if (rtdal.machine.using_uhd) {
 #ifdef HAVE_UHD
 		struct sched_param param;
 		sem_init(&dac_sem, 0, 0);
@@ -405,13 +396,12 @@ int main(int argc, char **argv) {
 #endif
 	}
 
-	printf("Time slot:\t%d us\nPlatform:\t%d cores\nTimer:\t\t%s\n\n", (int) timeslot_us,
-			rtdal.machine.nof_cores,(clock_source==MULTI_TIMER)?"Multi":"Single");
-
+	printf("Time slot:\t%d us\nPlatform:\t%d cores\nTimer:\t\t%s\n\n", rtdal.machine.ts_len_us,
+			rtdal.machine.nof_cores,(rtdal.machine.clock_source==MULTI_TIMER)?"Multi":"Single");
 
 	/* initialize kernel */
 	if (kernel_initialize()) {
-		aerror("Initiating kernel\n");
+		aerror("Initiating kernel");
 		goto clean_and_exit;
 	}
 
@@ -423,9 +413,9 @@ int main(int argc, char **argv) {
 	/* the main thread runs the sigwait loop */
 	sigwait_loop();
 
-	printf("exiting\n");
-
 clean_and_exit:
+	printf("exiting\n");
+	kernel_exit();
 	exit(0);
 }
 

@@ -21,8 +21,6 @@
 
 #include "debug.h"
 
-
-
 #define WHERESTR  "[%s():%d]: "
 #define WHEREARG  __func__, __LINE__
 #define DEBUGPRINT2(...)       fprintf(stderr, __VA_ARGS__)

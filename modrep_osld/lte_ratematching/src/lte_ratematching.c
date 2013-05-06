@@ -114,7 +114,7 @@ int work(void **inp, void **out) {
 		input_b = inp[i];
 		in_len = get_input_samples(i);
 
-		if (in_len && inp[i]) {
+		if (in_len && inp[i] && out[i]) {
 			if(!direction) {
 				if (char_RM_block(input_b,&output_b[i*out_len_block],in_len,
 						out_len_block,rvidx)) {

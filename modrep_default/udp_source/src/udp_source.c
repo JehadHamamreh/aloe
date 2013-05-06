@@ -38,7 +38,7 @@ static int fd;
 pmid_t blen_id;
 
 int create_server_upd(char *address, int port) {
-	int sockfd,n;
+	int sockfd;
 	struct sockaddr_in me;
 
 	modinfo_msg("Opening socket at %s:%d\n",address,port);
@@ -75,8 +75,6 @@ int create_server_upd(char *address, int port) {
  */
 int initialize() {
 	char address[64];
-	var_t pm;
-	int i;
 	int port;
 
 	blen_id = param_id("block_length");
@@ -87,6 +85,7 @@ int initialize() {
 	}
 
 #ifdef _COMPILE_ALOE
+	var_t pm;
 	pm = oesr_var_param_get(ctx, "address");
 	if (!pm) {
 		moderror("Parameter file_name undefined\n");
@@ -120,7 +119,7 @@ int work(void **inp, void **out) {
 	struct sockaddr_in other;
 	socklen_t addrsz = sizeof(other);
 	int n;
-	int block_length,rcv_len,i;
+	int block_length,rcv_len;
 	output_t *output = out[0];
 
 	if (!out[0]) {

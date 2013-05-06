@@ -18,11 +18,11 @@
 
 
 #define KERNEL_SIG_THREAD_SPECIFIC SIGRTMIN
-#define N_THREAD_SPECIFIC_SIGNALS 7
+#define N_THREAD_SPECIFIC_SIGNALS 8
 const int thread_specific_signals[N_THREAD_SPECIFIC_SIGNALS] =
-	{SIGSEGV, SIGABRT, SIGBUS, SIGILL, SIGFPE, TASK_TERMINATION_SIGNAL, SIGUSR1};
+	{SIGSEGV, SIGABRT, SIGBUS, SIGILL, SIGFPE, SIGXCPU, TASK_TERMINATION_SIGNAL, SIGUSR1};
 const char *thread_specific_signals_name[N_THREAD_SPECIFIC_SIGNALS] =
-	{"SIGSEGV", "SIGABRT", "SIGBUS", "SIGILL", "SIGFPE", "TASK_TERMINATION_SIGNAL", "SIGUSR1"};
+	{"SIGSEGV", "SIGABRT", "SIGBUS", "SIGILL", "SIGFPE", "SIGXCPU","TASK_TERMINATION_SIGNAL", "SIGUSR1"};
 
 extern int sigwait_stops;
 strdef(tmp_msg);
@@ -108,30 +108,28 @@ void sigwait_loop(void) {
 		} while (signum == -1 && errno == EINTR);
 		if (signum == -1) {
 			poserror(errno, "sigwaitinfo");
-			goto out;
+			return;
 		}
 		hdebug("detected signal %d\n",signum);
 		if (signum == KERNEL_SIG_THREAD_SPECIFIC) {
 			printf("[rtdal]: Caught thread-specific signal\n");
 #ifdef EXIT_ON_THREADSIG
 			fflush(stdout);
-			goto out;
+			return;
 #else
 			sigwait_loop_process_thread_signal(&info);
 #endif
 		} else if (signum == SIGINT) {
 			printf("Caught SIGINT, exiting\n");
 			fflush(stdout);
-			goto out;
+			return;
 		} else if (signum != SIGWINCH && signum != SIGCHLD) {
 			printf("Got signal %d, exiting\n", signum);
 			fflush(stdout);
-			goto out;
+			return;
 		}
 	}
 
-out:
-	kernel_exit();
 }
 
 static void full_write(int fd, const char *buf, size_t len)
@@ -195,7 +193,6 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr)
 	void *ip = 0;
 
 	sigsegv_outp("Segmentation Fault!");
-	sigsegv_outp("Use add2line from binutils to help resolve address to file:line.");
 	sigsegv_outp("info.si_signo = %d", signum);
 	sigsegv_outp("info.si_errno = %d", info->si_errno);
 	sigsegv_outp("info.si_code  = %d (%s)", info->si_code, si_codes[info->si_code]);
@@ -274,6 +271,11 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	int thread_id;
 	int i;
 
+	if (signum == SIGXCPU) {
+		write(1,"-",1);
+		return;
+	}
+
 #ifdef PRINT_BT_ON_SIGSEGV
 	if (signum == SIGSEGV) {
 		signal_segv(signum,info,ctx);
@@ -283,7 +285,6 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	signal_received++;
 	thread_id = -1;
 
-	hdebug("[ts=%d] signal %d received\n",rtdal_time_slot(),signum);
 
 	/* try to find the thread that caused the signal */
 
@@ -295,7 +296,7 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 
 	/* if signum is SIGUSR2, its a task termination signal, just exit */
 	if (signum == TASK_TERMINATION_SIGNAL) {
-		hdebug("sigusr2 signal. thread=%d\n",thisthread);
+		aerror_msg("sigusr2 signal. thread=%d\n",thisthread);
 		goto cancel_and_exit;
 	}
 
@@ -306,7 +307,7 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 		}
 	}
 	if (i < rtdal.machine.nof_cores) {
-		hdebug("pipeline_idx=%d\n",i);
+		aerror_msg("pipeline_idx=%d\n",i);
 		thread_id = i;
 
 		/* set the thread to 0 because is terminating */
@@ -314,12 +315,12 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 	} else {
 		/* it is not, may be it is the kernel timer */
 		if (thisthread == single_timer_thread) {
-			hdebug("timer thread=%d\n",thisthread);
+			aerror_msg("timer thread=%d\n",thisthread);
 			thread_id = -1;
 		} else {
 			/* @TODO: check if it is a status or init thread of any module */
 
-			hdebug("other thread=%d\n",thisthread);
+			aerror_msg("other thread=%d\n",thisthread);
 			goto cancel_and_exit;
 		}
 	}
@@ -329,7 +330,7 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 		if (thread_specific_signals[i] == signum)
 			break;
 	}
-	hdebug("signal=%d, thread=%d\n",i,thread_id);
+	aerror_msg("signal=%s, thread=%d\n",thread_specific_signals_name[i],thread_id);
 	value.sival_int = thread_id<<16 | i;
 	if (sigqueue(kernel_pid,
 			KERNEL_SIG_THREAD_SPECIFIC,
@@ -337,13 +338,13 @@ void thread_signal_handler(int signum, siginfo_t *info, void *ctx) {
 		poserror(errno, "sigqueue");
 	}
 
+
 cancel_and_exit:
 	if (signum != SIGABRT || thread_id == -1) {
 		pthread_exit(NULL);
 	} else {
 		rtdal.pipelines[thread_id].waiting=1;
 		while(rtdal.pipelines[thread_id].waiting) {
-			hdebug("waiting\n",0);
 			usleep(1000);
 		}
 	}

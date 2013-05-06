@@ -16,13 +16,18 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string.h>
+#include <unistd.h>
+
+#include "rtdal.h"
 #include "defs.h"
 #include "packet.h"
-#include "rtdal.h"
 #include "nod_waveform.h"
 #include "mempool.h"
 #include "oesr_context.h"
+#include "nod_anode.h"
 
+extern r_log_t modules_log;
+extern struct log_cfg logs_cfg;
 
 /**  Allocates memory for the oesr context structure of a nod_module_t
  *
@@ -39,6 +44,7 @@ int nod_module_alloc(nod_module_t *module) {
 	if (oesr_context_init(module->context, module)) {
 		return -1;
 	}
+
 	memset(&module->parent.execinfo,0,sizeof(execinfo_t));
 	return 0;
 }
@@ -71,31 +77,40 @@ void *nod_module_finish_callback(void *context) {
 	ndebug("module_id=%d, error_code=%d, finishing=%d, runnable=%d\n",module->parent.id,
 			rtdal_process_geterror(module->process), waveform->finishing);
 
-	if(DEBUG_NODE) {
-		rtdal_task_print_sched();
-	}
-
 	switch(rtdal_process_geterror(module->process)) {
 
-	case RTFAULT:
-		aerror_msg("Module %s violated real-time deadlines. Trying a clean stop\n",
-						module->parent.name);
-		break;
 	case SIG_RECV:
 		aerror_msg("Module %s produced a SIGSEGV, SIGILL, SIGFPE or SIGBUS signal. Trying a clean stop\n",
 						module->parent.name);
 		break;
+	case RTFAULT:
 	case RUNERROR:
-		aerror_msg("Module %s returned error from work() function. Trying a clean stop\n",
+		ndebug("Module %s returned error from work() function. Trying a clean stop\n",
 						module->parent.name);
+		rtdal_printf("#");
 		break;
 	default:
 			aerror("Warning, not supposed to be here\n");
 			return 0;
 		break;
 	}
-	if (nod_waveform_status_stop(waveform)) {
-		aerror("stopping waveform\n");
+
+	if (rtdal_process_geterror(module->process) == RUNERROR
+			|| rtdal_process_geterror(module->process) == RTFAULT) {
+#ifdef FINISH_ON_RUNERROR
+		if (nod_waveform_status_stop(waveform)) {
+			aerror("stopping waveform\n");
+		}
+#else
+		if (nod_waveform_reset_pipeline(waveform,module->process)) {
+			aerror("resetting pipeline\n");
+		}
+#endif
+
+	} else {
+		if (nod_waveform_status_stop(waveform)) {
+			aerror("stopping waveform\n");
+		}
 	}
 	return NULL;
 }
@@ -121,6 +136,32 @@ int nod_module_load(nod_module_t *module) {
 
 	nod_waveform_t *waveform = module->parent.waveform;
 	attr.process_group_id = waveform->id;
+
+	char tmp[128];
+	if (logs_cfg.modules_en && (module->parent.log_enable & 0x1 || logs_cfg.modules_all)) {
+		if (modules_log) {
+			module->log = modules_log;
+		} else {
+			snprintf(tmp,128,"%s.log",module->parent.name);
+			module->log = rtdal_log_new(tmp,TEXT,0);
+			if (!module->log) {
+				aerror_msg("Creating module log %s\n",tmp);
+			}
+		}
+		module->log_level = logs_cfg.log_modules_level;
+		module->output_stdout = logs_cfg.log_to_stdout;
+	} else {
+		module->log = NULL;
+	}
+	if (logs_cfg.modules_time_en && (module->parent.log_enable & 0x2 || logs_cfg.modules_all)) {
+		snprintf(tmp,128,"%s.time",module->parent.name);
+		module->time_log = rtdal_log_new(tmp,INT32,0);
+		if (!module->time_log) {
+			aerror_msg("Creating module log %s\n",tmp);
+		}
+	} else {
+		module->time_log = NULL;
+	}
 
 	module->init = NULL;
 	module->stop = NULL;
@@ -274,7 +315,7 @@ int nod_module_execinfo_add_sample(execinfo_t *obj, int ctx_tstamp) {
 		obj->max_exec_us = cpu;
 		obj->max_exec_ts = ctx_tstamp;
 	}
-	obj->module_ts = tstamp;
+	obj->module_ts = ctx_tstamp;
 	obj->max_rel_us = relinquish > obj->max_rel_us ? relinquish : obj->max_rel_us;
 	obj->max_start_us = start > obj->max_start_us ? start : obj->max_start_us;
 

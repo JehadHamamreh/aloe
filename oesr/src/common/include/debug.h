@@ -16,67 +16,58 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+extern r_log_t oesr_log;
 
-//#define DEBUG_TRACE
+#define MODULE_LOG_SZ	(16*1024)
+#define OESR_LOG_SIZE	(16*1024)
 
-#ifdef DEBUG_TRACE
-#ifndef _DEBUG_TRACE
-#define _DEBUG_TRACE
-extern FILE *trace_buffer;
-#endif
-#define debug_buffer (trace_buffer?trace_buffer:stdout)
-#else
-#define debug_buffer stdout
-#endif
-
+/* enable measurement of module's execution time*/
 #define OESR_API_GETTIME
 
 /* debug memory */
 #define DEBUG_POOL 0
 #define memdebug(_fmt, ...) \
-	do { if (DEBUG_POOL) fprintf(debug_buffer,"[debug-mempool]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_POOL && oesr_log) rtdal_log_printf(oesr_log,"[mempool]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug memory */
-#define DEBUG_MAPPING 0
+#define DEBUG_MAPPING 1
 #define mapdebug(_fmt, ...) \
-	do { if (DEBUG_MAPPING) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
+		do { if (LOGS_ENABLED && DEBUG_MAPPING && oesr_log) rtdal_log_printf(oesr_log,"[mapping]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
-/* debug execution time of modules (OESR_API_GETTIME) must be selected*/
-#define DEBUG_TIMEMOD 		0
-#define DEBUG_TIMEMOD_ID	-1
-#define tmdebug(_fmt, ...) \
-	do { if (DEBUG_TIMEMOD) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
+/* log execution time of modules (OESR_API_GETTIME) must be selected*/
+#define tmdebug(a,b) \
+	do { if (LOGS_ENABLED && a) rtdal_log_add(a,b,sizeof(int));} while(0);
 
 
 /* debug packet */
-#define DEBUG_PKT 0
+#define DEBUG_PKT 1
 #define pktdebug(_fmt, ...) \
-	do { if (DEBUG_PKT) fprintf(debug_buffer,"[debug-packet]\t[%s()]: pkt=0x%x " _fmt, __func__,pkt,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_PKT && oesr_log) rtdal_log_printf(oesr_log,"[packet]\t[%s()]: pkt=0x%x " _fmt, __func__,pkt,__VA_ARGS__);} while(0);
 
 
 /* debug serializable */
-#define DEBUG_SER 0
+#define DEBUG_SER 1
 #define serdebug(_fmt, ...) \
-	do { if (DEBUG_SER) fprintf(debug_buffer,"[debug-serial]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_SER && oesr_log) rtdal_log_printf(oesr_log,"[serial]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug manager */
-#define DEBUG_MAN 0
+#define DEBUG_MAN 1
 #define mdebug(_fmt, ...) \
-	do { if (DEBUG_MAN) fprintf(debug_buffer,"[debug-manager]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_MAN && oesr_log) rtdal_log_printf(oesr_log,"[manager]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug parse */
-#define DEBUG_PARSER 0
+#define DEBUG_PARSER 1
 #define pardebug(_fmt, ...) \
-	do { if (DEBUG_PARSER) fprintf(debug_buffer,"[debug-parser]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_PARSER && oesr_log) rtdal_log_printf(oesr_log,"[parser]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug node */
-#define DEBUG_NODE 0
+#define DEBUG_NODE 1
 #define ndebug(_fmt, ...) \
-	do { if (DEBUG_NODE) fprintf(debug_buffer,"[debug-node]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_NODE && oesr_log) rtdal_log_printf(oesr_log,"[node]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 /* debug oesr */
-#define DEBUG_oesr 0
+#define DEBUG_oesr 1
 #define sdebug(_fmt, ...) \
-	do { if (DEBUG_oesr) fprintf(debug_buffer,"[debug-oesr]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && DEBUG_oesr && oesr_log) rtdal_log_printf(oesr_log,"[api]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
 
 

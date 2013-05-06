@@ -29,7 +29,7 @@
 #define INCLUDE_DEFS_ONLY
 #include "plp_sink.h"
 
-static PLFLT x[2*NOF_INPUT_ITF][INPUT_MAX_SAMPLES], t[INPUT_MAX_SAMPLES];
+static PLFLT t[INPUT_MAX_SAMPLES];
 static PLFLT xmin, xmax, ymin, ymax;
 
 static int is_complex;
@@ -148,7 +148,6 @@ void draw_legend() {
 }
 
 int plp_draw(double *signal, int *signal_lengths, int ylog_scale) {
-	int count;
 	int i,j;
 	int col;
 	int dowind;
@@ -213,6 +212,6 @@ int plp_draw(double *signal, int *signal_lengths, int ylog_scale) {
 	}
 
 	plflush();                      // force an update of the tk driver
-
+	return 0;
 }
 

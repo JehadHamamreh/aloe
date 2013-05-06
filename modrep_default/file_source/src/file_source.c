@@ -28,11 +28,15 @@
 
 FILE *fd;
 
+#ifdef _COMPILE_ALOE
 static int last_snd_samples;
+#endif
 static int data_type;
 static int block_length;
 
 extern int output_sample_sz;
+
+char buffer[153600];
 
 /**
  * @ingroup file_source
@@ -44,8 +48,6 @@ extern int output_sample_sz;
  */
 int initialize() {
 	char name[64];
-	var_t pm;
-	int i;
 
 	if (param_get_int_name("data_type", &data_type)) {
 		data_type=-1;
@@ -71,6 +73,7 @@ int initialize() {
 	}
 
 #ifdef _COMPILE_ALOE
+	var_t pm;
 	pm = oesr_var_param_get(ctx, "file_name");
 	if (!pm) {
 		moderror("Parameter file_name undefined\n");
@@ -90,9 +93,11 @@ int initialize() {
 		return -1;
 	}
 
+	int n = rtdal_datafile_read_bin(fd,buffer,10*block_length);
+	printf("read %d bytes\n",n);
 	return 0;
 }
-
+static int cnt=0;
 /**
  * @ingroup file_source
  *
@@ -100,9 +105,9 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int n;
 	output_t *output = out[0];
 
+/*
 	switch(data_type) {
 	case 0:
 		n = rtdal_datafile_read_real(fd,(float*) output,block_length);
@@ -118,16 +123,24 @@ int work(void **inp, void **out) {
 	case -1:
 		n = rtdal_datafile_read_bin(fd,output,block_length);
 	}
-
+*/
 #ifdef _COMPILE_ALOE
+	int n;
+	n=block_length;
 	if (n != last_snd_samples) {
 		last_snd_samples = n;
 		modinfo_msg("Sending %d samples at tslot %d\n",
 				n,oesr_tstamp(ctx));
 	}
 #endif
-
-	return n;
+	
+	memcpy(output,&buffer[cnt*block_length],block_length);
+	cnt++;
+	if (cnt==10) {
+		cnt=0;
+	}
+	
+	return block_length;
 }
 
 /**  Deallocates resources created during initialize().

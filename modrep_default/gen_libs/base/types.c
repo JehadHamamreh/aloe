@@ -6,6 +6,7 @@ int type_size(sample_t type) {
 	case REAL_TYPE: return sizeof(real_t);
 	case COMPLEX_TYPE: return sizeof(complex_t);
 	}
+	return 0;
 }
 
 int type_param_2_type(int data_type, sample_t *type) {

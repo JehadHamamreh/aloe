@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/mman.h>
 
 #include "oesr.h"
 #include "rtdal.h"
@@ -243,6 +244,8 @@ int Init(void *_ctx) {
 
 	moddebug("enter ts=%d\n",oesr_tstamp(ctx));
 
+	mlockall(MCL_CURRENT | MCL_FUTURE);
+
 	if (!mem_ok) {
 		init_memory();
 		mem_ok = 1;
@@ -250,18 +253,14 @@ int Init(void *_ctx) {
 
 	if (!log_ok) {
 		mlog = NULL;
-		if (USE_LOG) {
-			if (init_log(ctx)) {
-				return -1;
-			}
+#ifdef USE_LOG
+		if (init_log(ctx)) {
+			return -1;
 		}
+#endif
 		log_ok = 1;
 	}
 
-/*	if (init_counter(ctx)) {
-		return -1;
-	}
-*/
 	if (init_variables(ctx)) {
 		return -1;
 	}
@@ -353,9 +352,10 @@ int Run(void *_ctx) {
 				oesr_perror("oesr_itf_get");
 				return -1;
 			} else {
-				itfdebug("[ts=%d] received %d bytes\n",rtdal_time_slot(),rcv_len[i]);
+				moddebug("received %d bytes\n",rtdal_time_slot(),rcv_len[i]);
 				rcv_len[i] /= input_sample_sz;
 			}
+			itflog(i,"rcv",rcv_len[i],rcv_len[i]*input_sample_sz);
 		}
 	}
 	for (i=0;i<nof_output_itf;i++) {
@@ -364,7 +364,7 @@ int Run(void *_ctx) {
 		} else {
 			n = oesr_itf_ptr_request(outputs[i], &output_ptr[i]);
 			if (n == 0) {
-				moderror_msg("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
+				moddebug("no packets available in output interface %d\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_request");
 				return -1;
@@ -391,7 +391,7 @@ int Run(void *_ctx) {
 		if (input_ptr[i]) {
 			n = oesr_itf_ptr_release(inputs[i]);
 			if (n == 0) {
-				itfdebug("[ts=%d] packet from interface %d not released\n",rtdal_time_slot(),i);
+				moddebug("packet from interface %d not released\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_release\n");
 				return -1;
@@ -402,11 +402,12 @@ int Run(void *_ctx) {
 		if (output_ptr[i] && snd_len[i]) {
 			n = oesr_itf_ptr_put(outputs[i],snd_len[i],tstamp);
 			if (n == 0) {
-				itfdebug("[ts=%d] no space left in output interface %d\n",rtdal_time_slot(),i);
+				moddebug("no space left in output interface %d\n",rtdal_time_slot(),i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_put\n");
 				return -1;
 			}
+			itflog(i,"snd",snd_len[i]/output_sample_sz,snd_len[i]);
 		}
 	}
 

@@ -19,19 +19,34 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdarg.h>
 
-#include "defs.h"
-#include "str.h"
+#ifdef __XENO__
+#include <rtdk.h>
+#endif
+
+#include "rtdal.h"
 #include "rtdal_kernel.h"
 #include "objects_max.h"
 #include "rtdal_context.h"
 #include "rtdal_time.h"
 #include "rtdal_file.h"
 #include "rtdal_error.h"
-#include "rtdal.h"
+#include "defs.h"
+#include "str.h"
 
 static rtdal_context_t *context;
 extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
+
+void rtdal_printf(const char *format, ...) {
+	va_list ap;
+	va_start(ap,format);
+#ifdef __XENO__
+	rt_vprintf(format,ap);
+#else
+	vprintf(format,ap);
+#endif
+}
 
 /** Enables/Disables real-time control 
 */
@@ -45,6 +60,7 @@ void rtdal_rtcontrol_enable(int enabled) {
  */
 void rtdal_machine(rtdal_machine_t *machine) {
 	assert(context);
+
 	memcpy(machine,&context->machine,sizeof(rtdal_machine_t));
 }
 
@@ -73,7 +89,7 @@ int rtdal_initialize_node(rtdal_context_t *_context, string config_file,
 	rtdal_error_set_context(&context->error);
 	context->time.ts_len_us = context->machine.ts_len_us;
 	rtdal_time_set_context(&context->time);
-	//rtdal_file_set_path("outputs");
+
 	rtdal_time_reset();
 
 	return -1;
@@ -251,7 +267,7 @@ r_itf_t rtdal_itfphysic_get_id(int id) {
  * @param msg_sz Positive integer. Maximum message size
  * @return non-null value on success, zero on error
  */
-r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz, int delay) {
+r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz, int delay, r_log_t log) {
 	hdebug("max_msg=%d,max_msg_sz=%d\n",max_msg,max_msg_sz);
 	assert(context);
 	RTDAL_ASSERT_PARAM_P(max_msg>=0);
@@ -273,6 +289,7 @@ r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz, int delay) {
 	context->spscqs[i].max_msg_sz = max_msg_sz;
 	context->spscqs[i].parent.delay = delay;
 	context->spscqs[i].parent.id = i+1;
+	context->spscqs[i].parent.log = log;
 
 	if (rtdal_itfspscq_init(&context->spscqs[i])) {
 		context->spscqs[i].parent.id = 0;

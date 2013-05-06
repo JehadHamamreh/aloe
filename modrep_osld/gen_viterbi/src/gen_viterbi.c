@@ -90,7 +90,7 @@ int work(void **inp, void **out) {
 		output = out[i];
 		moddebug("rcv_len=%d\n",get_input_samples(i));
 		rcv_samples = get_input_samples(i);
-		if (rcv_samples) {
+		if (rcv_samples && output) {
 			input_llr = input;
 
 			viterbi_decode(&state,input_llr,rcv_samples,constraint_length,rate,g,

@@ -16,6 +16,7 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <rtdal.h>
 #include "defs.h"
 
 #include "packet.h"
@@ -181,6 +182,7 @@ int module_serialize(module_t *src, packet_t *pkt, enum variable_serialize_data 
 	add_i(&src->exec_position);
 	add_i(&src->nof_modes);
 	add_i(&src->mode.cur_mode);
+	add_i(&src->log_enable);
 	if (packet_add_data(pkt,src->name,STR_LEN))
 		return -1;
 	if (packet_add_data(pkt,src->binary,STR_LEN))
@@ -221,6 +223,7 @@ int module_unserializeTo(packet_t *pkt, module_t *dest, enum variable_serialize_
 	get_i(&dest->exec_position);
 	get_i(&dest->nof_modes);
 	get_i(&dest->mode.cur_mode);
+	get_i(&dest->log_enable);
 	dest->mode.next_tslot = 0;
 	if (packet_get_data(pkt,dest->name,STR_LEN)) return -1;
 	if (packet_get_data(pkt,dest->binary,STR_LEN)) return -1;

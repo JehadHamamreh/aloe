@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=true;
+	precach_pipeline=false;
 	auto_ctrl_module="ctrl";
 };
 
@@ -13,20 +13,18 @@ modules:
 	rx:
 	{
 		binary="modrep_default/libfile_source.so";	
-		mopts=8;
-		/*
-		variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
-		*/
-		variables=({name="file_name";value="output.bin"}
-				,{name="block_length";value=15360}
-			); 
+		mopts=10;
+		// variables for udp_source
+		//variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
+		// variables for file_source
+		variables=({name="file_name";value="output.bin"},{name="block_length";value=15360}); 
 	};
 
 	/* muxes all control messages from other modules */
 	ctrl_mux: 
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=15;
+		mopts=2.5;
 		variables=(
 			{name="nof_inputs";value=4;},{name="data_type";value=0;});
 	};
@@ -34,7 +32,7 @@ modules:
 	ctrl:
 	{
 		binary="modrep_osld/liblte_ctrl.so";	
-		mopts=100;
+		mopts=30;
 		variables=(
 			{name="nof_output_data_itf";value=0},
 			{name="mode";value=1}, /* 0 tx, 1 rx, 2 both */
@@ -70,7 +68,7 @@ modules:
 	synchro:
 	{
 		binary="modrep_osld/liblte_synchG.so";
-		mopts=5;
+		mopts=8.2;
 		variables=({name="bypass";value=1},{name="FFTsize";value=128},
 		{name="LTEframe_structtype";value=1;});
 	};
@@ -83,7 +81,7 @@ modules:
 	mux_rx:
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=11;
+		mopts=8.7;
 		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
 	};
 
@@ -106,7 +104,7 @@ modules:
 	resdemapp_pcfich:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=18;
+		mopts=19.19;
 		variables=(
 			{name="channel_id_0";value=4},{name="subframe_idx";value=-1});
 	};
@@ -119,7 +117,7 @@ modules:
 	resdemapp_pdcch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=31;
+		mopts=28.44;
 		variables=(
 			{name="channel_id_0";value=2},{name="subframe_idx";value=-1});
 	};
@@ -132,7 +130,7 @@ modules:
 	resdemapp_pdsch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=12;
+		mopts=20.44;
 		variables=(
 			{name="channel_id_0";value=0},{name="subframe_idx";value=-1});
 	};
@@ -145,7 +143,7 @@ modules:
 	sink:
 	{
 		binary="modrep_default/libplp_sink.so";
-		mopts=4;
+		mopts=1.5;
 		variables=({name="is_complex";value=1},{name="mode";value=0});
 	};	
 	

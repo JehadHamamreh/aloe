@@ -38,6 +38,8 @@ typedef struct {
 	int is_blocking;
 	void (*callback)(void);
 
+	r_log_t log;
+
 }rtdal_itf_t;
 
 #endif

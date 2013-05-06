@@ -37,7 +37,7 @@ struct sockaddr_in servaddr;
 pmid_t blen_id;
 
 int create_client_upd(char *address, int port, struct sockaddr_in *server) {
-	int sockfd,n;
+	int sockfd;
 
 	modinfo_msg("Opening socket to %s:%d\n",address,port);
 
@@ -64,8 +64,6 @@ int create_client_upd(char *address, int port, struct sockaddr_in *server) {
  */
 int initialize() {
 	char address[64];
-	var_t pm;
-	int i;
 	int port;
 
 	blen_id = param_id("nof_pkts");
@@ -76,6 +74,7 @@ int initialize() {
 	}
 
 #ifdef _COMPILE_ALOE
+	var_t pm;
 	pm = oesr_var_param_get(ctx, "address");
 	if (!pm) {
 		moderror("Parameter file_name undefined\n");
@@ -107,7 +106,6 @@ int initialize() {
 int work(void **inp, void **out) {
 	int rcv_samples;
 	int n;
-	char tmp[16];
 	int nof_pkts,pkt_len,i;
 	input_t *input = inp[0];
 

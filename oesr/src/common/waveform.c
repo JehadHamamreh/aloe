@@ -18,7 +18,7 @@
 
 
 #include <stdlib.h>
-
+#include <rtdal.h>
 #include "defs.h"
 #include "waveform.h"
 #include "mempool.h"

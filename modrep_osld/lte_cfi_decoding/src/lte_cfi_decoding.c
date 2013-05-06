@@ -43,7 +43,7 @@ int initialize() {
 	if (cfi_pm_idx < 0) {
 		moderror("Error getting remote parameter cfi_rx\n");
 	}
-	moddebug("Remote CFI parameter is a at %d\n",cfi_pm_idx)
+	moddebug("Remote CFI parameter is a at %d\n",cfi_pm_idx);
 #endif
 	return 0;
 }

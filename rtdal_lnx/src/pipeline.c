@@ -23,6 +23,9 @@
 #include <ucontext.h>
 #include <execinfo.h>
 #include <sys/ucontext.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "pipeline.h"
 #include "rtdal.h"
@@ -36,7 +39,6 @@
 struct timespec nsec_deb[NSEC_DEB_LEN];
 struct timespec nsec_deb2[NSEC_DEB_LEN];
 
-
 static int timer_first_cycle = 0;
 static int num_pipelines;
 static int is_first_in_cycle_count;
@@ -49,6 +51,11 @@ void pipeline_initialize(int _num_pipelines) {
 	hdebug("num_pipelines=%d\n",_num_pipelines);
 	num_pipelines = _num_pipelines;
 	pipeline_sync_initialize(num_pipelines);
+}
+
+inline void pipeline_sync_thread_idx(int idx) {
+	hdebug("syncing\n",0);
+	pipeline_sync_threads_wake_idx(idx);
 }
 
 inline void pipeline_sync_threads() {
@@ -84,6 +91,7 @@ inline static void pipeline_run_thread_check_status(pipeline_t *pipe,
 		if (proc->attributes.finish_callback) {
 			hdebug("calling finish 0x%x arg=0x%x\n",proc->attributes.finish_callback,
 					proc->arg);
+			printf("fault-%d\n",rtdal_time_slot());
 			pgroup_notified_failure[proc->attributes.process_group_id] = 1;
 			rtdal_task_new(NULL, proc->attributes.finish_callback,proc->arg);
 		} else {
@@ -124,22 +132,29 @@ inline static void pipeline_run_time_slot(pipeline_t *obj, struct timespec *time
 	run_proc = obj->first_process;
 	idx = 0;
 
-	while(run_proc) {
-		hdebug("%d/%d: run=%d code=%d next=0x%x\n",idx,obj->nof_processes,run_proc->runnable,
-				run_proc->finish_code,run_proc->next);
-		if (idx > obj->nof_processes) {
-			aerror_msg("Fatal error. Corrupted pipeline-%d process list at process %d\n",
-					obj->id, idx);
-			kill(getpid(),SIGTERM);
-			pthread_exit(NULL);
+	timelog(obj->log_in);
+
+	if (obj->enable) {
+		while(run_proc) {
+			hdebug("%d/%d: run=%d code=%d next=0x%x\n",idx,obj->nof_processes,run_proc->runnable,
+					run_proc->finish_code,run_proc->next);
+			if (idx > obj->nof_processes) {
+				aerror_msg("Fatal error. Corrupted pipeline-%d process list at process %d\n",
+						obj->id, idx);
+				kill(getpid(),SIGTERM);
+				pthread_exit(NULL);
+			}
+			pipeline_run_thread_check_status(obj,run_proc);
+			pipeline_run_thread_run_module(obj,run_proc, idx);
+			run_proc = run_proc->next;
+			idx++;
 		}
-		pipeline_run_thread_check_status(obj,run_proc);
-		pipeline_run_thread_run_module(obj,run_proc, idx);
-		run_proc = run_proc->next;
-		idx++;
 	}
 
-	obj->ts_counter++;
+	timelog(obj->log_out);
+
+	obj->ts_counter=rtdal_time_slot();
+
 	obj->finished = 1;
 }
 
@@ -170,6 +185,10 @@ void *pipeline_run_thread(void *self) {
 	assert(self);
 	pipeline_t *obj = (pipeline_t*) self;
 	assert(obj->id>=0);
+
+#ifdef __XENO__
+	pthread_set_mode_np(0, PTHREAD_WARNSW);
+#endif
 
 	hdebug("pipeid=%d waiting\n",obj->id);
 
@@ -219,11 +238,17 @@ int pipeline_rt_fault(pipeline_t *obj) {
 #else
 	obj->finished = 1;
 	obj->rtfaults++;
+/*	if (obj->running_process->runnable) {
+		obj->running_process->finish_code = RTFAULT;
+	}
+*/
 #ifdef PRINT_RT_FAULT
 	printf("+++[ts=%d]+++ RT-Fault: Process %d/%d still running in pipeline %d\n",
 			obj->ts_counter, obj->running_process_idx, obj->nof_processes, obj->id);
 #else
-	write(0,"!",1);
+	char tmp[2];
+	snprintf(tmp,2,"%d",obj->id);
+	write(0,tmp,strlen(tmp));
 #endif
 #endif
 	return 0;

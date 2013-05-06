@@ -89,6 +89,7 @@ int work(void **inp, void **out) {
 		input_lengths[i] = get_input_samples(i);
 		nof_active_inputs++;
 	}
+
 	if (exclusive && nof_active_inputs>1) {
 		moderror_msg("Exclusive mux but %d inputs have data\n",nof_active_inputs);
 		return -1;

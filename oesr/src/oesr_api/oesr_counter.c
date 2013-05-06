@@ -16,6 +16,8 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <rtdal.h>
+
 #include "oesr_context.h"
 #include "oesr_counter.h"
 #include "oesr.h"

@@ -48,6 +48,7 @@ struct timeval t[3];
 double mean_interval=0;
 int ct=0;
 struct dac_cfg *def_cfg;
+FILE *f;
 
 /***********************************************************************
  * Benchmark RX Rate
@@ -89,6 +90,16 @@ void rx_thread(uhd::usrp::multi_usrp::sptr usrp, const std::string &rx_cpu,
 
         sync();
 
+        struct timespec t;
+
+#ifdef DAC_LOG
+		clock_gettime(CLOCK_REALTIME,&t);
+		unsigned int usec = (unsigned int) t.tv_nsec/1000;
+		if (fwrite(&usec,sizeof(unsigned int),1,f) == 0) {
+			perror("writein");
+		}
+		fflush(f);
+#endif
         //handle the error codes
         switch(md.error_code){
         case uhd::rx_metadata_t::ERROR_CODE_NONE:
@@ -240,9 +251,18 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
 
     std::string rx_otw, tx_otw;
     std::string rx_cpu, tx_cpu;
+    int blen;
+    double freq,gain,bw;
+
     rx_otw="sc16";
 	tx_otw="sc16";
 
+#ifdef DAC_LOG
+	f=fopen("dac","w+");
+	if (f == NULL) {
+		perror("open");
+	}
+#endif
 	if (cfg->sampleType) {
 		rx_cpu="sc16";
 		tx_cpu="sc16";
@@ -255,24 +275,24 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
     if (main_cfg.chain_is_tx==0) {
     	/** Set receive chain */
 		for(size_t chan = 0; chan < usrp->get_rx_num_channels(); chan++) {
-			double freq = cfg->inputRFFreq;
+			freq = cfg->inputRFFreq;
 			if (freq>0) {
 				usrp->set_rx_freq(freq, chan);
 			}
 
 			//set the rf gain
-			double gain = cfg->rx_gain;
+			gain = cfg->rx_gain;
 			if (gain>0) {
 				usrp->set_rx_gain(gain, chan);
 			}
 
 			//set the IF filter bandwidth
-			double bw = cfg->rx_bw;
+			bw = cfg->rx_bw;
 			if (bw>0) {
 				usrp->set_rx_bandwidth(bw, chan);
 			}
 		}
-
+		blen = cfg->NsamplesOut;
     	double x=(double) cfg->NsamplesOut/cfg->inputFreq;
     	*timeSlotLength=(int) 1000000*x;
 		thread_group.create_thread(boost::bind(&rx_thread, usrp, rx_cpu, rx_otw,cfg,sync,timeSlotLength));
@@ -283,29 +303,30 @@ int uhd_init(struct dac_cfg *cfg, long int *timeSlotLength, void (*sync)(void)){
 
 		/** Set transmit chain */
 		for(size_t chan = 0; chan < usrp->get_tx_num_channels(); chan++) {
-			double freq = cfg->outputRFFreq;
+			freq = cfg->outputRFFreq;
 			if (freq>0) {
 				usrp->set_tx_freq(freq, chan);
 			}
 
 			//set the rf gain
-			double gain = cfg->tx_gain;
+			gain = cfg->tx_gain;
 			if (gain>0.0) {
 				usrp->set_tx_gain(gain, chan);
 			}
 
 			//set the IF filter bandwidth
-			double bw = cfg->tx_bw;
+			bw = cfg->tx_bw;
 			if (bw>0.0) {
 				usrp->set_tx_bandwidth(bw, chan);
 			}
-			printf("\nTX Chain: Freq=%g MHz\tBW=%g MHz\tGain=%g dB\n",freq/1000000,bw/1000000,gain);
 		}
+		blen = cfg->NsamplesOut;
 
 		double x=(double) cfg->NsamplesOut/cfg->outputFreq;
 		*timeSlotLength=(int) 1000000*x;
 		thread_group.create_thread(boost::bind(&tx_thread, usrp, tx_cpu, tx_otw,cfg,sync,timeSlotLength));
 	}
+	printf("\nFreq=%g MHz\tBW=%g MHz\tGain=%g dB\t Block=%d\n",freq/1000000,bw/1000000,gain,blen);
 	return 1;
 }
 

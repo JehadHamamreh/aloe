@@ -48,7 +48,6 @@ float get_variance(float snr_db,float scale) {
  * \returns This function returns 0 on success or -1 on error
  */
 int initialize() {
-	int size;
 
 	gain_re_id = param_id("gain_re");
 	gain_im_id = param_id("gain_im");

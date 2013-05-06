@@ -28,8 +28,10 @@
 pmid_t blen_id, gen_id;
 int cnt=0;
 static int last_type;
-static int last_block_length;
 static int period,period_cnt;
+#ifdef _COMPILE_ALOE
+static int last_block_length;
+#endif
 
 /**@ingroup source
  *
@@ -39,7 +41,6 @@ static int period,period_cnt;
  *
  */
 int initialize() {
-	int size;
 	int block_length;
 
 	blen_id = param_id("block_length");
@@ -74,7 +75,7 @@ int initialize() {
 
 int work(void **inp, void **out) {
 	int block_length, type;
-	int i,j;
+	int i;
 	int snd_samples;
 
 	period_cnt++;
@@ -82,6 +83,10 @@ int work(void **inp, void **out) {
 		period_cnt=0;
 	}
 	if (period_cnt) {
+		return 0;
+	}
+
+	if (!out[0]) {
 		return 0;
 	}
 

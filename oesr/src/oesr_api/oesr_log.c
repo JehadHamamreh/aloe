@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include <rtdal.h>
 #include "oesr_log.h"
 #include "oesr.h"
 #include "defs.h"

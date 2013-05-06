@@ -19,6 +19,8 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <errno.h>
+
+#include <rtdal.h>
 #include "str.h"
 #include "oesr_context.h"
 #include "oesr_error.h"

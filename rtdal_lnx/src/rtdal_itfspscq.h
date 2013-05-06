@@ -44,6 +44,7 @@ typedef struct {
 
 int rtdal_itfspscq_init(rtdal_itfspscq_t *obj);
 int rtdal_itfspscq_create(r_itf_t obj, string address);
+int rtdal_itfspscq_reset(r_itf_t obj);
 int rtdal_itfspscq_remove(r_itf_t obj);
 int rtdal_itfspscq_request(r_itf_t obj, void **ptr);
 int rtdal_itfspscq_push(r_itf_t obj, int len, int tstamp);

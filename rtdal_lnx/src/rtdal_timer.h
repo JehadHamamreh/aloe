@@ -43,6 +43,7 @@ typedef struct
 	void *arg;
 	void (*period_function)(void*, struct timespec *time);
 	enum timer_mode mode;
+	r_log_t log;
 } rtdal_timer_t;
 
 #ifdef __XENO__

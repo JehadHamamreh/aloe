@@ -16,9 +16,9 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "rtdal.h"
 #include "defs.h"
 #include "packet.h"
-#include "rtdal.h"
 #include "rtdal_machine.h"
 #include "nod_waveform.h"
 #include "mempool.h"
@@ -142,10 +142,6 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 	nod_waveform_t* waveform = arg;
 	ndebug("waveform_id=%d\n",waveform->id);
 
-	if (DEBUG_NODE) {
-		rtdal_task_print_sched();
-	}
-
 	for (i=0;i<waveform->nof_modules;i++) {
 		if (waveform->modules[i].parent.status != STOP) {
 			/*if (rtdal_process_isrunning(waveform->modules[i].process)) {
@@ -161,6 +157,39 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 		}
 	}
 	return (void*) 1;
+}
+
+int nod_waveform_reset_pipeline(nod_waveform_t *waveform, r_proc_t proc) {
+	int i,j;
+	ndebug("reseting at %d\n",rtdal_time_slot());
+	if (nod_waveform_run(waveform,0)) {
+		return -1;
+	}
+	rtdal_process_seterror(proc, FINISH_OK);
+	rtdal_process_group_notified(proc);
+
+	time_t t;
+	t.tv_sec = 0;
+	t.tv_usec = 20000;
+	rtdal_sleep(&t);
+
+	for (i=0;i<waveform->nof_modules;i++) {
+		for (j=0;j<waveform->modules[i].parent.nof_outputs;j++) {
+			if (waveform->modules[i].parent.outputs[j].hw_itf) {
+				rtdal_itf_reset(waveform->modules[i].parent.outputs[j].hw_itf);
+			}
+		}
+		oesr_context_reset_ts(waveform->modules[i].context);
+		rtdal_process_seterror(waveform->modules[i].process, FINISH_OK);
+	}
+
+	rtdal_process_group_notified(proc);
+
+	ndebug("return at %d\n",rtdal_time_slot());
+	if (nod_waveform_run(waveform,1)) {
+		return -1;
+	}
+	return 0;
 }
 
 /**  goes through all the modules and calls nod_module_stop();
@@ -224,10 +253,6 @@ void* nod_waveform_status_init_thread(void *arg) {
 	int n;
 	int nof_trials, nof_initiated;
 	nod_waveform_t *waveform = arg;
-
-	if (DEBUG_NODE) {
-		rtdal_task_print_sched();
-	}
 
 	i = nof_trials = nof_initiated = 0;
 	printf("Initiating %d modules",waveform->nof_modules);

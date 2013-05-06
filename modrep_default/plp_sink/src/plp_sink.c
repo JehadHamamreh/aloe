@@ -40,7 +40,9 @@ static float f_pl_signals[2*NOF_INPUT_ITF*INPUT_MAX_SAMPLES];
 static double pl_signals[2*NOF_INPUT_ITF*INPUT_MAX_SAMPLES];
 static int plp_initiated=0;
 static int fft_initiated=0;
+#ifdef _COMPILE_ALOE
 static int interval_ts, last_tstamp;
+#endif
 static int print_not_received;
 static int last_rcv_samples;
 static int is_complex;
@@ -104,7 +106,6 @@ dft_plan_t* generate_new_plan(int dft_size) {
 int initialize() {
 	int i;
 	int mode;
-	int tslen;
 	int data_type;
 
 	last_rcv_samples=0;
@@ -174,6 +175,7 @@ int initialize() {
 
 
 #ifdef _COMPILE_ALOE
+	int tslen;
 	tslen = oesr_tslot_length(ctx);
 	if (tslen > EXEC_MIN_INTERVAL_MS*1000) {
 		interval_ts = 1;

@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <strings.h>
 
+#include <rtdal.h>
 #include "str.h"
 #include "defs.h"
 #include "objects_max.h"
@@ -56,10 +57,12 @@ int oesr_man_initialize(string platform_conf, int max_waveforms) {
 	if (man_platform_config(&oesr_man.platform, platform_conf)) {
 		return -1;
 	}
+
 	oesr_man.waveforms = (waveform_t*) pool_alloc(max_waveforms,sizeof(waveform_t));
 	if (!oesr_man.waveforms) {
 		return -1;
 	}
+
 	oesr_man.max_waveforms = max_waveforms;
 	oesr_man.initialized = 1;
 	return 0;

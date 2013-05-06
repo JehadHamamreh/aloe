@@ -17,17 +17,21 @@
  */
 
 #include <stddef.h>
-#include "defs.h"
-#include "str.h"
 #include "rtdal_itf.h"
 #include "rtdal_itfspscq.h"
 #include "rtdal_itfphysic.h"
 #include "rtdal.h"
+#include "defs.h"
+#include "str.h"
 
 #define call(a, ...) if (obj->is_external) return rtdal_itfphysic_##a(__VA_ARGS__); else return rtdal_itfspscq_##a(__VA_ARGS__)
 
 int rtdal_itf_remove(r_itf_t obj) {
 	call(remove,obj);
+}
+
+int rtdal_itf_reset(r_itf_t obj) {
+	call(reset,obj);
 }
 
 /** Receives up to len bytes from the interface and stores the data in the

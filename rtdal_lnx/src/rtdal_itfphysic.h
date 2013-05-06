@@ -39,6 +39,7 @@ typedef struct {
 
 int rtdal_itfphysic_create(r_itf_t obj, string address);
 int rtdal_itfphysic_remove(r_itf_t obj);
+int rtdal_itfphysic_reset(r_itf_t obj);
 int rtdal_itfphysic_request(r_itf_t obj, void **ptr);
 int rtdal_itfphysic_release(r_itf_t obj);
 int rtdal_itfphysic_push(r_itf_t obj, int len, int tstamp);

@@ -18,6 +18,8 @@
 
 #include <stdlib.h>
 
+#include <rtdal.h>
+
 #include "defs.h"
 #include "man_mapping.h"
 #include "man_platform.h"

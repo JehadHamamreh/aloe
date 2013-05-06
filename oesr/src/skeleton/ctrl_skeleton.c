@@ -24,6 +24,8 @@
 #include "ctrl_pkt.h"
 #include "ctrl_skeleton.h"
 
+#include "rtdal.h"
+
 #define MAX_OUTPUTS 		100
 #define MAX_INPUT_PACKETS	20
 
@@ -89,8 +91,8 @@ int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	if (n == -1) {
 		return -1;
 	} else if (!n) {
-		printf("Buffer full while sending control packet to %s:%s\n",remote_params_db[dest_idx].module_name,
-				remote_params_db[dest_idx].variable_name);
+		moddebug("Buffer full while sending control packet to %s:%s at %d\n",remote_params_db[dest_idx].module_name,
+				remote_params_db[dest_idx].variable_name, rtdal_time_slot());
 		return -1;
 	}
 	return 0;
@@ -114,7 +116,7 @@ int remote_parameters_sendall(void *ctx) {
 	for (i=0;i<nof_remote_variables;i++) {
 
 		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size,oesr_tstamp(ctx))) {
-			moderror_msg("sending ctrl packet to %s:%s\n",
+			moddebug("sending ctrl packet to %s:%s\n",
 					remote_params_db[i].module_name,remote_params_db[i].variable_name);
 			return -1;
 		}

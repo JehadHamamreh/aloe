@@ -54,7 +54,7 @@ int check_received_samples_channel(struct channel *ch, int ch_id) {
 			return 0;
 		}
 		if (re != get_input_samples(ch->in_port)) {
-			moderror_msg("Received %d samples from channel %s in_port %d, but expected %d "
+			moddebug("Received %d samples from channel %s in_port %d, but expected %d "
 					"(subframe_idx=%d)\n",
 				get_input_samples(ch->in_port),ch->name, ch->in_port,
 				re, subframe_idx);

@@ -19,12 +19,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <errno.h>
-#include "defs.h"
-#include "str.h"
+#include "rtdal.h"
 #include "rtdal_error.h"
 #include "rtdal_itf.h"
 #include "rtdal_itfspscq.h"
-#include "rtdal.h"
+#include "defs.h"
+#include "str.h"
 
 #define cast(a,b) RTDAL_ASSERT_PARAM(a);\
 			rtdal_itfspscq_t *b = (rtdal_itfspscq_t*) a;
@@ -39,6 +39,7 @@ int rtdal_itfspscq_init(rtdal_itfspscq_t *itf) {
 	itf->read = 0;
 	itf->write = 0;
 	itf->data = malloc(itf->max_msg*itf->max_msg_sz);
+	memset(itf->data,0,itf->max_msg*itf->max_msg_sz);
 	itf->packets = calloc(itf->max_msg,sizeof(r_pkt_t));
 	if (!itf->data || !itf->packets) {
 		return -1;
@@ -48,6 +49,19 @@ int rtdal_itfspscq_init(rtdal_itfspscq_t *itf) {
 		itf->packets[i].valid = 0;
 	}
 
+	return 0;
+}
+
+int rtdal_itfspscq_reset(r_itf_t obj) {
+	cast(obj,itf);
+	int i;
+
+	itf->read = 0;
+	itf->write = 0;
+	qdebug("resetting %d msg \n",itf->max_msg);
+	for (i=0;i<itf->max_msg;i++) {
+		itf->packets[i].valid = 0;
+	}
 	return 0;
 }
 
@@ -85,6 +99,7 @@ int rtdal_itfspscq_request(r_itf_t obj, void **ptr) {
 	qdebug("write=%d, tstamp=%d\n",itf->write,itf->packets[itf->write].tstamp);
 
 	if (spscq_is_full(itf)) {
+		qdebug("[full] id=%d write=%d, valid=%d\n",itf->parent.id,itf->write,itf->packets[itf->write].valid);
 		RTDAL_SETERROR(RTDAL_ERROR_NOSPACE);
 		return 0;
 	}
@@ -99,6 +114,7 @@ int rtdal_itfspscq_request(r_itf_t obj, void **ptr) {
 int rtdal_itfspscq_push(r_itf_t obj, int len, int tstamp) {
 	cast(obj,itf);
 	if (spscq_is_full(itf)) {
+		qdebug("[full] id=%d write=%d, valid=%d\n",itf->parent.id,itf->write,itf->packets[itf->write].valid);
 		RTDAL_SETERROR(RTDAL_ERROR_NOSPACE);
 		return 0;
 	}

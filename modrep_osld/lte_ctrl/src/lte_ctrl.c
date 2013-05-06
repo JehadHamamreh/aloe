@@ -190,7 +190,6 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	}
 
 	if (lte_grid_init(grid)==-1) {
-		moderror("Error initiating grid\n");
 		return 0;
 	}
 	params->cfi = grid->cfi;

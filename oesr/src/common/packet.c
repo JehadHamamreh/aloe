@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <rtdal.h>
 #include "packet.h"
 #include "defs.h"
 

@@ -12,7 +12,7 @@ set(LIBRARIES m rt ${FFTWS_LIBRARIES})
 # set-up program includes here
 include_directories(/usr/local/include/)
 
-set(CMAKE_C_FLAGS "-std=c99 -D_GNU_SOURCE -fPIC")
+set(CMAKE_C_FLAGS "-DLOGS_ENABLED=0 -std=c99 -D_GNU_SOURCE -fPIC -Wno-implicit-function-declaration")
 
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE

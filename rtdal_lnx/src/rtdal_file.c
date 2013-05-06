@@ -23,10 +23,10 @@
 #include <stddef.h>
 #include <unistd.h>
 
-#include "defs.h"
-#include "str.h"
 #include "rtdal.h"
 #include "rtdal_error.h"
+#include "defs.h"
+#include "str.h"
 
 static lstrdef(tmp_path);
 static strdef(syspath);

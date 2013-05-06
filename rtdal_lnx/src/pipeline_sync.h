@@ -37,6 +37,7 @@
 int pipeline_sync_initialize(int num_pipelines);
 void pipeline_sync_thread_waits(int idx);
 void pipeline_sync_threads_wake();
+void pipeline_sync_threads_wake_idx(int idx);
 
 
 #endif

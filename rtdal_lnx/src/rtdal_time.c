@@ -20,10 +20,9 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include "defs.h"
+#include "rtdal.h"
 #include "defs.h"
 #include "rtdal_time.h"
-#include "rtdal.h"
 #include "rtdal_error.h"
 
 static rtdal_time_t *context = NULL;
@@ -52,6 +51,7 @@ int rtdal_time_reset() {
 	return 0;
 }
 
+static time_t last_time;
 
 int rtdal_time_reset_realtime(struct timespec *x) {
 	assert(context);
@@ -59,11 +59,32 @@ int rtdal_time_reset_realtime(struct timespec *x) {
 	context->init_time.tv_sec = x->tv_sec;
 	context->init_time.tv_usec = x->tv_nsec/1000;
 	context->ts_counter = 0;
+	last_time.tv_sec = x->tv_sec;
+	last_time.tv_usec = x->tv_nsec/1000;
 	return 0;
 }
 
+
 inline void rtdal_time_ts_inc() {
+	assert(context);
+
+#ifdef TS_INC_CHECK_TIME
+	struct timespec x;
+	time_t x2,diff;
+
+	if (clock_gettime(CLOCK_REALTIME,&x)) {
+		RTDAL_SYSERROR("clock_gettime");
+		return -1;
+	}
+	x2.tv_sec=x.tv_sec;
+	x2.tv_usec=x.tv_nsec/1000;
+	timersub(&x2,&last_time,&diff);
+	if (diff.tv_usec > 0.5*context->ts_len_us) {
+		context->ts_counter++;
+	}
+#else
 	context->ts_counter++;
+#endif
 }
 
 /**

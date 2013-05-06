@@ -45,7 +45,7 @@ void sort_b(float m[])
 	int ord[Mmax];
 	int stop = 0;
 	float aux;
-	int i_indx, j_indx;
+	int i_indx=0, j_indx=0;
 
 	// initialization
 	for (i=0; i<M; i++)

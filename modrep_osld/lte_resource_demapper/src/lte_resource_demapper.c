@@ -71,6 +71,7 @@ int initialize() {
 	grid.cfi = -1;
 	grid.nof_pdsch = 0;
 	grid.nof_pdcch = 0;
+	grid.verbose=0;
 
 	subframe_idx_id = param_id("subframe_idx");
 	if (!subframe_idx_id) {
@@ -133,7 +134,7 @@ int work(void **inp, void **out) {
 	}
 
 	if (channels_init_grid(channel_ids, nof_channels)) {
-		moderror("Initiating resource grid\n");
+		moddebug("Initiating resource grid\n",0);
 		return 0;
 	}
 

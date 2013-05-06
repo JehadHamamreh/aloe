@@ -4,7 +4,7 @@ modules:
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
-		mopts=5;
+		mopts=3.9;
 		variables=(
 			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=1.5;});
 	};
@@ -12,7 +12,7 @@ modules:
 	descrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=3;
+		mopts=2.14;
 		variables=({name="subframe";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
 			{name="channel";value=3},{name="hard";value=0});
 	};
@@ -20,7 +20,7 @@ modules:
 	unratematching:
 	{
 		binary="modrep_osld/liblte_ctrl_ratematching.so";	
-		mopts=3;
+		mopts=1.8;
 		variables=(
 			{name="direction";value=1},{name="S";value=120}
 		);
@@ -29,7 +29,7 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/libgen_viterbi.so";	
-		mopts=50;
+		mopts=35.1;
 		variables=(
 			{name="constraint_length";value=7},{name="rate";value=3},
 			{name="generator_0";value=91},{name="generator_1";value=127},{name="generator_2";value=117}
@@ -39,14 +39,14 @@ modules:
 	crc_descramble:
 	{
 		binary="modrep_osld/liblte_crc_scrambling.so";
-		mopts=2;
+		mopts=1.16;
 		variables=({name="direction";value=0;},{name="channel";value=1;},{name="nof_ports";value=1;});
 	};	
 
 	crc_check:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=5;
+		mopts=1.55;
 		variables=({name="direction";value=1},{name="long_crc";value=16;}
 					/*,{name="print_nof_pkts";value=10000} */
 			); 
@@ -55,7 +55,7 @@ modules:
 	unpack:
 	{
 		binary="modrep_osld/liblte_bch_pack.so";	
-		mopts=3;
+		mopts=1.1;
 		variables=(
 			{name="direction";value=1}
 		);

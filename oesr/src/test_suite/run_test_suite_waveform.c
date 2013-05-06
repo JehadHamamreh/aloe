@@ -1,11 +1,11 @@
 #include <stdlib.h>
+#include "rtdal.h"
 #include "defs.h"
 #include "str.h"
 #include "oesr_man.h"
 #include "waveform.h"
 #include "nod_waveform.h"
 #include "mempool.h"
-#include "rtdal.h"
 
 /* in a multi-processing environment, this file wont be included */
 #include "nod_anode.h"
@@ -25,7 +25,7 @@ int print_execinfo(waveform_t *waveform, int tslot_us) {
 	const char *t;
 	int total_cpu=0, total_max_cpu=0;
 	printf(" ========================= Execinfo: %s ==============\n\n",waveform->name);
-	printf(" Name\t\t\t\t  Mean Exec (us)   Max Exec (us)   Max Exec (ts) Processor Id:Pos\n");
+	printf(" Name\t\t\t\t  Mean Exec (us)   Max Exec (us)   Time slot Processor Id:Pos\n");
 	for (i=0;i<waveform->nof_modules;i++) {
 		if (strlen(waveform->modules[i].name)<7) {
 			t="\t\t\t\t";
@@ -36,9 +36,9 @@ int print_execinfo(waveform_t *waveform, int tslot_us) {
 		} else {
 			t="\t";
 		}
-		printf(" %s%s%16.2f%16d%16d%18d:%d\n",waveform->modules[i].name,t,
+		printf(" %s%s%16.2f%16d%12d%18d:%d\n",waveform->modules[i].name,t,
 				waveform->modules[i].execinfo.mean_exec_us,
-				waveform->modules[i].execinfo.max_exec_us,waveform->modules[i].execinfo.max_exec_ts,
+				waveform->modules[i].execinfo.max_exec_us,waveform->modules[i].execinfo.module_ts,
 				waveform->modules[i].processor_idx,waveform->modules[i].exec_position);
 		total_cpu += waveform->modules[i].execinfo.t_exec[0].tv_usec;
 		total_max_cpu += waveform->modules[i].execinfo.max_exec_us;
@@ -48,23 +48,22 @@ int print_execinfo(waveform_t *waveform, int tslot_us) {
 	return 0;
 }
 
+rtdal_machine_t machine;
 
 void *_run_main(void *arg) {
 	int c;
 	int tslen;
 	int mode;
-	rtdal_machine_t machine;
 
 	rtdal_machine(&machine);
 	tslen = machine.ts_len_us;
 
-	//rtdal_task_print_sched();
-
-	/* this will be done by the module */
-	if (nod_anode_initialize(2)) {
+	/* this would be done by the node */
+	if (nod_anode_initialize(&machine,2)) {
 		aerror("initializing node\n");
 		return NULL;
 	}
+
 
 	/* from here, this is the oesr_man interface only */
 	if (oesr_man_initialize(NULL,2)) {

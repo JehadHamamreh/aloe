@@ -18,11 +18,12 @@
 
 #include <stdlib.h>
 #include <dlfcn.h>
-#include "defs.h"
+#include "rtdal.h"
+#include "rtdal_context.h"
 #include "rtdal_error.h"
 #include "rtdal_process.h"
-#include "rtdal.h"
 #include "pipeline.h"
+#include "defs.h"
 
 lstrdef(tmp);
 lstrdef(tmp2);
@@ -30,9 +31,9 @@ lstrdef(tmp3);
 
 extern pid_t kernel_pid;
 
-extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
+extern rtdal_context_t rtdal;
 
-extern char libs_path[255];
+extern int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
 
 /**
  * Loads a process binary into memory. The process must have been created using
@@ -55,7 +56,8 @@ int rtdal_process_launch(rtdal_process_t *obj) {
 
 	snprintf(tmp,LSTR_LEN,"/tmp/am_%s_%d_%d.so",name,
 			obj->pid,kernel_pid);
-	snprintf(tmp2,LSTR_LEN,"cp %s/%s %s",libs_path,obj->attributes.binary_path,tmp);
+	snprintf(tmp2,LSTR_LEN,"cp %s/%s %s",rtdal.machine.path_to_libs,
+			obj->attributes.binary_path,tmp);
 	if (system(tmp2) == -1) {
 		aerror("Error removing file\n");
 		return -1;
@@ -91,7 +93,7 @@ int rtdal_process_launch(rtdal_process_t *obj) {
 int rtdal_process_remove(r_proc_t process) {
 	RTDAL_ASSERT_PARAM(process);
 	rtdal_process_t *obj = (rtdal_process_t*) process;
-	hdebug("pid=%d\n",obj->pid)
+	hdebug("pid=%d\n",obj->pid);
 
 	if (pipeline_remove((pipeline_t*) obj->pipeline, obj)) {
 		return -1;
