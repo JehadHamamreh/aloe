@@ -107,7 +107,7 @@ int work(void **inp, void **out) {
 	float *output_f;
 
 	rcv_samples = get_input_samples(0);
-	if (!rcv_samples) {
+	if (!rcv_samples || !out[0] || rcv_samples > 3*6114) {
 		return 0;
 	}
 
