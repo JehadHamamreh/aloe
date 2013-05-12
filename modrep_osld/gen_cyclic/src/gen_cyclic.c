@@ -25,14 +25,14 @@
 
 #include "gen_cyclic.h"
 
-pmid_t ofdm_symbol_sz_id;
+pmid_t dft_size_id;
 pmid_t cyclic_prefix_sz_id;
 pmid_t first_cyclic_prefix_sz_id;
 int direction;
 
 /**@ingroup gen_cyclic
  *
- * \param ofdm_symbol_sz Size of the OFDM symbol (in samples). This parameter is mandatory.
+ * \param dft_size Size of the OFDM symbol (in samples). This parameter is mandatory.
  * \param cyclic_prefix_sz Size of the cyclic prefix to add to each received symbol (in samples)
  * This parameter is mandatory.
  * \param first_cyclic_prefix_sz Size of the cyclic prefix to add to the first received symbol
@@ -40,10 +40,12 @@ int direction;
  */
 int initialize() {
 
-	ofdm_symbol_sz_id = param_id("ofdm_symbol_sz");
-	if (!ofdm_symbol_sz_id) {
-		moderror("Parameter ofdm_symbol_sz undefined\n");
-		return -1;
+	dft_size_id = param_id("dft_size");
+	if (!dft_size_id) {
+/*		moderror("Parameter dft_size undefined\n");
+		return -1;*/
+		modinfo("Parameter dft_size not defined. Assuming "
+		"dft_size = number of input samples on interface 0.\n");
 	}
 
 	cyclic_prefix_sz_id = param_id("cyclic_prefix_sz");
@@ -73,18 +75,29 @@ int initialize() {
 int work(void **inp, void **out) {
 	int i, j;
 	int nof_ofdm_symb;
-	int ofdm_symbol_sz, cyclic_prefix_sz, first_cyclic_prefix_sz;
-	int k, nof_ofdm_symbols_per_slot;
+	int dft_size, cyclic_prefix_sz, first_cyclic_prefix_sz;
+	int k, nof_ofdm_symbols_per_slot,rcv_samples;
 	int cnt;
 	int cpy;
 	div_t symbols;
 	input_t *input;
 	output_t *output;
 
-	if (param_get_int(ofdm_symbol_sz_id, &ofdm_symbol_sz) != 1) {
-		moderror("getting parameter ofdm_symbol_sz\n");
-		return -1;
+	if (param_get_int(dft_size_id, &dft_size) != 1) {
+		/*moderror("getting parameter dft_size\n");
+		return -1;*/
+		dft_size = get_input_samples(0);
+		moddebug("Parameter dft_size not defined. Assuming %d"
+		" (number of input samples on interface 0).\n", dft_size);
 	}
+
+	if (dft_size == 0) {
+		modinfo("dft_size = 0. Returning.\n");
+		return 0;
+	} else {
+		moddebug("dft_size = %d.\n", dft_size);
+	}
+
 	if (param_get_int(cyclic_prefix_sz_id, &cyclic_prefix_sz) != 1) {
 		moderror("getting parameter cyclic_prefix_sz\n");
 		return -1;
@@ -97,9 +110,9 @@ int work(void **inp, void **out) {
 	} else {
 		first_cyclic_prefix_sz = cyclic_prefix_sz;
 	}
-	if (first_cyclic_prefix_sz > ofdm_symbol_sz || cyclic_prefix_sz > ofdm_symbol_sz) {
-		moderror_msg("Error with parameters ofdm_symbol_sz=%d, cyclic_prefix_sz=%d, "
-				"first_cyclic_prefix_sz=%d\n",ofdm_symbol_sz,cyclic_prefix_sz,first_cyclic_prefix_sz);
+	if (first_cyclic_prefix_sz > dft_size || cyclic_prefix_sz > dft_size) {
+		moderror_msg("Error with parameters dft_size=%d, cyclic_prefix_sz=%d, "
+				"first_cyclic_prefix_sz=%d\n",dft_size,cyclic_prefix_sz,first_cyclic_prefix_sz);
 		return -1;
 	}
 
@@ -112,14 +125,15 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
+		rcv_samples = get_input_samples(i);
+		moddebug("rcv_len=%d samples \n",rcv_samples);
 
-		symbols = div(get_input_samples(i),ofdm_symbol_sz);
+		symbols = div(rcv_samples,dft_size);
 
 		if (symbols.rem) {
 			moderror_msg("Number of input samples (%d) must be "
-			"integer multiple of ofdm_symbol_sz (%d) on interface "
-			"%d\n",get_input_samples(i),ofdm_symbol_sz,i);
+			"integer multiple of dft_size (%d) on interface "
+			"%d\n",rcv_samples,dft_size,i);
 			return -1;
 		}
 
@@ -135,11 +149,11 @@ int work(void **inp, void **out) {
 				} else {
 					cpy = cyclic_prefix_sz;
 				}
-				memcpy(output, &input[ofdm_symbol_sz-cpy], sizeof(input_t)*cpy);
-				memcpy(&output[cpy], input, sizeof(input_t)*ofdm_symbol_sz);
-				input += ofdm_symbol_sz;
-				output += ofdm_symbol_sz+cpy;
-				cnt += ofdm_symbol_sz+cpy;
+				memcpy(output, &input[dft_size-cpy], sizeof(input_t)*cpy);
+				memcpy(&output[cpy], input, sizeof(input_t)*dft_size);
+				input += dft_size;
+				output += dft_size+cpy;
+				cnt += dft_size+cpy;
 			}
 
 			set_output_samples(i, cnt);

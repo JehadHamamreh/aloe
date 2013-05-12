@@ -24,14 +24,14 @@
 
 #include "gen_remcyclic.h"
 
-pmid_t ofdm_symbol_sz_id;
+pmid_t dft_size_id;
 pmid_t cyclic_prefix_sz_id;
 pmid_t first_cyclic_prefix_sz_id;
 int direction;
 
 /**@ingroup gen_remcyclic
  *
- * \param ofdm_symbol_sz Size of the OFDM symbol (in samples). This parameter is mandatory.
+ * \param dft_size Size of the OFDM symbol (in samples). This parameter is mandatory.
  * \param cyclic_prefix_sz Size of the cyclic prefix to add to each received symbol (in samples)
  * This parameter is mandatory.
  * \param first_cyclic_prefix_sz Size of the cyclic prefix to add to the first received symbol
@@ -39,10 +39,12 @@ int direction;
  */
 int initialize() {
 
-	ofdm_symbol_sz_id = param_id("ofdm_symbol_sz");
-	if (!ofdm_symbol_sz_id) {
-		moderror("Parameter ofdm_symbol_sz undefined\n");
-		return -1;
+	dft_size_id = param_id("dft_size");
+	if (!dft_size_id) {
+		/*moderror("Parameter dft_size undefined\n");
+		return -1;*/
+		modinfo("Parameter dft_size not defined. Assuming "
+		"dft_size = number of input samples on interface 0 - cyclic_prefix_sz.\n");
 	}
 
 	cyclic_prefix_sz_id = param_id("cyclic_prefix_sz");
@@ -71,17 +73,13 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int i, j;
-	int ofdm_symbol_sz, cyclic_prefix_sz, first_cyclic_prefix_sz;
-	int k, nof_ofdm_symbols_per_slot;
+	int dft_size, cyclic_prefix_sz, first_cyclic_prefix_sz;
+	int k, nof_ofdm_symbols_per_slot, rcv_samples;
 	int cpy;
 	int cnt;
 	input_t *input;
 	output_t *output;
 
-	if (param_get_int(ofdm_symbol_sz_id, &ofdm_symbol_sz) != 1) {
-		moderror("getting parameter ofdm_symbol_sz\n");
-		return -1;
-	}
 	if (param_get_int(cyclic_prefix_sz_id, &cyclic_prefix_sz) != 1) {
 		moderror("getting parameter cyclic_prefix_sz\n");
 		return -1;
@@ -94,9 +92,26 @@ int work(void **inp, void **out) {
 	} else {
 		first_cyclic_prefix_sz = cyclic_prefix_sz;
 	}
-	if (first_cyclic_prefix_sz > ofdm_symbol_sz || cyclic_prefix_sz > ofdm_symbol_sz) {
-		moderror_msg("Error with parameters ofdm_symbol_sz=%d, cyclic_prefix_sz=%d, "
-				"first_cyclic_prefix_sz=%d\n",ofdm_symbol_sz,cyclic_prefix_sz,first_cyclic_prefix_sz);
+
+	if (param_get_int(dft_size_id, &dft_size) != 1) {
+		/*moderror("getting parameter dft_size\n");
+		return -1;*/
+		dft_size = get_input_samples(0)-cyclic_prefix_sz;
+		moddebug("Parameter dft_size not defined. Assuming %d"
+		" (number of input samples on interface 0 - cyclic_prefix_sz)."
+		"\n", dft_size);
+	}
+
+	if (dft_size <= 0) {
+		modinfo("dft_size <= 0. Returning.\n");
+		return 0;
+	} else {
+		moddebug("dft_size = %d.\n", dft_size);
+	}
+
+	if (first_cyclic_prefix_sz > dft_size || cyclic_prefix_sz > dft_size) {
+		moderror_msg("Error with parameters dft_size=%d, cyclic_prefix_sz=%d, "
+				"first_cyclic_prefix_sz=%d\n",dft_size,cyclic_prefix_sz,first_cyclic_prefix_sz);
 		return -1;
 	}
 
@@ -110,30 +125,31 @@ int work(void **inp, void **out) {
 		cnt=0;
 		input = inp[i];
 		output = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
+		rcv_samples = get_input_samples(i);
+		moddebug("rcv_len=%d samples \n",rcv_samples);
 
-		if (get_input_samples(i) > 0) {
+		if (rcv_samples > 0) {
 			j = 0;
 			k = 0;
-			while (cnt < get_input_samples(i)) {
+			while (cnt < rcv_samples) {
 				if (j == k*nof_ofdm_symbols_per_slot) {
 					cpy = first_cyclic_prefix_sz;
 					k++;
 				} else {
 					cpy = cyclic_prefix_sz;
 				}
-				memcpy(output,&input[cpy],sizeof(input_t)*ofdm_symbol_sz);
-				input += ofdm_symbol_sz+cpy;
-				output += ofdm_symbol_sz;
-				cnt += ofdm_symbol_sz+cpy;
+				memcpy(output,&input[cpy],sizeof(input_t)*dft_size);
+				input += dft_size+cpy;
+				output += dft_size;
+				cnt += dft_size+cpy;
 				j++;
 			}
-			if (get_input_samples(i) != cnt) {
+			if (rcv_samples != cnt) {
 				moderror_msg("Number of input samples (%d) should be "
-				"equal to %d on interface %d\n",get_input_samples(i),cnt,i);
+				"equal to %d on interface %d\n",rcv_samples,cnt,i);
 				return -1;
 			}
-			set_output_samples(i, j*ofdm_symbol_sz);
+			set_output_samples(i, j*dft_size);
 		}
 	}
 	return 0;
