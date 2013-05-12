@@ -43,15 +43,18 @@ int get_input_sample_sz(int data_type) {
 /**
  * @ingroup Zero padding/unpadding
  * This module has two operational modes.
- * Mode A (direction = 0): Pads pre_padding and post_padding zeros to
- * each of the nof_packets data packets
- * Mode B (direction != 0): Eliminates pre_padding and post_padding zeros
- * from each of the nof_packets data packets
+ * Zero-padding mode (direction = 0): Pads pre_padding and post_padding zeros
+ * to each of the nof_packets data packets
+ * Sample-unpadding mode (direction != 0): Eliminates pre_padding and
+ * post_padding samples from each of the nof_packets data packets
  *
- * \param data_type Specify data type: 0 for _Complex float, 1 for real, 2 for char (default: 0)
+ * \param data_type Specify data type: 0 for _Complex float, 1 for real, 2 for
+ * char (default: 0)
  * \param direction Padding if 0 and unpadding otherwise (default: 0)
- * \param pre_padding Number of samples to be added to/ eliminated from the beginning of the packet
- * \param post_padding Number of samples to be added to/ eliminated from the end of the packet
+ * \param pre_padding Number of samples to be added to/ eliminated from the
+ * beginning of the packet
+ * \param post_padding Number of samples to be added to/ eliminated from the
+ * end of the packet
  * \param nof_packets Number of data packets that the input stream contains
  *
  * \returns This function returns 0 on success or -1 on error
@@ -66,10 +69,10 @@ int initialize() {
 
 	input_sample_sz = get_input_sample_sz(data_type);
 	output_sample_sz = input_sample_sz;
-	modinfo_msg("Chosed data type %d sample_sz=%d\n",data_type, input_sample_sz);
+	moddebug("Chosen data type %d sample_sz=%d\n",data_type, input_sample_sz);
 
 	if (param_get_int(param_id("direction"),&direction) != 1) {
-		modinfo("Parameter direction undefined. Assuming padding.\n");
+		modinfo("Parameter direction undefined. Assuming padding mode.\n");
 		direction = 0;
 	}
 
@@ -105,6 +108,7 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int i, in_pkt_len, out_pkt_len, j;
+	int rcv_samples;
 
 	char *input, *output;
 
@@ -115,15 +119,20 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
+		rcv_samples = get_input_samples(i);
+		moddebug("%d samples received on input interface %d.\n",rcv_samples,i);
+		if (rcv_samples == 0) {
+			moddebug("%d samples to process. Returning.\n", rcv_samples);
+			continue;
+		}
 
-		if ((get_input_samples(i)) % nof_packets) {
-			moderror_msg("Received samples (%d) should multiple of nof_packets (%d)\n",
-					get_input_samples(i), nof_packets);
+		if ((rcv_samples) % nof_packets) {
+			moderror_msg("Received samples (%d) should multiple of "
+			"nof_packets (%d)\n", rcv_samples, nof_packets);
 			return -1;
 		}
 
-		in_pkt_len = get_input_samples(i) / nof_packets;
+		in_pkt_len = rcv_samples / nof_packets;
 		if (direction) {
 			out_pkt_len = in_pkt_len - pre_padding - post_padding;
 		} else {
@@ -142,6 +151,7 @@ int work(void **inp, void **out) {
 					memset(outaddr(pre_padding+in_pkt_len),0,input_sample_sz*post_padding);
 				}
 			}
+			moddebug("%d samples sent to output interface %d.\n",out_pkt_len*nof_packets, i);
 			set_output_samples(i,out_pkt_len*nof_packets);
 		}
 
