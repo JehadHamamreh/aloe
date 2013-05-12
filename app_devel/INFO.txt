@@ -1,5 +1,7 @@
-Data and control channels
+Test waveforms (WFs)
+WFs build to test DSP blocks or processing chains.
 
 Execute WF:
 ../aloe/app_devel$ ../build/rtdal_lnx/runcf ./viterbi.app ./config
-
+../aloe/app_devel$ ../build/rtdal_lnx/runcf ./pdcch.app ./config
+../aloe/app_devel$ ../build/rtdal_lnx/runcf ./pbbch.app ./config
