@@ -126,7 +126,7 @@ int work(void **inp, void **out) {
 	snd_samples = generators[i].work(out[0],block_length);
 
 #ifdef _COMPILE_ALOE
-	moddebug("Sent %d samples at ts=%d\n",snd_samples,oesr_tstamp(ctx));
+	moddebug("%d bytes sent at ts=%d\n",snd_samples,oesr_tstamp(ctx));
 #endif
 	return snd_samples;
 }
