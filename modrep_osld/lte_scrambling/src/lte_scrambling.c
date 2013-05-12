@@ -204,12 +204,12 @@ int work(void **inp, void **out) {
 
 	struct ul_params uparams;
 
-#ifdef _COMPILE_ALOE
-	moddebug("ts=%d rcv_samples=%d\n",oesr_tstamp(ctx),get_input_samples(0));
-#endif
 
 	rcv_samples = get_input_samples(0);
 	if (!rcv_samples) {
+#ifdef _COMPILE_ALOE
+		moddebug("ts=%d rcv_samples=%d.\n",oesr_tstamp(ctx),rcv_samples);
+#endif
 		return 0;
 	}
 
@@ -257,13 +257,22 @@ int work(void **inp, void **out) {
 	moddebug("ts=%d subframe=%d\n",oesr_tstamp(ctx),subframe);
 #endif
 
+	snd_samples = rcv_samples;
 	if (hard) { /* bits (scrambling, hard descrambling) */
+		#ifdef _COMPILE_ALOE
+			moddebug("ts=%d rcv_samples=%d bits (char)\n",oesr_tstamp(ctx),rcv_samples);
+		#endif
 		if (ul) { /* Check for placeholder bits */
 			identify_xy(input_b, rcv_samples, &uparams);
 		}
 		scramble(input_b, output_b, rcv_samples, c[subframe], direct, sample);
+		moddebug("snd_samples=%d bits (char)\n.", snd_samples);
 	} else { /* soft bits, i.e., floats (descrambling) */
+		#ifdef _COMPILE_ALOE
+			moddebug("ts=%d rcv_samples=%d soft 'bits' (float)\n",oesr_tstamp(ctx),rcv_samples);
+		#endif
 		soft_scrambling(input_f, output_f, rcv_samples, c[subframe], sample);
+		moddebug("snd_samples=%d soft 'bits' (float)\n.", snd_samples);
 	}
 
 	if (ul) {
@@ -271,7 +280,6 @@ int work(void **inp, void **out) {
 		set_xy(output_b, uparams);
 	}
 
-	snd_samples = rcv_samples;
 	return snd_samples;
 }
 
