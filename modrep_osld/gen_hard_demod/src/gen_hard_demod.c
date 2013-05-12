@@ -36,8 +36,8 @@ static int in_real=0;
  *
  * Modulation types: BPSK, QPSK, QAM16, QAM64.
  *
- * \param modulation Modulation index (0: BPSK, 1: QPSK, 2: QAM16, 3: QAM64).
- * Default: 1 (QPSK).
+ * \param modulation Modulation index (1: BPSK, 2: QPSK, 4: QAM16, 6: QAM64).
+ * Default: 1 (BPSK).
  *
  * \returns This function returns 0 on success or -1 on error
  */
@@ -92,14 +92,14 @@ int work(void **inp, void **out) {
 
 	/* Dynamically obtain modulation type */
 	if (param_get_int(modulation_id, &modulation) != 1) {
-		moderror("Error getting 'modulation' parameter. Assuming QPSK.\n");
-		modulation = QPSK;
+		moderror("Error getting 'modulation' parameter. Assuming BPSK.\n");
+		modulation = BPSK;
 	}
 
 	/* Verify parameters */
-	if (modulation > 3 || modulation < 0) {
+	if ((modulation != BPSK) && (modulation != QPSK) && (modulation != QAM16) && (modulation != QAM64)) {
 		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
-				"3 for 16QAM, or 4 for 64QAM\n", modulation);
+				"4 for 16QAM, or 6 for 64QAM\n", modulation);
 		return -1;
 	}
 
