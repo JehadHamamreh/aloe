@@ -90,7 +90,7 @@ void llr_approx(_Complex float *in, output_t *out, int N, int M, int B,
 
 /**
  * @ingroup Soft Modulation Demapping based on the approximate
- * log-likelihood algorithm
+ * log-likelihood ratio algorithm
  * Common algorithm that approximates the log-likelihood ratio. It takes
  * only the two closest constellation symbols into account, one with a '0'
  * and the other with a '1' at the given bit position.
