@@ -111,7 +111,6 @@ int work_ramp_c(_Complex float *output, int block_size) {
 		__imag__ output[j] = block_size-j-1;
 	}
 	return block_size*sizeof(_Complex float);
-
 }
 
 int work_bpsk_re(float *output, int block_size) {
@@ -205,3 +204,4 @@ int work_sin_c(_Complex float *output, int block_size) {
 	}
 	return block_size*sizeof(_Complex float);
 }
+

@@ -18,7 +18,9 @@
 
 #include "str.h"
 
-/**@ingroup source source
+/**@ingroup source 
+ * Defined different sample generators. A generator returns the number of bytes 
+ * according to the number of samples to generate and data type.
  * @{
  */
 #define GENERATOR_BINARY	0
