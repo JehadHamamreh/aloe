@@ -40,8 +40,8 @@ struct Sx Sx;
  * Demodulation modes: hard (not implemented), approximate log-likelihood
  * ratio (LLR), exact LLR (not implemented)
  *
- * \param modulation Modulation index (0: BPSK, 1: QPSK, 2: QAM16, 3: QAM64).
- * Default: 1 (QPSK).
+ * \param modulation Modulation index (1: BPSK, 2: QPSK, 4: QAM16, 6: QAM64).
+ * Default: 1 (BPSK).
  * \param soft Soft demodulation indication (0: exact LLR, 1: approximate LLR).
  * Default: 1 (approximate LLR).
  *
@@ -115,16 +115,18 @@ int work(void **inp, void **out) {
 
 	/* Dynamically obtain demodulation parameters */
 	if (param_get_int(modulation_id, &modulation) != 1) {
-		moderror("Error getting 'modulation' parameter\n");
-		return -1;
+		modulation = BPSK;
+		moddebug("Parameter modulation not specified. Assuming %d (BPSK).\n",modulation);
 	}
 	if (param_get_float(sigma2_id, &sigma2) != 1) {
-		moderror("Error getting noise variance (sigma2) parameter\n");
-		return -1;
+		/*moderror("Error getting noise variance (sigma2) parameter\n");
+		return -1;*/
+		sigma2 = 1.0;
+		moddebug("Parameter sigma2 (noise variance) not specified. Assuming %d.\n",sigma2);
 	}
 
 	/* Verify parameters */
-	if (modulation > 6 || modulation < 0) {
+	if ((modulation != BPSK) && (modulation != QPSK) && (modulation != QAM16) && (modulation != QAM64)) {
 		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
 				"4 for 16QAM, or 6 for 64QAM\n", modulation);
 		return -1;
@@ -177,6 +179,7 @@ int work(void **inp, void **out) {
 		}
 	}
 	snd_samples = rcv_samples*bits_per_symbol;
+	moddebug("snd_samples=%d soft 'bits' (float).\n",snd_samples);
 	return snd_samples;
 }
 
