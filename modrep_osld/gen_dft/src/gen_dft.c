@@ -53,7 +53,7 @@ _Complex float *shift;
 int shift_increment;
 
 pmid_t df_id, fs_id;
-int previous_df, previous_fs;
+int previous_df, previous_fs, previous_dft_size;
 
 void calculate_shift_vector(_Complex float *comp_shift, int df, int fs, int dft_size);
 void precalculate_shift_vectors(_Complex float *shift_reg, _Complex float *shift_1536);
@@ -110,41 +110,33 @@ void precalculate_shift_vectors(_Complex float *shift_1536, _Complex float *shif
 int process_shift_params(int df, int fs, int dft_size)
 {
 	if (df == df_lte) {
-		switch (fs) {
-			case 1920000:	/* 1.4 MHz LTE mode */
-				shift = precomputed_shift_reg;
-				shift_increment = 16;
-				break;
-			case 3840000:	/* 3 MHz LTE mode */
-				shift = precomputed_shift_reg;
-				shift_increment = 8;
-				break;
-			case 7680000:	/* 5 MHz LTE mode */
-				shift = precomputed_shift_reg;
-				shift_increment = 4;
-				break;
-			case 15360000:	/* 10 MHz LTE mode */
-				shift = precomputed_shift_reg;
-				shift_increment = 2;
-				break;
-			case 23040000:	/* 15 MHz LTE mode */
-				shift = precomputed_shift_1536;
-				shift_increment = 1;
-				break;
-			case 30720000:	/* 20 MHz LTE mode */
-				shift = precomputed_shift_reg;
-				shift_increment = 1;
-				break;
-			default:
-				if (dft_size > MAX_DFT_SIZE) {
-					moderror_msg("Too large DFT size %d. Maximum "
-					"supported size is %d\n", dft_size, MAX_DFT_SIZE);
-					return -1;
-				}
-				calculate_shift_vector(computed_shift, df, fs, dft_size);
-				shift = computed_shift;
-				shift_increment = 1;
-				break;
+		if ((fs == 1920000) && (dft_size == 128)) {	/* 1.4 MHz LTE mode */
+			shift = precomputed_shift_reg;
+			shift_increment = 16;
+		} else if ((fs == 3840000) && (dft_size == 256)) {/* 3 MHz LTE mode */
+			shift = precomputed_shift_reg;
+			shift_increment = 8;
+		} else if ((fs == 7680000) && (dft_size == 512)) {/* 5 MHz LTE mode */
+			shift = precomputed_shift_reg;
+			shift_increment = 4;
+		} else if ((fs == 15360000) && (dft_size == 1024)) {/* 10 MHz LTE mode */
+			shift = precomputed_shift_reg;
+			shift_increment = 2;
+		} else if ((fs == 23040000) && (dft_size == 1536)) {/* 15 MHz LTE mode */
+			shift = precomputed_shift_1536;
+			shift_increment = 1;
+		} else if ((fs == 30720000) && (dft_size == 2048)) {/* 20 MHz LTE mode */
+			shift = precomputed_shift_reg;
+			shift_increment = 1;
+		} else {
+			if (dft_size > MAX_DFT_SIZE) {
+				moderror_msg("Too large DFT size %d. Maximum "
+				"supported size is %d\n", dft_size, MAX_DFT_SIZE);
+				return -1;
+			}
+			calculate_shift_vector(computed_shift, df, fs, dft_size);
+			shift = computed_shift;
+			shift_increment = 1;
 		} 
 	} else {
 		if (dft_size > MAX_DFT_SIZE) {
@@ -216,9 +208,12 @@ int initialize() {
 
 	dft_size_id = param_id("dft_size");
 	if (!dft_size_id) {
-		moderror("Parameter dft_size not defined\n");
-		return -1;
+/*		moderror("Parameter dft_size not defined\n");
+		return -1;*/
+		modinfo("Parameter dft_size not defined. Assuming "
+			"dft_size = number of input samples on interface 0.\n");
 	}
+		
 
 	if (dft_plan_multi_c2c(precomputed_dft_len, (!direction)?FORWARD:BACKWARD, NOF_PRECOMPUTED_DFT,
 			plans)) {
@@ -237,6 +232,7 @@ int initialize() {
 	shift = precomputed_shift_reg;
 	previous_df = df_lte;
 	previous_fs = 1920000;
+	previous_dft_size = 128;
 	shift_increment = 16;
 
 	return 0;
@@ -288,7 +284,8 @@ dft_plan_t* generate_new_plan(int dft_size) {
 
 
 int work(void **inp, void **out) {
-	int i, j, k, nof_fft;
+	int i, j, k;
+	int rcv_samples, nof_ffts;
 	int df, fs;
 	int e;
 	int dft_size;
@@ -296,11 +293,28 @@ int work(void **inp, void **out) {
 	output_t *output;
 	dft_plan_t *plan;
 	
+ 
 	if (param_get_int(dft_size_id,&dft_size) != 1) {
-		moderror("Getting parameter dft_size\n");
-		return -1;
+		dft_size = get_input_samples(0);
+		moddebug("Parameter dft_size not defined. Assuming %d"
+		" (number of input samples on interface 0).\n", dft_size);
+		/*moderror("Getting parameter dft_size\n");
+		return -1;*/
 	}
 
+	if (dft_size == 0) {
+		modinfo("dft_size = 0. Returning.\n");
+		return 0;
+	} else {
+		moddebug("dft_size = %d.\n", dft_size);
+	}
+	
+/*	if (param_get_int(param_id("dft_size"),&dft_size) != 1) {
+		
+		moddebug("Parameter dft_size not defined. Assuming %d"
+			" (number of input samples on interface 0).\n", dft_size);
+	}
+*/
 	plan = find_plan(dft_size);
 	if (!plan) {
 		if ((plan = generate_new_plan(dft_size)) == NULL) {
@@ -321,30 +335,37 @@ int work(void **inp, void **out) {
 			moderror("Sampling rate fs must be larger than 0.\n");
 			return -1;
 		}
-		if ((df != previous_df) || (fs != previous_fs)) {
+		if ((df != previous_df) || (fs != previous_fs) || (dft_size != previous_dft_size)) {
 			e = process_shift_params(df, fs, dft_size);
 			if (e < 0) {
 				return -1;
 			}
 			previous_df = df;
 			previous_fs = fs;
+			previous_dft_size = dft_size;
 		}
 	}
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
+		rcv_samples = get_input_samples(i);
+		moddebug("%d samples received on interface %d.\n",rcv_samples, i);
+		if (rcv_samples == 0) {
+			moddebug("%d samples to process. Returning.\n", rcv_samples);
+			continue;
+		}
+		moddebug("Processing %d samples...\n",rcv_samples);
 
-		if (get_input_samples(i) % dft_size) {
-			moderror_msg("Number of input samples (%d) must be multiple of dft_size (%d), in "
-					"interface %d\n",get_input_samples(i),dft_size,i);
+		if (rcv_samples % dft_size) {
+			moderror_msg("Number of input samples (%d) not integer multiple"
+			" of dft_size (%d) on interface %d\n",rcv_samples,dft_size,i);
 			return -1;
 		}
 
-		nof_fft = get_input_samples(i)/dft_size;
+		nof_ffts = rcv_samples/dft_size;
 
-		for (j=0;j<nof_fft;j++) {
+		for (j=0;j<nof_ffts;j++) {
 			if ((df != 0) && (direction == FORWARD)) { /* Rx: shift before FFT */
 				for (k=0;k<dft_size;k++) {
 					input[j*dft_size+k] *= shift[k*shift_increment];
@@ -360,7 +381,8 @@ int work(void **inp, void **out) {
 			}
 		}
 
-		set_output_samples(i,dft_size*nof_fft);
+		set_output_samples(i,dft_size*nof_ffts);
+		moddebug("%d samples sent to output interface %d.\n",dft_size*nof_ffts,i);
 	}
 
 	return 0;
