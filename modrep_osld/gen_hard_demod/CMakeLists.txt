@@ -4,7 +4,7 @@
 set(LIBRARIES m rt)
 
 # set-up program includes here
-include_directories(/usr/local/include/)
+include_directories(/usr/local/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 
