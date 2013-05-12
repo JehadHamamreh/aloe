@@ -1,5 +1,5 @@
 Data and control channels
 
 Execute WF:
-../aloe/app_video$ ../build/rtdal_lnx/runcf ./osld_ul.app ./config
+../aloe/app_video$ ../build/rtdal_lnx/runcf ./osld_video.app ./config
 
