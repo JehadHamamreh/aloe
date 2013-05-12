@@ -18,8 +18,10 @@
 
 
 /**
- * @defgroup gen_soft_demod gen_soft_demod
- * Document here your module
+ * @defgroup Soft Modulation Demapping
+ * Maps the modulated symbols to soft "bits" (floating point numbers) computing
+ * the exact or approximate log-likelihood ratio, as indicated by a parameter.
+ * The supported modulation types are BPSK, QPSK, 16QAM and 64QAM.
  * @{
  */
 #ifndef DEFINE_H

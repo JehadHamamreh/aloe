@@ -18,8 +18,11 @@
 
 
 /**
- * @defgroup gen_hard_demod gen_hard_demod
- * Document here your module
+ * @defgroup Hard demodulator
+ * Maps modulated symbols to bits (char). The supported modulation types are 
+ * BPSK, QPSK, 16QAM and 64QAM. Each modulated symbol is mapped to 1 (BPSK), 
+ * 2 (QPSK), 4 (16QAM), or 6 (64QAM) bits, based on the symbol location in the 
+ * constellation diagram and the defined thresholds.
  * @{
  */
 #ifndef DEFINE_H

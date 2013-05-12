@@ -20,9 +20,8 @@
 
 /** @defgroup gen_modulator gen_modulator
  *
- * Modulates the input bit stream producing a stream of complex samples.
- *
- * Several modulations are supported (see modulator.h). The symbol levels are also defined in this file.
+ * Maps the input bit stream to a (complex valued) symbol stream. X bits define a modulation symbol, 
+ * where X depends on the chosen modulation type. Several modulation types are supported (see modulator.h).
  *
  * @{
  */

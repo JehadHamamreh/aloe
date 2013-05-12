@@ -35,8 +35,10 @@ int modulate_real(input_t *input, float *output, int nof_bits);
 
 
 /**@ingroup gen_modulator
+ * Maps the input bit stream to a (complex valued) symbol stream. X bits define a modulation symbol, 
+ * where X depends on the chosen modulation type.
  *
- * \param modulation Choose between 0: BPŜK, 1: QPSK, 2: QAM16 or 3: QAM64. Default is BPSK.
+ * \param modulation Choose 1 for BPSK, 2 for QPSK, 4 for QAM16 or 6 for QAM64. Default is BPSK.
  */
 int initialize() {
 
@@ -69,13 +71,23 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 
-	param_get_int(modulation_id,&modulation);
+	/* Dynamically obtain demodulation parameters */
+	if (param_get_int(modulation_id, &modulation) != 1) {
+		modinfo("Parameter modulation not specified. Assuming BPSK.\n");
+		modulation = BPSK;
+	}
+	/* Verify modulation parameter */
+	if ((modulation != BPSK) && (modulation != QPSK) && (modulation != QAM16) && (modulation != QAM64)) {
+		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
+				"4 for 16QAM, or 6 for 64QAM\n", modulation);
+		return -1;
+	}
 
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
 		outreal = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
+		moddebug("rcv_len=%d input bits\n",get_input_samples(i));
 
 		if (get_input_samples(i)) {
 			if (out_real) {
@@ -87,8 +99,12 @@ int work(void **inp, void **out) {
 				return -1;
 			}
 			set_output_samples(i,out_len);
-#ifdef _COMPILE_ALOE
-			moddebug("ts=%d, snd=%d\n",oesr_tstamp(ctx),out_len);
+#ifdef _COMPILE_ALOE	
+			if (out_real) {
+				moddebug("ts=%d, snd=%d real modulation symbols\n",oesr_tstamp(ctx),out_len);
+			} else {
+				moddebug("ts=%d, snd=%d complex modulation symbols\n",oesr_tstamp(ctx),out_len);
+			}
 #endif
 		}
 	}
@@ -115,6 +131,8 @@ int modulate_real(input_t *input, float *output, int nof_bits) {
 		}
 		break;
 	default:
+		moddebug("Real modulation symbols, but modulation type %d "
+		"rather than BPSK (%d) chosen.\n", modulation, BPSK);
 		return -1;
 	}
 	return nof_symbols;
@@ -154,7 +172,7 @@ int modulate(input_t *input, output_t *output, int nof_bits) {
 		}
 	break;
 	default:
-		moderror_msg("Unknown modulation %d\n",modulation);
+		moderror_msg("Unknown modulation type %d\n",modulation);
 		return -1;
 	}
 	return nof_symbols;
