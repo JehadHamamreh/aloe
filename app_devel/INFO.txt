@@ -1,0 +1,5 @@
+Data and control channels
+
+Execute WF:
+../aloe/app_devel$ ../build/rtdal_lnx/runcf ./viterbi.app ./config
+

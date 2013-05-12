@@ -1,0 +1,5 @@
+Data and control channels
+
+Execute WF:
+../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_ul.app ./config
+

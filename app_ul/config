@@ -1,0 +1,38 @@
+
+rtdal:
+{
+	enable_usrp=false; 
+							
+	timer_mode_single=true; /* If use_usrp=true and timer_mode_single=true, the clock source
+								is the GPP. If timer_mode_single=false, clock source is USRP.
+								For Ethernet USRP, use timer_mode_single=true, 
+								For USB USRP, use timer_mode_single=true
+								  
+							   If use_usrp=false, the option timer_mode_single=true creates a 
+							   	timer that synchronizes the pipeline threads. This is recommended
+							   	for best real-time control. 
+							 */
+	
+	time_slot_us=10000; 			/* time slot length, in microseconds
+								IGNORED if use_usrp=true 
+							*/
+	cores="1";				/* Options: 
+								- single value n uses 0..n cores
+								- comma-separated values, e.g. 0,3,5 uses cores 0, 3 and 5. 
+								- to use a single core, use 1, for instance, to use core 1
+							*/
+						
+	path_to_libs="../build/lib";
+	
+};
+
+dac:
+{
+	samp_freq=1920000.0;
+	block_size=1792;
+	rf_freq=900000000.0;
+	rf_gain=0.0;
+	if_bw=8000000.0
+	chain_is_tx=true;
+	sample_is_short=true; // default is false and samples are complex float 
+};

@@ -1,0 +1,14 @@
+Data channel only: 
+
+Source generates 1000 bits
+Coding rate: 1/3 --> 3012 bits
+Rate matching: 2016 bits
+QPSK Modulation: --> 72*14 = 1008 complex symbols
+Transform precoder: 14 DFTs of 72 points each
+IFFT: 14 instances of 128 samples each
+CP: 14 instances 
+
+
+Execute WF:
+../aloe/app_ul$ ../build/rtdal_lnx/runcf ./osld_ul.app ./config
+
