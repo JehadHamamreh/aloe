@@ -7,5 +7,5 @@ Execute Tx WF:
 ../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_tx.app ./config
 
 
-Execute Tx WF:
+Execute Rx WF:
 ../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_rx.app ./config
