@@ -41,18 +41,6 @@ modules:
 		variables=({name="modulation";value=2});
 	};	/* modulation = 1 (BPSK), 2 (QPSK), 4 (16QAM), or 6 (64QAM) */
 
-	dft:
-	{
-		binary="modrep_osld/libgen_dft.so";	
-		mopts=10;
-		instances=1;
-		variables=(
-			{name="dc_offset";value=0},
-			{name="direction";value=0},{name="mirror";value=0},{name="normalize";value=1},
-			{name="dft_size";value=72},{name="psd";value=0},{name="out_db";value=0}
-		);
-	}
-
 };
 
 
@@ -63,7 +51,6 @@ interfaces:
 	{src="coder"; dest="ratematching"},
 	{src="ratematching"; dest="scrambling"},
 	{src="scrambling"; dest="modulator"},
-	{src="modulator"; dest="dft"},
-	{src="dft"; dest="_output"}
+	{src="modulator"; dest="_output"}
 );
 

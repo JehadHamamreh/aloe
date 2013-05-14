@@ -19,7 +19,7 @@ modules:
 		mopts=3;
 		instances=2;
 		variables=(
-			/*{name="dft_size";value=128},*/
+			{name="dft_size";value=128},  /* automatically detected if commented */
 			{name="cyclic_prefix_sz";value=10});
 	};
 
@@ -30,7 +30,7 @@ modules:
 		mopts=3;
 		instances=12;
 		variables=(
-			/*{name="dft_size";value=128},*/
+			{name="dft_size";value=128},  /* automatically detected if commented */
 			{name="cyclic_prefix_sz";value=9});
 	};
 	
@@ -42,7 +42,7 @@ modules:
 		variables=(
 			{name="dc_offset";value=1},
 			{name="direction";value=0},{name="mirror";value=2},{name="normalize";value=1},
-			/*{name="dft_size";value=128},*/
+			{name="dft_size";value=128},  /* automatically detected if commented */
 			{name="psd";value=0},{name="out_db";value=0},
 			{name="df";value=-7500},{name="fs";value=1920000}
 		);

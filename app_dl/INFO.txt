@@ -1,5 +1,11 @@
-Data and control channels
+LTE DL Data and control channels
 
-Execute WF:
+Execute transmitter (Tx) & receiver (Rx) waveform (WF):
 ../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld.app ./config
 
+Execute Tx WF:
+../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_tx.app ./config
+
+
+Execute Tx WF:
+../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_rx.app ./config

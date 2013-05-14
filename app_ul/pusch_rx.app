@@ -1,17 +1,6 @@
 
 modules:
 {
-	idft:
-	{
-		binary="modrep_osld/libgen_dft.so";	
-		mopts=100;
-		instances=1;
-		variables=(
-			{name="dc_offset";value=0},
-			{name="direction";value=1;},{name="mirror";value=0;},{name="normalize";value=1;},
-			{name="dft_size";value=72;},{name="psd";value=0},{name="out_db";value=0}
-		);
-	};
 
 	demodulator:
 	{
@@ -60,8 +49,7 @@ modules:
 
 interfaces:
 (
-	{src="_input"; dest="idft"},		
-	{src="idft"; dest="demodulator"},	
+	{src="_input"; dest="demodulator"},			
 	{src="demodulator"; dest="descrambling"},
 	{src="descrambling"; dest="unratematching"},
 	{src="unratematching"; dest="decoder"},

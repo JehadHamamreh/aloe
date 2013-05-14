@@ -1,4 +1,5 @@
-Data channel only: 
+LTE UL Transmitter and Receiver
+Data channel only (UL-SCH/PUSCH):
 
 Source generates 1000 bits
 Coding rate: 1/3 --> 3012 bits
@@ -9,6 +10,11 @@ IFFT: 14 instances of 128 samples each
 CP: 14 instances 
 
 
-Execute WF:
+Execute transmitter (Tx) and receiver (Rx) waveform (WF):
 ../aloe/app_ul$ ../build/rtdal_lnx/runcf ./osld_ul.app ./config
 
+Execute Tx WF:
+../aloe/app_ul$ ../build/rtdal_lnx/runcf ./osld_ul_tx.app ./config
+
+Execute Rx WF:
+../aloe/app_ul$ ../build/rtdal_lnx/runcf ./osld_ul_rx.app ./config
