@@ -4,7 +4,7 @@ main:
 	/* if set to non-zero, the platform time slot must be integer divisible of waveform_granularity_us */
 	waveform_granularity_us=0;
 	
-	precach_pipeline=true;
+	precach_pipeline=false;
 	auto_ctrl_module="ctrl";
 };
 
@@ -13,20 +13,20 @@ modules:
 	rx:
 	{
 		binary="modrep_default/libfile_source.so";	
-		mopts=8;
-		/*
-		variables=({name="address";value="0.0.0.0"},{name="port";value=10000;}
-		*/
-		variables=({name="file_name";value="output.bin"}
-				,{name="block_length";value=15360}
-			); 
+		mopts=13.0;
+		log=false;
+
+		variables=({name="file_name";value="output.bin"},
+				{name="block_length";value=15360});
 	};
+	
 
 	/* muxes all control messages from other modules */
 	ctrl_mux: 
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=15;
+		mopts=4.0;
+		log=false;
 		variables=(
 			{name="nof_inputs";value=4;},{name="data_type";value=0;});
 	};
@@ -34,11 +34,14 @@ modules:
 	ctrl:
 	{
 		binary="modrep_osld/liblte_ctrl.so";	
-		mopts=100;
+		mopts=35.0;
+		log=true;		
 		variables=(
 			{name="nof_output_data_itf";value=0},
 			{name="mode";value=1}, /* 0 tx, 1 rx, 2 both */
-			{name="mcs_tx";value=9},{name="nof_rbg_tx";value=6},{name="rbg_mask_tx";value=0x3f},
+			{name="mcs_tx";value=9},
+			{name="nof_rbg_tx";value=6},
+			{name="rbg_mask_tx";value=0x3f},
 			{name="nof_prb_tx";value=6},
 			
 			{name="cfi_tx";value=1},
@@ -55,10 +58,16 @@ modules:
 			{name="nof_ports";value=1},
 			{name="cell_id";value=0},{name="nof_osymb_x_subf";value=14},
 			
-			{name="delay_synchro";value=0},
+			{name="delay_synchro_pss";value=0},
+			{name="delay_synchro_sss";value=0},
+			{name="delay_equalizer";value=0},			
 			{name="delay_resdemapp_pbch";value=0},			
+			{name="delay_pbch_rx_descrambling";value=0},			
+			{name="delay_resdemapp_pcfich";value=0},			
+			{name="delay_resdemapp_pdsch";value=0},			
 			{name="delay_pcfich_rx_descrambling";value=0},
 			{name="delay_resdemapp_pdcch";value=0},			
+			{name="delay_pdcch_rx_descrambling";value=0},			
 			{name="delay_pdsch_rx_demodulator";value=0},
 			{name="delay_pdsch_rx_descrambling";value=0},
 			{name="delay_pdsch_rx_unratematching";value=0},
@@ -66,13 +75,56 @@ modules:
 			
 		);
 	};
-			
-	synchro:
+	
+	agc:
 	{
-		binary="modrep_osld/liblte_synchG.so";
-		mopts=5;
-		variables=({name="bypass";value=1},{name="FFTsize";value=128},
-		{name="LTEframe_structtype";value=1;});
+		binary="modrep_osld/libgen_agc.so";	
+		mopts=27.0;
+		log=false;
+		variables=(
+			//{name="power";value=742.0}
+			{name="scale";value=1.0}
+		);
+	};
+		
+	synchro_pss:
+	{
+		binary="modrep_osld/liblte_pss_synch.so";
+		mopts=266.0;
+		log=true;
+		variables=(
+			{name="bypass";value=0},
+			{name="unsync_nof_pkts";value=0},
+			{name="do_cfo";value=1},
+			{name="correlation_threshold";value=10000},
+			{name="input_len";value=1920},{name="N_id_2";value=0});
+	};
+
+	logtime_st: 
+	{
+		binary="modrep_default/liblogtime.so";	
+		mopts=8.0;
+		log=false;
+		variables=({name="bypass";value=1},
+				{name="file_name";value="time_st.log";},{name="log_size";value=100000});
+	};
+	
+	dup:
+	{
+		binary="modrep_default/libdup.so";
+		mopts=11.0;
+		log=false;
+		variables=({name="nof_output_itf";value=2});
+	};
+
+	synchro_sss:
+	{
+		binary="modrep_osld/liblte_sss_synch.so";
+		mopts=52.0;
+		log=true;
+		variables=(
+			{name="correlation_threshold";value=3000},
+			{name="input_len";value=1920},{name="N_id_2";value=0});
 	};
 
 	symb_rx:
@@ -83,14 +135,24 @@ modules:
 	mux_rx:
 	{
 		binary="modrep_osld/libgen_mux.so";	
-		mopts=11;
-		variables=({name="nof_inputs";value=14;},{name="data_type";value=2;});
+		mopts=11.0;
+		log=false;
+		variables=({name="nof_inputs";value=14;},{name="check_all";value=1},{name="data_type";value=2;});
+	};
+
+	equalizer:
+	{
+		binary="modrep_osld/liblte_equalizer.so";	
+		mopts=27.0;
+		log=false;
+		variables=({name="bypass";value=0},{name="ntime";value=4},{name="nfreq";value=10});
 	};
 
 	resdemapp_pbch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=17;
+		mopts=19.0;
+		log=false;		
 		variables=(
 			{name="channel_id_0";value=6},
 			{name="nof_prb";value=6},{name="fft_size";value=128}, /* initially sample at 1.9 MHz, then whatever */
@@ -106,7 +168,8 @@ modules:
 	resdemapp_pcfich:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=18;
+		mopts=22;
+		log=false;		
 		variables=(
 			{name="channel_id_0";value=4},{name="subframe_idx";value=-1});
 	};
@@ -119,7 +182,8 @@ modules:
 	resdemapp_pdcch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=31;
+		mopts=29.0;
+		log=false;		
 		variables=(
 			{name="channel_id_0";value=2},{name="subframe_idx";value=-1});
 	};
@@ -132,7 +196,8 @@ modules:
 	resdemapp_pdsch:
 	{
 		binary="modrep_osld/liblte_resource_demapper.so";	
-		mopts=12;
+		mopts=22.0;
+		log=false;		
 		variables=(
 			{name="channel_id_0";value=0},{name="subframe_idx";value=-1});
 	};
@@ -141,11 +206,20 @@ modules:
 	{
 		include="./pdsch_rx.app";	
 	};
+		
+	logtime_end: 
+	{
+		binary="modrep_default/liblogtime.so";	
+		mopts=4.0;
+		log=false;
+		variables=({name="bypass";value=1},
+				{name="file_name";value="time_end.log";},{name="log_size";value=100000});
+	};
 	
 	sink:
 	{
 		binary="modrep_default/libplp_sink.so";
-		mopts=4;
+		mopts=3;
 		variables=({name="is_complex";value=1},{name="mode";value=0});
 	};	
 	
@@ -154,7 +228,7 @@ modules:
 
 join_stages=
 (
-	("ctrl_mux","ctrl","rx","synchro"),
+	("rx","ctrl_mux","ctrl","agc","synchro_pss","logtime_st","dup","synchro_sss"),
 	
 	("symb_rx_remcyclic_first_0","symb_rx_fft_0"),
 	("symb_rx_remcyclic_0","symb_rx_fft_1"),
@@ -171,59 +245,66 @@ join_stages=
 	("symb_rx_remcyclic_10","symb_rx_fft_12"),
 	("symb_rx_remcyclic_11","symb_rx_fft_13"),
 
-	("mux_rx","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
+	("mux_rx","equalizer","resdemapp_pbch","pbch_rx_demodulator","pbch_rx_descrambling","pbch_rx_unratematching","pbch_rx_decoder","pbch_rx_crc_descramble","pbch_rx_crc_check","pbch_rx_unpack"),	
 	("resdemapp_pcfich","pcfich_rx_demodulation","pcfich_rx_descrambling","pcfich_rx_decoder"),
 	("resdemapp_pdcch","pdcch_rx_descrambling","pdcch_rx_demodulator","pdcch_rx_unratematching","pdcch_rx_decoder","pdcch_rx_crc_check","pdcch_rx_unpack"),
-	("resdemapp_pdsch","pdsch_rx_descrambling","pdsch_rx_demodulator","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","sink")
+	("resdemapp_pdsch","pdsch_rx_demodulator","pdsch_rx_descrambling","pdsch_rx_unratematching","pdsch_rx_decoder","pdsch_rx_uncrc_tb","logtime_end","sink")
 );
 
 interfaces:
 (
 	{src="ctrl_mux";dest="ctrl";delay=0},
 	
-	{src="rx";dest="synchro"},
-	{src="synchro";dest="symb_rx"},
+	{src="rx";dest="agc"},
+	{src="agc";dest="synchro_pss"},
+	{src="synchro_pss";dest="logtime_st"},
+	{src="logtime_st";dest="dup"},
+	{src=("dup",0);dest="synchro_sss"},
+	{src=("dup",1);dest="symb_rx"},
 
 	/* loop back to control */
-	{src=("synchro",1);dest=("ctrl_mux",0);mbpts=0.0;delay=3},
+	{src="synchro_sss";dest=("ctrl_mux",0);mbpts=0.0;delay=3},
 	
-	{src=("symb_rx",0);dest=("mux_rx",0)},
-	{src=("symb_rx",1);dest=("mux_rx",1)},
-	{src=("symb_rx",2);dest=("mux_rx",2)},
-	{src=("symb_rx",3);dest=("mux_rx",3)},
-	{src=("symb_rx",4);dest=("mux_rx",4)},
-	{src=("symb_rx",5);dest=("mux_rx",5)},
-	{src=("symb_rx",6);dest=("mux_rx",6)},
-	{src=("symb_rx",7);dest=("mux_rx",7)},
-	{src=("symb_rx",8);dest=("mux_rx",8)},
-	{src=("symb_rx",9);dest=("mux_rx",9)},
-	{src=("symb_rx",10);dest=("mux_rx",10)},
-	{src=("symb_rx",11);dest=("mux_rx",11)},
-	{src=("symb_rx",12);dest=("mux_rx",12)},
-	{src=("symb_rx",13);dest=("mux_rx",13)},
+	{src=("symb_rx",0);dest=("mux_rx",0);log=false},
+	{src=("symb_rx",1);dest=("mux_rx",1);log=false},
+	{src=("symb_rx",2);dest=("mux_rx",2);log=false},
+	{src=("symb_rx",3);dest=("mux_rx",3);log=false},
+	{src=("symb_rx",4);dest=("mux_rx",4);log=false},
+	{src=("symb_rx",5);dest=("mux_rx",5);log=false},
+	{src=("symb_rx",6);dest=("mux_rx",6);log=false},
+	{src=("symb_rx",7);dest=("mux_rx",7);log=false},
+	{src=("symb_rx",8);dest=("mux_rx",8);log=false},
+	{src=("symb_rx",9);dest=("mux_rx",9);log=false},
+	{src=("symb_rx",10);dest=("mux_rx",10);log=false},
+	{src=("symb_rx",11);dest=("mux_rx",11);log=false},
+	{src=("symb_rx",12);dest=("mux_rx",12);log=false},
+	{src=("symb_rx",13);dest=("mux_rx",13);log=false},
 	
-	{src="mux_rx";dest="resdemapp_pbch"},	
+	
+	{src="mux_rx";dest="equalizer"},	
+	{src="equalizer";dest="resdemapp_pbch"},	
 
 	{src=("resdemapp_pbch",0);dest="pbch_rx"},
 	{src=("resdemapp_pbch",1);dest="resdemapp_pcfich"},
 
 	/* loop back to control */
-	{src="pbch_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=0},
+	{src="pbch_rx";dest=("ctrl_mux",1);mbpts=0.0;delay=1},
 
 	{src=("resdemapp_pcfich",0);dest="pcfich_rx"},	
 	{src=("resdemapp_pcfich",1);dest="resdemapp_pdcch"},
 
 	/* loop back to control */
-	{src="pcfich_rx";dest=("ctrl_mux",2);mbpts=0.0;delay=0},
+	{src="pcfich_rx";dest=("ctrl_mux",2);mbpts=0.0;delay=1},
 
 	{src=("resdemapp_pdcch",0);dest="pdcch_rx"},	
 	{src=("resdemapp_pdcch",1);dest="resdemapp_pdsch"},
 
 	/* loop back to control */
-	{src="pdcch_rx";dest=("ctrl_mux",3);mbpts=0.0;delay=0},
+	{src="pdcch_rx";dest=("ctrl_mux",3);mbpts=0.0;delay=1},
 	
 	{src=("resdemapp_pdsch",0);dest="pdsch_rx"},	
 	
-	{src="pdsch_rx";dest="sink"}
+	{src="pdsch_rx";dest="logtime_end"},
+	{src="logtime_end";dest="sink"}
 );
 

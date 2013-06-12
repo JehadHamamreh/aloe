@@ -8,11 +8,7 @@ modules:
 		mopts=60;
 		log=false;
 		variables=(
-<<<<<<< HEAD:app_dl/pdsch_rx.app
-			{name="soft";value=1},{name="modulation";value=2},{name="sigma2";value=1.0});
-=======
 			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=0.5;});
->>>>>>> devel:pdsch_rx.app
 	};
 	
 	descrambling:
@@ -28,7 +24,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
 		mopts=122;
-		log=true;
+		log=false;
 		variables=(
 			{name="direction";value=1},{name="out_len";value=0},
 			{name="rvidx";value=0;}
@@ -39,7 +35,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
 		mopts=279;
-		log=true;
+		log=false;
 		variables=({name="direction";value=1},{name="iterations";value=1},{name="padding";value=0;});
 	};
 

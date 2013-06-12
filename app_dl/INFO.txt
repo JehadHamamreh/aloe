@@ -3,9 +3,31 @@ LTE DL Data and control channels
 Execute transmitter (Tx) & receiver (Rx) waveform (WF):
 ../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld.app ./config
 
-Execute Tx WF:
-../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_tx.app ./config
+(*) the waveform osld.app is not working correctly in this release. 
+Please use file tx/rx instead. 
 
 
-Execute Rx WF:
-../aloe/app_dl$ ../build/rtdal_lnx/runcf ./osld_rx.app ./config
+
+TX-RX using file (non RT mode)
+==============================
+
+** File name is setup in osld_*_file.app files
+
+TX:
+../aloe/app_dl$ sudo ../build/rtdal_lnx/runcf ./osld_tx_file.app ./config
+
+RX:
+../aloe/app_dl$ sudo ../build/rtdal_lnx/runcf ./osld_rx_file.app ./config
+
+
+TX-RX using USRP (RT mode)
+==============================
+
+** USRP parameters are setup in osld_*_file.app files
+** Set time_slot_ns=1000000 (1ms) 
+
+TX:
+../aloe/app_dl$ sudo ../build/rtdal_lnx/runcf ./osld_tx_usrp.app ./config
+
+RX:
+../aloe/app_dl$ sudo ../build/rtdal_lnx/runcf ./osld_rx_usrp.app ./config

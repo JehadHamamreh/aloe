@@ -34,7 +34,6 @@
 #include "rtdal_file.h"
 #include "rtdal_error.h"
 #include "rtdal_itfspscq.h"
-#include "rtdal_itfqueue.h"
 
 #include "defs.h"
 #include "str.h"

@@ -49,6 +49,7 @@ void vec_sum_c(complex_t *z, complex_t *x, complex_t *y, int len) {
 		z[i] = x[i]+y[i];
 	}
 }
+
 void vec_mult_c_r(complex_t *x,complex_t *y, real_t h, int len) {
 #ifndef HAVE_VOLK
 	int i;
@@ -61,6 +62,14 @@ void vec_mult_c_r(complex_t *x,complex_t *y, real_t h, int len) {
 	__imag__ hh = 0;
 	volk_32fc_s32fc_multiply_32fc_a(y,x,hh,(unsigned int) len);
 #endif
+}
+
+
+void vec_mult_c(complex_t *x,complex_t *y, complex_t h, int len) {
+	int i;
+	for (i=0;i<len;i++) {
+		y[i] = x[i]*h;
+	}
 }
 
 void *vec_malloc(int size) {

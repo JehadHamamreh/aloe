@@ -7,6 +7,7 @@ complex_t sum_c(complex_t *x, int len);
 void *vec_malloc(int size);
 void vec_sum_c(complex_t *z, complex_t *x, complex_t *y, int len);
 void vec_mult_c_r(complex_t *x,complex_t *y, real_t h, int len);
+void vec_mult_c(complex_t *x,complex_t *y, complex_t h, int len);
 void vec_conj(complex_t *x, complex_t *y, int len);
 void vec_dot_prod(complex_t *x,complex_t *y, complex_t *z, int len);
 void vec_dot_prod_u(complex_t *x,complex_t *y, complex_t *z, int len);

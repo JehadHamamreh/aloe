@@ -84,8 +84,8 @@ void rtdal_log_flushall() {
 }
 
 void rtdal_log_flush(r_log_t _log) {
-	char tmp[128];
 #if LOGS_ENABLED!=0
+	char tmp[128];
 	cast(log,_log);
 	assert(log);
 	if (!logs_enabled) {

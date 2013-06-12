@@ -204,15 +204,8 @@ int work(void **inp, void **out) {
 
 	struct ul_params uparams;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> devel
 	rcv_samples = get_input_samples(0);
 	if (!rcv_samples) {
-#ifdef _COMPILE_ALOE
-		moddebug("ts=%d rcv_samples=%d.\n",oesr_tstamp(ctx),rcv_samples);
-#endif
 		return 0;
 	}
 

@@ -19,7 +19,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
 		mopts=26;
-		log=true;
+		log=false;
 		variables=(
 			{name="direction";value=0},{name="out_len";value=0},
 			{name="rvidx";value=0;}

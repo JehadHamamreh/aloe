@@ -27,7 +27,7 @@ else()
 	else()
 		message("-- LOGS Disabled")
 	endif()
-	set(CFDEB "-O3 ${LOGEN} -march=core2")
+	set(CFDEB "${LOGEN}")
 endif()
 
 set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-unused-result -Wno-format -std=c99 -D_GNU_SOURCE -fPIC")

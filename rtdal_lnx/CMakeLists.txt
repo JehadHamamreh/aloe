@@ -54,7 +54,7 @@ list(APPEND rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/extern/message_queue.c" "
 
 # runcf executable
 add_executable(runcf ${rtdal_SOURCES} ${DAC_SOURCES})
-set_target_properties(runcf PROPERTIES COMPILE_FLAGS "-std=gnu99 ${CFDEB} ${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI} ${MATFILE_CFLAGS}")
+set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${CFDEB} ${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI} ${MATFILE_CFLAGS}")
 
 target_link_libraries (runcf "-Wl,--whole-archive" oesr)
 target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread volk rt dl ${LINK_DAC})

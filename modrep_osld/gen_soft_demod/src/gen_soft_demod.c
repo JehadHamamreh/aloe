@@ -115,7 +115,6 @@ int work(void **inp, void **out) {
 
 	/* Dynamically obtain demodulation parameters */
 	if (param_get_int(modulation_id, &modulation) != 1) {
-<<<<<<< HEAD
 		modulation = BPSK;
 		moddebug("Parameter modulation not specified. Assuming %d (BPSK).\n",modulation);
 	}
@@ -128,9 +127,8 @@ int work(void **inp, void **out) {
 
 	/* Verify parameters */
 	if ((modulation != BPSK) && (modulation != QPSK) && (modulation != QAM16) && (modulation != QAM64)) {
-		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
-=======
-		printf("Error getting 'modulation' parameter\n");
+		moderror_msg("Invalid modulation %d. Specify %d for BPSK, "
+				"%d for QPSK, %d QAM16, %d QAM64\n",modulation,BPSK,QPSK,QAM16,QAM64);
 		return -1;
 	}
 	if (param_get_float(sigma2_id, &sigma2) != 1) {
@@ -138,13 +136,6 @@ int work(void **inp, void **out) {
 		return -1;
 	}
 
-	/* Verify parameters */
-	if (modulation > 6 || modulation < 0) {
-		printf("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
->>>>>>> devel
-				"4 for 16QAM, or 6 for 64QAM\n", modulation);
-		return -1;
-	}
 	if (sigma2 < 0) {
 		printf("Noise variance %f. Must be greater than 0.\n", sigma2);
 		return -1;
@@ -195,14 +186,6 @@ int work(void **inp, void **out) {
 		}
 	}
 	snd_samples = rcv_samples*bits_per_symbol;
-<<<<<<< HEAD
-	moddebug("snd_samples=%d soft 'bits' (float).\n",snd_samples);
-=======
-	for (int i=0;i<snd_samples;i++) {
-		output[i]*=1.5;
-	}
-
->>>>>>> devel
 	return snd_samples;
 }
 

@@ -18,7 +18,6 @@
 
 #include <stddef.h>
 #include "rtdal_itf.h"
-#include "rtdal_itfqueue.h"
 #include "rtdal_itfspscq.h"
 #include "rtdal_itfphysic.h"
 #include "rtdal.h"
@@ -28,7 +27,6 @@
 #define call(a, ...) switch(obj->type) {\
 					case ITF_EXTERNAL: return rtdal_itfphysic_##a(__VA_ARGS__); \
 					case ITF_INT_SPSCQ: return rtdal_itfspscq_##a(__VA_ARGS__); \
-					case ITF_INT_QUEUE: return rtdal_itfqueue_##a(__VA_ARGS__);\
 					default: return -1; }
 
 int rtdal_itf_remove(r_itf_t obj) {

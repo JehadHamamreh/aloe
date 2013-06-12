@@ -14,7 +14,8 @@ modules:
 	ctrl:
 	{
 		binary="modrep_osld/liblte_ctrl.so";	
-		mopts=100;
+		mopts=30;
+		log=true;
 		variables=(
 			{name="nof_output_data_itf";value=0},
 			{name="mode";value=0}, /* 0 tx, 1 rx, 2 both */
@@ -40,7 +41,7 @@ modules:
 	source:
 	{
 		binary="modrep_default/libsource.so";	
-		mopts=6;
+		mopts=80;
 		variables=(
 			{name="block_length";value=176},{name="generator";value=0}
 		);
@@ -76,6 +77,8 @@ modules:
 		);
 	};
 	
+	
+	
 	demux_tx:
 	{
 		binary="modrep_osld/libgen_demux.so";	
@@ -92,14 +95,22 @@ modules:
 	
 	sink:
 	{
-		binary="modrep_default/libfile_sink.so";
-		mopts=4;
-		/*
-		variables=({name="address";value="192.168.0.1"},{name="port";value=10000},
-				{name="nof_pkts";value=15});
-		*/
-		variables=({name="file_name";value="output.bin"});
+		binary="modrep_default/libdac_sink.so";
+		mopts=50;
+		log=true;
+
+		variables=(				
+				{name="board";value="USRP"},
+				{name="nsamples";value=1920},
+				{name="blocking";value=0},
+				{name="rate";value=1920000.0},
+				{name="gain";value=60.0},
+				{name="freq";value=2400000000.0}
+		);
+		
 	};	
+	
+	
 	
 	
 };
@@ -121,7 +132,6 @@ join_stages=
 	("symb_tx_ifft_11","symb_tx_cyclic_9"),
 	("symb_tx_ifft_12","symb_tx_cyclic_10"),
 	("symb_tx_ifft_13","symb_tx_cyclic_11")
-	
 );
 
 interfaces:
