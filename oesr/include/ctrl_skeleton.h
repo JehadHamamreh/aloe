@@ -33,8 +33,6 @@ typedef struct {
 
 #define MAX_VARIABLES 200
 
-extern void *ctx;
-
 /** Sends size bytes from the buffer value to the destination variable given by the index
  * dest_idx in the structure remote_params_db_t remote_params_db[]
  * \returns 0 on success, or -1 on error
@@ -58,39 +56,6 @@ int ctrl_work(int tslot);
 
 int ctrl_init();
 
-#define MOD_DEBUG 0
-
-
-/* Info and error messages print */
-#define debug_buffer stdout
-#define INFOSTR "[info at "
-#define ERRSTR "[error at "
-
-#define WHERESTR  "%s]: "
-#define WHEREARG  oesr_module_name(ctx)
-
-#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
-
-#define aerror_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
-#define aerror(a)  DEBUGPRINT2(stderr, ERRSTR WHERESTR a, WHEREARG)
-
-#define ainfo(a) DEBUGPRINT2(debug_buffer, INFOSTR WHERESTR a, WHEREARG)
-#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
-
-#define modinfo 		ainfo
-#define modinfo_msg 	ainfo_msg
-#define moderror 		aerror
-#define moderror_msg 	aerror_msg
-
-
-#ifdef _COMPILE_ALOE
-	#define moddebug(_fmt, ...) \
-		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
-				oesr_tstamp(ctx),__VA_ARGS__);} while(0);
-#else
-	#define moddebug(_fmt, ...) \
-		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug]\t[%s()]: " _fmt, __func__,\
-				__VA_ARGS__);} while(0);
-#endif
-
+#define _SKELETON_INCLUDED_CTRL
+#include "skeleton.h"
 

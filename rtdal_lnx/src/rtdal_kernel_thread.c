@@ -3,26 +3,24 @@
 #include <stdlib.h>
 #include <libconfig.h>
 #include <assert.h>
-#include <semaphore.h>
 
+#include <unistd.h>
+
+#include "rtdal.h"
+#include "rtdal_context.h"
 #include "rtdal_kernel.h"
 #include "pipeline.h"
-#include "rtdal_context.h"
 #include "rtdal_time.h"
 
+#include "barrier.h"
 static int first_cycle = 0;
-sem_t dac_sem;
 int signal_received = 0;
-
-extern long int timeslot_us;
-extern enum clock_source clock_source;
-
-extern int using_uhd;
 
 extern rtdal_context_t rtdal;
 
 extern int sigwait_stops;
 
+extern barrier_t start_barrier;
 
 
 /**
@@ -39,22 +37,56 @@ extern int sigwait_stops;
  *  causing it is always helpful.
  */
 
-inline static void kernel_tslot_run_rt_control() {
-	if (rtdal.machine.rt_fault_opts == RT_FAULT_OPTS_HARD) {
-		for (int i=0;i<rtdal.machine.nof_cores;i++) {
-			hdebug("tslot=%d, pipeline=%d, ts_counter=%d, finished=%d\n",rtdal_time_slot(),
-					rtdal.pipelines[i].id,rtdal.pipelines[i].ts_counter, rtdal.pipelines[i].finished);
-			if (!rtdal.pipelines[i].finished
-					&& rtdal.pipelines[i].running_process
-					&& rtdal.pipelines[i].ts_counter < rtdal_time_slot()-1) {
-				    if (pipeline_rt_fault(&rtdal.pipelines[i])) {
-				    	aerror("Couldn't kill pipeline after an rt-fault, "
-							"going out\n");
-                                    }
+inline static int kernel_tslot_run_rt_control() {
+	unsigned int has_exec[pipeline_MAX];
+	int j=0,k=-1;
+
+	for (int i=0;i<rtdal.machine.nof_cores;i++) {
+		has_exec[i]=1;
+		rtdal.pipelines[i].enable=1;
+		hdebug("tslot=%d, pipeline=%d, ts_counter=%d, finished=%d\n",rtdal_time_slot(),
+				rtdal.pipelines[i].id,rtdal.pipelines[i].ts_counter, rtdal.pipelines[i].finished);
+		if (!rtdal.pipelines[i].finished) {
+			rtdal.pipelines[i].finished=1;
+			has_exec[i]=2;
+			k=i;
+			if (rtdal.machine.rt_cfg.exec_kill && rtdal.pipelines[i].running_process
+					&& rtdal.pipelines[i].running_process->runnable) {
+				rtdal.pipelines[i].running_process->finish_code = RTFAULT;
+			}
+		} else if (rtdal.pipelines[i].ts_counter < rtdal_time_slot()-1) {
+			has_exec[i]=0;
+			j++;
+			if (rtdal.machine.rt_cfg.miss_kill && rtdal.pipelines[i].running_process
+					&& rtdal.pipelines[i].running_process->runnable) {
+				rtdal.pipelines[i].running_process->finish_code = RTFAULT;
 			}
 		}
-	}  else if (rtdal.machine.rt_fault_opts == RT_FAULT_OPTS_SOFT) {
-		aerror("Not implemented\n");
+		rtdal_log_add(rtdal.pipelines[i].log_exec,&has_exec[i],sizeof(unsigned int));
+	}
+	if (rtdal.machine.rt_cfg.miss_correct && j>0) {
+		for (int i=0;i<rtdal.machine.nof_cores;i++) {
+			if (has_exec[i]) {
+				rtdal.pipelines[i].enable=0;
+			}
+		}
+	}
+	
+	if (rtdal.machine.rt_cfg.exec_correct && k!=-1) {
+		k=0;
+		for (int i=0;i<rtdal.machine.nof_cores;i++) {
+			if (has_exec[i] != 2) {
+				k++;
+			}
+			rtdal.pipelines[i].ts_counter = rtdal_time_slot();
+		}
+		if (k) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 0;
 	}
 }
 
@@ -71,7 +103,7 @@ static inline void kernel_tslot_run_periodic_callbacks() {
 	}
 }
 
-inline void kernel_tslot_run() {
+inline int kernel_tslot_run() {
 	rtdal_time_ts_inc();
 
 	hdebug("tslot=%d\n",rtdal_time_slot());
@@ -80,9 +112,18 @@ inline void kernel_tslot_run() {
 		signal_received = 0;
 	}
 
-	kernel_tslot_run_rt_control();
+	if (rtdal.machine.rt_cfg.do_rtcontrol) {
+		if (kernel_tslot_run_rt_control()) {
+			return 0;
+		}
+	}
+
+	for (int i=0;i<rtdal.machine.nof_cores;i++) {
+		rtdal.pipelines[i].enable=1;
+	}
 
 	kernel_tslot_run_periodic_callbacks();
+	return 1;
 }
 
 /**
@@ -90,29 +131,20 @@ inline void kernel_tslot_run() {
  * after the reception of a synchronization packet.
  */
 void kernel_cycle(void *x, struct timespec *time) {
-	hdebug("now is %d:%d\n",time->tv_sec,time->tv_nsec);
+	struct timespec t;
 	if (!first_cycle) {
+		if (!time) {
+			clock_gettime(CLOCK_REALTIME,&t);
+			time=&t;
+		}
 		rtdal_time_reset_realtime(time);
 		first_cycle = 1;
 	}
-	kernel_tslot_run();
-	pipeline_sync_threads();
-	if (clock_source == SINGLE_TIMER && using_uhd) {
-		sem_post(&dac_sem);
+	if (kernel_tslot_run()) {
+		pipeline_sync_threads();
 	}
-
-}
-
-#ifdef HAVE_UHD
-void dac_cycle(void) {
-	struct timespec time;
-	if (clock_source == DAC) {
-		clock_gettime(CLOCK_REALTIME,&time);
-		kernel_cycle(NULL,&time);
-	} else {
-		if (!sigwait_stops) {
-			sem_wait(&dac_sem);
-		}
+	if (rtdal.machine.thread_sync_on_finish) {
+		barrier_wait(&start_barrier);
 	}
 }
-#endif
+

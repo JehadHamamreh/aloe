@@ -19,8 +19,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "defs.h"
 #include "rtdal.h"
+#include "defs.h"
 #include "nod_waveform.h"
 #include "oesr_static.h"
 #include "oesr_context.h"
@@ -72,6 +72,7 @@ int _run_cycle(void* context) {
 	}
 
 	if (!module->changing_status && module->parent.status == RUN) {
+
 #ifdef OESR_API_GETTIME
 		/* save start time */
 		rtdal_time_get(&module->parent.execinfo.t_exec[1]);
@@ -94,36 +95,14 @@ int _run_cycle(void* context) {
 		rtdal_time_get(&module->parent.execinfo.t_exec[2]);
 		rtdal_time_interval(module->parent.execinfo.t_exec);
 		nod_module_execinfo_add_sample(&module->parent.execinfo,ctx->tstamp);
-		if (DEBUG_TIMEMOD_ID == module->parent.id || DEBUG_TIMEMOD_ID == -1) {
-			tmdebug("%d,%d\n",module->parent.id,
-				module->parent.execinfo.t_exec[0].tv_usec);
-		}
+		tmdebug(module->time_log, &module->parent.execinfo.t_exec[0].tv_usec);
 #endif
 		ctx->tstamp++;
 
-		/* compute execution time, exponential average, max, etc. and save data to mymodule.execinfo */
-#ifdef kk
-		/* stat reports */
-		for (i=0;i<nof_reporting_vars;i++) {
-			module.reporting_variables[i].period_cnt++;
-			/* save the first window samples only */
-			if (module.reporting_variables[i].period_cnt++<module.reporting_variables[i].window)
-				module.reporting_variables[i].serialize(module.reporting_variables[i].report_packet);
-			}
-			/* send report every period */
-			if (module.reporting_variables[i].periodCnt++<module.reporting_variables[i].period) {
-				rtdal.newTask(report_variable,&reporting_variables[i]);
-			}
-		}
-
-		/* write logs */
-		for (i=0;i<nof_logs;i++) {
-			if (logs[i].w_ptr) {
-				rtdal.new_task(oesr_log._writelog,logs[i]);
-			}
-		}
-#endif
+	} else {
+		rtdal_process_stop(module->process);
 	}
+
 	return 0;
 }
 

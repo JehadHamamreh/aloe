@@ -28,11 +28,18 @@
 
 FILE *fd;
 
+#ifdef _COMPILE_ALOE
 static int last_snd_samples;
+#endif
 static int data_type;
 static int block_length;
 
 extern int output_sample_sz;
+static int read_at_init;
+
+static int cnt=0;
+
+char *readall_buff;
 
 /**
  * @ingroup file_source
@@ -44,8 +51,6 @@ extern int output_sample_sz;
  */
 int initialize() {
 	char name[64];
-	var_t pm;
-	int i;
 
 	if (param_get_int_name("data_type", &data_type)) {
 		data_type=-1;
@@ -70,7 +75,11 @@ int initialize() {
 		return -1;
 	}
 
+	read_at_init = 0;
+	param_get_int_name("read_at_init", &read_at_init);
+
 #ifdef _COMPILE_ALOE
+	var_t pm;
 	pm = oesr_var_param_get(ctx, "file_name");
 	if (!pm) {
 		moderror("Parameter file_name undefined\n");
@@ -90,6 +99,16 @@ int initialize() {
 		return -1;
 	}
 
+	if (read_at_init) {
+		readall_buff = malloc(read_at_init*block_length);
+		if (!readall_buff) {
+			moderror_msg("Could not allocate %d bytes\n", read_at_init*block_length);
+			return -1;
+		}
+		int n = rtdal_datafile_read_bin(fd,readall_buff,read_at_init*block_length);
+		modinfo_msg("read %d bytes\n",n);
+	}
+
 	return 0;
 }
 
@@ -100,26 +119,29 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int n;
 	output_t *output = out[0];
 
-	switch(data_type) {
-	case 0:
-		n = rtdal_datafile_read_real(fd,(float*) output,block_length);
-		break;
-	case 1:
-		n = rtdal_datafile_read_complex(fd,
-				(_Complex float*) output,block_length);
-		break;
-	case 2:
-		n = rtdal_datafile_read_complex_short(fd,
-				(_Complex short*) output,block_length);
-		break;
-	case -1:
-		n = rtdal_datafile_read_bin(fd,output,block_length);
+	if (!read_at_init) {
+		switch(data_type) {
+		case 0:
+			rtdal_datafile_read_real(fd,(float*) output,block_length);
+			break;
+		case 1:
+			rtdal_datafile_read_complex(fd,
+					(_Complex float*) output,block_length);
+			break;
+		case 2:
+			rtdal_datafile_read_complex_short(fd,
+					(_Complex short*) output,block_length);
+			break;
+		case -1:
+			rtdal_datafile_read_bin(fd,output,block_length);
+		}
 	}
 
 #ifdef _COMPILE_ALOE
+	int n;
+	n=block_length;
 	if (n != last_snd_samples) {
 		last_snd_samples = n;
 		modinfo_msg("Sending %d samples at tslot %d\n",
@@ -127,7 +149,14 @@ int work(void **inp, void **out) {
 	}
 #endif
 
-	return n;
+	if (read_at_init) {
+		memcpy(output,&readall_buff[cnt*block_length],block_length);
+		cnt++;
+		if (cnt==read_at_init) {
+			cnt=0;
+		}
+	}
+	return block_length;
 }
 
 /**  Deallocates resources created during initialize().

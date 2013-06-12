@@ -30,7 +30,7 @@ if( UNIX )
 
     # add compile/preprocess options
     set(XENOMAI_CFLAGS "-D_GNU_SOURCE -D_REENTRANT -pipe -D__XENO__")
-    set(XENOMAI_LDFLAGS "-Wl,@${XENOMAI_DIR}/lib/posix.wrappers")# -L/usr/xenomai/lib -lpthread_rt -lxenomai -lpthread -lrt")
+    set(XENOMAI_LDFLAGS "-Wl,@${XENOMAI_DIR}/lib/posix.wrappers")# -L/usr/xenomai/lib -lpthread_rt -lrtdk -lxenomai -lpthread -lrt")
 
   else( XENOMAI_DIR )
     MESSAGE(STATUS "xenomai NOT found. (${XENOMAI_SEARCH_PATH})")

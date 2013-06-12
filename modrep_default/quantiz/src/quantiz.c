@@ -36,7 +36,6 @@ pmid_t scale_id,amplitude_id;
  * \returns This function returns 0 on success or -1 on error
  */
 int initialize() {
-	int size;
 
 	scale_id = param_id("scale");
 	if (!scale_id) {

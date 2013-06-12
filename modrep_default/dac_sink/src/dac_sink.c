@@ -22,47 +22,125 @@
 #include <params.h>
 #include <skeleton.h>
 #include <complex.h>
+#include <math.h>
+
+#include "rtdal.h"
+
 #include "dac_sink.h"
 
-extern int input_sample_sz;
+#include "base/vector.h"
 
-static int data_type;
-static void *buffer;
-pmid_t freq_id, gain_id;
-static float last_freq=0;
-static int last_rcv_samples = 0;
-float max=-9999;
-float min=9999;
+
+char board[128],args[128];
+pmid_t rate_id, gain_id, amp_id,freq_id;
+r_dac_t dac;
+static float amplitude,rate,gain,freq;
+static int check_blen, enable_dac;
+static int blocking;
+
+complex_t out_buffer[INPUT_MAX_SAMPLES];
+
+int process_params();
 
 /**
  * @ingroup dac_sink
  *
- * \param freq_samp Sets DA converter sampling frequency
+ * \param rate Sets DA converter sampling rateuency
  */
 int initialize() {
-	buffer = rtdal_uhd_buffer(1);
-	freq_id = param_id("freq_samp");
+	var_t pm;
+	pm = oesr_var_param_get(ctx, "board");
+	if (!pm) {
+		moderror("Parameter board undefined\n");
+		return -1;
+	}
+
+	if (oesr_var_param_get_value(ctx, pm, board, 128) == -1) {
+		moderror("Error getting board value\n");
+		return -1;
+	}
+	pm = oesr_var_param_get(ctx, "args");
+	if (pm) {
+		if (oesr_var_param_get_value(ctx, pm, args, 128) == -1) {
+			moderror("Error getting board value\n");
+			return -1;
+		}
+	} else {
+		bzero(args,128);
+	}
+
+	check_blen=0;
+	param_get_int_name("check_blen",&check_blen);
+	enable_dac=1;
+	param_get_int_name("enable_dac",&enable_dac);
+
+	rate_id = param_id("rate");
+	if (!rate_id) {
+		moderror("Parameter rate not found\n");
+		return -1;
+	}
+	freq_id = param_id("freq");
 	if (!freq_id) {
-		moderror("Parameter freq_samp not found\n");
+		moderror("Parameter freq not found\n");
 		return -1;
 	}
 	gain_id = param_id("gain");
+	amp_id = param_id("amplitude");
 
-	if (param_get_int_name("data_type", &data_type)) {
-		data_type = 1;
-	}
-	switch(data_type) {
-	case 0:
-		input_sample_sz = sizeof(float);
-		break;
-	case 1:
-		input_sample_sz = sizeof(_Complex float);
-		break;
-	case 2:
-		input_sample_sz = sizeof(_Complex short);
-		break;
+	blocking=0;
+	param_get_int_name("blocking",&blocking);
+
+	if (!enable_dac) {
+		modinfo("Warning: DAC is disabled\n");
 	}
 
+	dac = rtdal_dac_open(board,args);
+	return process_params();
+}
+
+int process_params() {
+	float _rate,_gain,_freq;
+	if (param_get_float(rate_id,&_rate) != 1) {
+		modinfo("Getting parameter rate\n");
+		return -1;
+	}
+	if (_rate != rate) {
+		rate = _rate;
+		_rate = rtdal_dac_set_tx_srate(dac,rate);
+		modinfo_msg("Set TX sampling rate %g MHz\n", _rate/1000000);
+	}
+
+	if (param_get_float(freq_id,&_freq) != 1) {
+		modinfo("Getting parameter freq\n");
+		return -1;
+	}
+	if (_freq != freq) {
+		freq = _freq;
+		_freq = rtdal_dac_set_tx_freq(dac,freq);
+		modinfo_msg("Set TX freq %g MHz\n",_freq/1000000);
+	}
+
+	if (gain_id) {
+		if (param_get_float(gain_id,&_gain) != 1) {
+			modinfo("Getting parameter gain\n");
+			return -1;
+		}
+	} else {
+		_gain = 0.0;
+	}
+	if (_gain != gain) {
+		gain = _gain;
+		_gain = rtdal_dac_set_tx_gain(dac,gain);
+		modinfo_msg("Set TX gain %g dB (%g)\n",_gain,gain);
+	}
+	if (amp_id) {
+		if (param_get_float(amp_id,&amplitude) != 1) {
+			modinfo("Getting parameter amplitude\n");
+			return -1;
+		}
+	} else {
+		amplitude = 1.0;
+	}
 	return 0;
 }
 
@@ -74,69 +152,29 @@ int initialize() {
  */
 int work(void **inp, void **out) {
 	int rcv_samples;
-	float *input_rf;
-	_Complex float *input_f;
-	_Complex short *input_s;
-	int i,j;
-	float freq;
-	float gain;
-	float x=0;
-	float *buffer_rf = buffer;
-	_Complex float *buffer_f = buffer;
-	_Complex short *buffer_s = buffer;
+	int n;
 
-	if (param_get_float(freq_id,&freq) != 1) {
-		moderror("Getting parameter freq_samp\n");
+	rcv_samples = get_input_samples(0);
+	if (!rcv_samples) {
+		return 0;
+	}
+	if (check_blen && check_blen != rcv_samples) {
+		moderror_msg("Expected %d samples but got %d\n", check_blen, rcv_samples);
 		return -1;
 	}
-
-	if (gain_id) {
-		if (param_get_float(gain_id,&gain) != 1) {
-			moderror("Getting parameter gain\n");
-			return -1;
-		}
+	if (process_params()) {
+		return -1;
+	}
+	vec_mult_c_r((complex_t*) inp[0],out_buffer,amplitude,rcv_samples);
+	if (enable_dac) {
+		n = rtdal_dac_send(dac,out_buffer,rcv_samples,blocking);
 	} else {
-		gain = 1.0;
+		n = rcv_samples;
 	}
-
-#ifdef _COMPILE_ALOE
-	if (freq != last_freq) {
-		modinfo_msg("Set sampling frequency to %.2f MHz at tslot %d\n", freq/1000000,oesr_tstamp(ctx));
-		last_freq = freq;
-	}
-#endif
-
-	rtdal_uhd_set_freq(freq);
-
-	for (i=0;i<NOF_INPUT_ITF;i++) {
-		input_s = inp[i];
-		input_f = inp[i];
-		input_rf = inp[i];
-
-		rcv_samples = get_input_samples(i);
-
-#ifdef _COMPILE_ALOE
-		if (rcv_samples != last_rcv_samples) {
-			last_rcv_samples = rcv_samples;
-			modinfo_msg("Receiving %d samples at tslot %d\n",rcv_samples,oesr_tstamp(ctx));
-		}
-#endif
-
-		rtdal_uhd_set_block_len(rcv_samples);
-		x=0;
-		for (j=0;j<rcv_samples;j++) {
-			switch(data_type) {
-			case 0:
-				buffer_rf[j] = gain*input_rf[j];
-				break;
-			case 1:
-				buffer_f[j] = gain*input_f[j];
-				break;
-			case 2:
-				buffer_s[j] = gain*input_s[j];
-				break;
-			}
-		}
+	modinfo_msg("send %d samples amplitude %g\n",n,amplitude);
+	if (n != rcv_samples) {
+		moderror_msg("Sent %d/%d samples\n",n,rcv_samples);
+		return -1;
 	}
 
 	return 0;

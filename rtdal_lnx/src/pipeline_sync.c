@@ -2,6 +2,7 @@
 #include <semaphore.h>
 #include <string.h>
 
+#include "rtdal.h"
 #include "futex.h"
 #include "objects_max.h"
 #include "pipeline_sync.h"
@@ -59,6 +60,10 @@ static inline void pipeline_sync_thread_wake_sem() {
 	}
 }
 
+static inline void pipeline_sync_thread_wake_sem_idx(int idx) {
+	sem_post(&semaphores[idx]);
+}
+
 static inline int pipeline_sync_initialize_futex() {
 	return 0;
 }
@@ -70,7 +75,7 @@ static inline void pipeline_sync_thread_wake_futex() {
 }
 
 static inline int pipeline_sync_initialize_barrier() {
-	pthread_barrier_init(&barrier, NULL, (unsigned int) num_pipelines + 1);
+	pthread_barrier_init(&barrier, NULL, (unsigned int) num_pipelines+1);
 	return 0;
 }
 static inline void pipeline_sync_thread_waits_barrier(int idx) {
@@ -131,4 +136,20 @@ inline void pipeline_sync_threads_wake() {
 	pipeline_sync_thread_wake_condvar();
 #endif
 }
+
+inline void pipeline_sync_threads_wake_idx(int idx) {
+#if PIPELINESYNC_MUTEX_TYPE==SEM
+	pipeline_sync_thread_wake_sem_idx(idx);
+#endif
+#if PIPELINESYNC_MUTEX_TYPE==FUTEX
+#error Not implemented
+#endif
+#if PIPELINESYNC_MUTEX_TYPE==BARRIER
+	pipeline_sync_thread_wake_barrier();
+#endif
+#if PIPELINESYNC_MUTEX_TYPE==CONDVAR
+	pipeline_sync_thread_wake_condvar();
+#endif
+}
+
 

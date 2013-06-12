@@ -1,38 +1,88 @@
 
 rtdal:
 {
-	enable_usrp=false; 
-							
-	timer_mode_single=true; /* If use_usrp=true and timer_mode_single=true, the clock source
-								is the GPP. If timer_mode_single=false, clock source is USRP.
-								For Ethernet USRP, use timer_mode_single=true, 
-								For USB USRP, use timer_mode_single=true
-								  
-							   If use_usrp=false, the option timer_mode_single=true creates a 
-							   	timer that synchronizes the pipeline threads. This is recommended
-							   	for best real-time control. 
-							 */
+	path_to_libs="build/lib";
+
+	scheduling="pipeline";
 	
-	time_slot_us=10000; 		/* time slot length, in microseconds
-								IGNORED if use_usrp=true 
-							*/
-	cores="1,3";				/* Options: 
+	/* available schedulers:
+	    - pipeline: ALOE creates one thread per processing core which run modules periodically and synchronously.
+	    			Modulesa are statically mapped to processing cores and scheduled. 
+	    - best-effort: ALOE creates one thread per waveform module running continuously. Interfaces are blocking.
+	    				Modules are scheduled dynamically by the OS.
+	*/
+	
+};
+
+pipeline_opts: 
+{
+	timer_mode="single"; 
+
+	/* available modes:
+		- single: Another thread runs a timer which synchronizes the processing threads each time slot.
+		- multi: Each processing thread runs its own timer. They are synchronized at the beginning only. 
+		- none: No timer is created and threads run as fast as they can. 
+		 		Option "thread_sync_on_finish" **should** be enabled to synchronize execution.
+	*/
+	
+	thread_sync_on_finish=false; /* synchronizes processing threads at the end of the time slot */
+	
+	time_slot_ns=10000000;
+	cores="1";				/* Options: 
 								- single value n uses 0..n cores
 								- comma-separated values, e.g. 0,3,5 uses cores 0, 3 and 5. 
 								- to use a single core, use 1, for instance, to use core 1
 							*/
-						
-	path_to_libs="../build/lib";
-	
-};
+							
+	core0_relative=1.0;
+							
+    /* these parameters are experimental */ 
+    correct_on_rtfault_missed = false; 
+    correct_on_rtfault_exec = false; 
+    kill_on_rtfault_missed = false; 
+    kill_on_rtfault_exec = false; 
 
-dac:
-{
-	samp_freq=1920000.0;
-	block_size=1792;
-	rf_freq=900000000.0;
-	rf_gain=0.0;
-	if_bw=8000000.0
-	chain_is_tx=true;
-	sample_is_short=true; // default is false and samples are complex float 
-};
+};		
+
+rtdal_opts: 
+{ 
+    log_enabled=true;    /* enables/disables all logging service. Some tiny overhead
+                            can still be reduced setting LOGS_ENABLED to 0 */ 
+    log_to_stout=false;  /* Warning, disable log_to_stout in section other to avoid 
+                           duplicates */ 
+    log_directory="./reports"; 
+ 
+    log_length_mb=16;    /* log buffers length */ 
+ 
+    log_rtdal_en=false;  /* enables rtdal logging */ 
+    log_timing_en=false; /* enables exec control and timing logging */
+    
+    xenomai_warn_msw=false; 
+ 
+}; 
+
+other: 
+{ 
+    log_oesr_en=false; 
+ 
+    log_modules_to_stdout=false;  /* sends modules output to stdout and log files */ 
+ 
+    log_modules=true;            
+    log_modules_all=false;        /* enables all modules logging */ 
+    log_modules_join=false;       /* join all modules logs in a single file */ 
+ 
+    log_modules_level="info"; /* debug: logs all and debug messages (moddebug); 
+                                 itf-info: itf + info logging 
+                                 itf: logs module's recv/send packet lengths; 
+                                 info: logs info messages (modinfo); 
+                              */ 
+    /* This is to debug internal spsc queue messages */ 
+    log_queues=false;         /* each queue to log must be enabled in the app */ 
+    log_queues_all=false;     /* enable all queues logging */ 
+    log_queues_join=false;    /* join all queue logs in a single file */ 
+ 
+    trace_modules_exetime=false; /* must be enabled in the app */ 
+    trace_modules_exetime_all=false; /* trace all module's execution time */
+ 
+    join_logs_sync=false;     /* Uses a mutex to synchronize joined logs writing. Breaks RT */ 
+} 

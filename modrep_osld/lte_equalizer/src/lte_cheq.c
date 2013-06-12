@@ -43,7 +43,7 @@ struct lte_grid_config grid;
 refsignal_t refsignal;
 
 pmid_t subframe_idx_id;
-static int subframe_idx;
+static int subframe_idx,bypass;
 
 /**
  * @ingroup lte_equalizer
@@ -88,6 +88,9 @@ int initialize() {
 		return -1;
 	}
 
+	bypass=0;
+	param_get_int_name("bypass",&bypass);
+
 	subframe_idx_id = param_id("subframe_idx");
 	if (!subframe_idx_id) {
 		subframe_idx = 0;
@@ -109,18 +112,27 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 
+	if (bypass) {
+		memcpy(output,input,rcv_samples*sizeof(input_t));
+		return rcv_samples;
+	}
+
 	param_get_int(subframe_idx_id,&subframe_idx);
 
 
 	if (rcv_samples != grid.nof_osymb_x_subf*grid.fft_size) {
-		modinfo_msg("WARNING: The number of input samples (%d) is different than expected (%d).\n",
+		moderror_msg("The number of input samples (%d) is different than expected (%d).\n",
 				rcv_samples, grid.nof_osymb_x_subf*grid.fft_size);
-		return 0;
+		return -1;
 	}
 
 	snd_samples = rcv_samples;
 
-	equalizer (&refsignal, subframe_idx,input, output, &filter,&grid);
+	if (subframe_idx>=0) {
+		equalizer (&refsignal, subframe_idx,input, output, &filter,&grid);
+	} else {
+		memcpy(output,input,rcv_samples*sizeof(input_t));
+	}
 
 	if (!subframe_idx_id) {
 		subframe_idx++;

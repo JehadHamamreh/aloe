@@ -19,34 +19,21 @@
 #include <assert.h>
 #include <stdio.h>
 
-
-//#define DEBUG_TRACE
-
-#ifdef DEBUG_TRACE
-#ifndef _DEBUG_TRACE
-#define _DEBUG_TRACE
-extern FILE *trace_buffer;
-#endif
-#define debug_buffer trace_buffer
-#else
-#define debug_buffer stdout
-#endif
+#define DEFAULT_LOG_LENGTH	(32*1024)
 
 /* debug rtdal */
-#define DEBUG_rtdal 0
-#define hdebug(_fmt, ...) \
-	do { if (DEBUG_rtdal) fprintf(debug_buffer,"[debug-rtdal]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0);
+extern r_log_t rtdal_log;
+#define hdebug(_fmt, ...) do {if (LOGS_ENABLED) \
+	rtdal_log_printf(rtdal_log,"[%s(),ts=%d]:\t" _fmt, __func__,rtdal_time_slot(),__VA_ARGS__);}while(0)
 
 /* debug rtdal timing*/
-#define DEBUG_TIME 0
-#define tdebug(_fmt, ...) \
-	do { if (DEBUG_TIME) fprintf(debug_buffer,_fmt,__VA_ARGS__);} while(0);
-
+#define timelog(a) do {if (LOGS_ENABLED && a) rtdal_log_add_us(a);}while(0)
 
 /* debug spscq */
-#define DEBUG_spscq 0
 #define qdebug(_fmt, ...) \
-	do { if (DEBUG_spscq == itf->parent.id) fprintf(debug_buffer,"[debug-spscq-%d][ts=%d]\t[%s()]: " _fmt, itf->parent.id,rtdal_time_slot(),__func__,__VA_ARGS__);} while(0);
+	do { if (LOGS_ENABLED && itf->parent.log) \
+		rtdal_log_printf(itf->parent.log,"[%s(),id=%d,ts=%d]:\t" _fmt, \
+				__func__,itf->parent.id,rtdal_time_slot(),__VA_ARGS__);} while(0);
 
 
 #define WHERESTR  "[%s():%d]: "

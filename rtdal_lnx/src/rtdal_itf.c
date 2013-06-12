@@ -17,17 +17,26 @@
  */
 
 #include <stddef.h>
-#include "defs.h"
-#include "str.h"
 #include "rtdal_itf.h"
+#include "rtdal_itfqueue.h"
 #include "rtdal_itfspscq.h"
 #include "rtdal_itfphysic.h"
 #include "rtdal.h"
+#include "defs.h"
+#include "str.h"
 
-#define call(a, ...) if (obj->is_external) return rtdal_itfphysic_##a(__VA_ARGS__); else return rtdal_itfspscq_##a(__VA_ARGS__)
+#define call(a, ...) switch(obj->type) {\
+					case ITF_EXTERNAL: return rtdal_itfphysic_##a(__VA_ARGS__); \
+					case ITF_INT_SPSCQ: return rtdal_itfspscq_##a(__VA_ARGS__); \
+					case ITF_INT_QUEUE: return rtdal_itfqueue_##a(__VA_ARGS__);\
+					default: return -1; }
 
 int rtdal_itf_remove(r_itf_t obj) {
 	call(remove,obj);
+}
+
+int rtdal_itf_reset(r_itf_t obj) {
+	call(reset,obj);
 }
 
 /** Receives up to len bytes from the interface and stores the data in the
@@ -84,8 +93,8 @@ int rtdal_itf_request(r_itf_t obj, void **ptr) {
  *
  * \returns 1 on success, 0 if there are no packets to release in the interface or -1 on error
  */
-int rtdal_itf_release(r_itf_t obj) {
-	call(release,obj);
+int rtdal_itf_release(r_itf_t obj, void *ptr, int len) {
+	call(release,obj,ptr,len);
 }
 
 /**Pushes the current packet to the interface. The contents of the packet are modified using
@@ -95,8 +104,8 @@ int rtdal_itf_release(r_itf_t obj) {
  * \param len Number of useful bytes in the packet.
  * \returns 1 on success, 0 if there is no space in the interface or -1 on error
  */
-int rtdal_itf_push(r_itf_t obj, int len, int tstamp) {
-	call(push,obj,len,tstamp);
+int rtdal_itf_push(r_itf_t obj, void *ptr, int len, int tstamp) {
+	call(push,obj,ptr, len,tstamp);
 }
 
 

@@ -22,15 +22,16 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define USE_LOG 0
-#define MOD_DEBUG 0
-#define ITF_DEBUG 0
-
+#define MOD_DEBUG 1
 
 #define PRINT_MEX
 
-/*#define DEBUG_TRACE
-*/
+#ifdef _COMPILE_MEX
+	#include "mex.h"
+#endif
+
+
+#ifndef _SKELETON_INCLUDED_CTRL
 /** Returns the number of samples (of size input_sample_sz) received from the input port
  * idx.
  * \returns non-negative integer on success or -1 if idx is not a valid interface.
@@ -44,52 +45,36 @@ int get_input_samples(int idx);
 int set_output_samples(int idx, int len);
 
 
-#ifdef _COMPILE_MEX
-	#include "mex.h"
-#endif
-
 
 int work(void **input, void **output);
 int initialize();
 int stop();
 int generate_input_signal(void *input, int *input_length);
-
+#endif
 
 #ifdef _COMPILE_ALOE
 	extern void *ctx;
-	extern log_t mlog;
 	#define INTERFACE_CONFIG
 #endif
 
 
-
-#ifdef DEBUG_TRACE
-	#define _DEBUG_TRACE
-	#ifdef _COMPILE_ALOE
-		extern FILE *trace_buffer;
-	#else
-		#define trace_buffer stdout
-	#endif
-
-	#define debug_buffer (trace_buffer?trace_buffer:stdout)
-#else
-	#define debug_buffer stdout
-#endif
-
-
-
-
 /* Info and error messages print */
 #ifdef _COMPILE_ALOE
-	#define INFOSTR "[info at "
+	#define INFOSTR "[info-"
 #else
 	#define INFOSTR "[info]: "
+#endif
+
+#ifdef _COMPILE_ALOE
+	#define DEBSTR "[debug-"
+#else
+	#define DEBSTR "[debug]: "
 #endif
 
 #define ERRSTR "[error at "
 
 #ifdef _COMPILE_ALOE
-	#define WHERESTR  "%s\t%d]: "
+	#define WHERESTR  "%s,ts=%d]: "
 	#define WHEREARG  oesr_module_name(ctx),oesr_tstamp(ctx)
 #else
 	#define WHERESTR  "file %s, line %d]: "
@@ -98,45 +83,71 @@ int generate_input_signal(void *input, int *input_length);
 
 #ifdef _COMPILE_MEX
 	#ifdef PRINT_MEX
-	#define DEBUGPRINT2(out,...)       mexPrintf(__VA_ARGS__)
+	#define DEBUGPRINT2(...)       mexPrintf(__VA_ARGS__)
 	#else
-	#define DEBUGPRINT2(out,...)
+	#define DEBUGPRINT2(...)
 	#endif
 #elif _COMPILE_ALOE
-	#define DEBUGPRINT2(out,...)       if (mlog && USE_LOG) { oesr_log_printf(mlog,__VA_ARGS__); }\
-						else {fprintf(out, __VA_ARGS__); }
+	#define DEBUGPRINT2(...)       	oesr_printf(ctx,__VA_ARGS__)
 #else
-	#define DEBUGPRINT2(out,...)	fprintf(out,__VA_ARGS__)
+	#define DEBUGPRINT2(...)		fprintf(stdout,__VA_ARGS__)
 #endif
 
 
-#define aerror_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
-#define aerror(a)  DEBUGPRINT2(stderr, ERRSTR WHERESTR a, WHEREARG)
+#define aerror_msg(_fmt, ...)  		fprintf(stderr,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+#define aerror(a)  					fprintf(stderr, ERRSTR WHERESTR a, WHEREARG)
 
 #ifdef _COMPILE_ALOE
-	#define ainfo(a) DEBUGPRINT2(debug_buffer, INFOSTR WHERESTR a, WHEREARG)
-	#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+	#define ainfo(a) 				DEBUGPRINT2(INFOSTR WHERESTR a, WHEREARG)
+	#define ainfo_msg(_fmt, ...)  	DEBUGPRINT2(INFOSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
 #else
-	#define ainfo(a) DEBUGPRINT2(debug_buffer, INFOSTR a)
-	#define ainfo_msg(_fmt, ...)  DEBUGPRINT2(debug_buffer,INFOSTR _fmt, __VA_ARGS__)
+	#define ainfo(a) 				DEBUGPRINT2(INFOSTR a)
+	#define ainfo_msg(_fmt, ...)  	DEBUGPRINT2(INFOSTR _fmt, __VA_ARGS__)
 #endif
 
-#define modinfo 		ainfo
-#define modinfo_msg 	ainfo_msg
+#ifdef _COMPILE_ALOE
+	#define adebug_msg(_fmt, ...)  	DEBUGPRINT2(DEBSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+#else
+	#define adebug_msg(_fmt, ...)  	DEBUGPRINT2(DEBSTR _fmt, __VA_ARGS__)
+#endif
+
 #define moderror 		aerror
 #define moderror_msg 	aerror_msg
 
+
+#ifdef _COMPILE_ALOE
+	#define modinfo(a) \
+		do { if (LOGS_ENABLED && oesr_log_level(ctx)&LOG_LEVEL_INFO) \
+			ainfo(a); } while(0);
+	#define modinfo_msg(_fmt, ...) \
+		do { if (LOGS_ENABLED && oesr_log_level(ctx)&LOG_LEVEL_INFO) \
+			ainfo_msg(_fmt,__VA_ARGS__); } while(0);
+#else
+	#define modinfo 		ainfo
+	#define modinfo_msg 	ainfo_msg
+#endif
+
+
+#ifdef _COMPILE_ALOE
+	#define itflog(port,mode,samples,bytes) \
+		do { if (LOGS_ENABLED && MOD_DEBUG && (oesr_log_level(ctx)&LOG_LEVEL_ITF)) \
+			oesr_printf(ctx,"[%s,ts=%d]: port=%d, %s=%d samples (%d bytes)\n",\
+					oesr_module_name(ctx),oesr_tstamp(ctx),port,mode,samples,bytes); } while(0)
+#else
+#define itflog(port,mode,samples,bytes) \
+		do { if (MOD_DEBUG) \
+			printf("[itf]: port=%d, %s=%d samples (%d bytes)\n",\
+				port,mode,samples,bytes); } while(0)
+#endif
+
 #ifdef _COMPILE_ALOE
 	#define moddebug(_fmt, ...) \
-		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
-				oesr_tstamp(ctx),__VA_ARGS__);} while(0);
-	#define itfdebug(_fmt, ...) \
-		do { if (ITF_DEBUG) fprintf(debug_buffer,"[itf_debug-%s]\t[%s()]: ts=%d " _fmt, oesr_module_name(ctx),__func__,\
-			oesr_tstamp(ctx),__VA_ARGS__);} while(0);
+		do { if (LOGS_ENABLED && MOD_DEBUG && (oesr_log_level(ctx)&LOG_LEVEL_DEBUG)) \
+			adebug_msg(_fmt,__VA_ARGS__); } while(0)
 #else
 	#define moddebug(_fmt, ...) \
-		do { if (MOD_DEBUG) fprintf(debug_buffer,"[mod_debug]\t[%s()]: " _fmt, __func__,\
-				__VA_ARGS__);} while(0);
+		do { if (MOD_DEBUG) \
+				printf("[debug]\t[%s()]: " _fmt, __func__,__VA_ARGS__);} while(0)
 #endif
 
 #endif

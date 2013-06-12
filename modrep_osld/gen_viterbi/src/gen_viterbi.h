@@ -36,7 +36,7 @@ typedef char output_t;
 
 #define MAX_RATE 3
 
-#define INPUT_MAX_SAMPLES 	2048
+#define INPUT_MAX_SAMPLES 	50000
 #define OUTPUT_MAX_SAMPLES 	MAX_RATE*INPUT_MAX_SAMPLES
 
 #define NOF_INPUT_ITF		1

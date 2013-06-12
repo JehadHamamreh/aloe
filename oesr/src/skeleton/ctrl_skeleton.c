@@ -19,10 +19,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <oesr.h>
+#include <rtdal.h>
 #include <params.h>
 
 #include "ctrl_pkt.h"
 #include "ctrl_skeleton.h"
+
+#include "rtdal.h"
 
 #define MAX_OUTPUTS 		100
 #define MAX_INPUT_PACKETS	20
@@ -78,6 +81,7 @@ void init_memory() {
 int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	int n;
 	if (dest_idx<0 || dest_idx>nof_remote_variables) {
+		rtdal_printf("invalid dest_idx=%d\n",dest_idx);
 		return -1;
 	}
 
@@ -85,12 +89,14 @@ int ctrl_skeleton_send_idx(int dest_idx, void *value, int size,int tstamp) {
 	ctrl_out_buffer.size = size;
 	memcpy(ctrl_out_buffer.value,value,size);
 
-	n=oesr_itf_write(remote_variables[dest_idx].addr->itf,&ctrl_out_buffer,size + CTRL_PKT_HEADER_SZ,tstamp);
+	n=oesr_itf_write(remote_variables[dest_idx].addr->itf,
+			&ctrl_out_buffer,size + CTRL_PKT_HEADER_SZ,tstamp);
 	if (n == -1) {
+		rtdal_printf("error writting\n");
 		return -1;
 	} else if (!n) {
-		printf("Buffer full while sending control packet to %s:%s\n",remote_params_db[dest_idx].module_name,
-				remote_params_db[dest_idx].variable_name);
+		rtdal_printf("Buffer full while sending control packet to %s:%s at %d\n",remote_params_db[dest_idx].module_name,
+				remote_params_db[dest_idx].variable_name, oesr_tstamp(ctx));
 		return -1;
 	}
 	return 0;
@@ -113,10 +119,11 @@ int remote_parameters_sendall(void *ctx) {
 	int i;
 	for (i=0;i<nof_remote_variables;i++) {
 
-		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size,oesr_tstamp(ctx))) {
-			moderror_msg("sending ctrl packet to %s:%s\n",
+		if (ctrl_skeleton_send_idx(i, remote_params_db[i].value, remote_params_db[i].size,
+				oesr_tstamp(ctx))) {
+/*			rtdal_printf("sending ctrl packet to %s:%s\n",
 					remote_params_db[i].module_name,remote_params_db[i].variable_name);
-			return -1;
+*/			return -1;
 		}
 	}
 
@@ -293,11 +300,6 @@ int init_remote_itf(void *ctx, int nof_itf) {
 
 int close_remote_itf(void *ctx, int nof_itf) {
 	int i;
-	if (ctrl_in) {
-		if (oesr_itf_close(ctrl_in)) {
-			oesr_perror("oesr_itf_close");
-		}
-	}
 	for (i=0;i<nof_itf;i++) {
 		if (oesr_itf_close(outputs[i].itf)) {
 			oesr_perror("oesr_itf_close");
@@ -378,6 +380,7 @@ int process_ctrl_packets(void *ctx) {
 	int i;
 
 	do {
+		moddebug("receiving control\n",0);
 		n = oesr_itf_read(ctrl_in, ctrl_in_buffer,
 				sizeof(struct ctrl_in_pkt)*MAX_INPUT_PACKETS,oesr_tstamp(ctx));
 		if (n == -1) {
@@ -408,22 +411,25 @@ int Run(void *_ctx) {
 	tslot = oesr_tstamp(ctx);
 	if (ctrl_in) {
 		if (process_ctrl_packets(ctx)) {
+			rtdal_printf("error processing ctrl packets\n");
 			return -1;
 		}
 	}
 
 	if (local_parameters_update(ctx)) {
-		moderror("Uploading control parameters\n");
+		rtdal_printf("error uploading local parameters\n");
 		return -1;
 	}
 
 	if (ctrl_work(tslot)) {
+		rtdal_printf("error running\n");
 		return -1;
 	}
 
 	if (ctrl_send_always) {
 		if (remote_parameters_sendall(ctx)) {
-			return -1;
+/*			rtdal_printf("error sending parameters\n");
+*/			return -1;
 		}
 	}
 

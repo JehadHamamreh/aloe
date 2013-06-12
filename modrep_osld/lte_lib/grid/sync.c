@@ -61,6 +61,7 @@ int lte_sss_put(real_t *sss, complex_t *output,
 
 const float root_value[] = {PSSCELLID0,PSSCELLID1,PSSCELLID2};
 
+
 /**
  * This function calculates the Zadoff-Chu sequence.
  * @params signal Output array.
@@ -83,12 +84,12 @@ void generate_pss(complex_t *signal, int direction, struct lte_grid_config *conf
 		}
 	} else {
 		for(i=0; i<PSS_LEN/2; i++){
-			arg=(float)sign*PI*root_value[root_idx]*((float)i*((float)i+1.0))/63.0;
+			arg=(float)sign*M_PI*root_value[root_idx]*((float)i*((float)i+1.0))/63.0;
 			__real__ signal[i]=cos(arg);
 			__imag__ signal[i]=sin(arg);
 		}
 		for(i=PSS_LEN/2; i<PSS_LEN; i++){
-			arg=(float)sign*PI*root_value[root_idx]*(((float)i+2.0)*((float)i+1.0))/63.0;
+			arg=(float)sign*M_PI*root_value[root_idx]*(((float)i+2.0)*((float)i+1.0))/63.0;
 			__real__ signal[i]=cos(arg);
 			__imag__ signal[i]=sin(arg);
 		}
@@ -97,85 +98,129 @@ void generate_pss(complex_t *signal, int direction, struct lte_grid_config *conf
 
 
 
+
 /** SECONDARY SYNCH SIGNALS*/
-#define N 31
-#define qp (int)floor((float)id1/30.0)
-#define q  (int)floor((float)(id1+qp*(qp+1)/2)/30.0)
-#define m  (int)(id1 + q*(q+1)/2)
-#define z0 z[(i+m0%8)%N]
-#define z1 z[(i+m1%8)%N]
-#define c0 c[(i+id2)%N]
-#define c1 c[(i+id2+3)%N]
-#define s0 s[(i+m0)%N]
-#define s1 s[(i+m1)%N]
-#define NUMSSS 168
-
-static int m0s[NUMSSS];
-static int m1s[NUMSSS];
-static int s[N], x[N], c[N], z[N];
-
+static int s_t[N_SSS], c_t[N_SSS], z_t[N_SSS];
+static int s0[N_SSS], s1[N_SSS], c0[N_SSS], c1[N_SSS], z1_0[N_SSS], z1_1[N_SSS];
 
 /**
- *
- * This function generates the table 6.11.2.1-1 described at
- * 3GPP TS 36.211 version 10.5.0 Release 10.
- * @params
- * @params int *m0s:
- * @params int *m1s:
+ * @brief Function documentation: initSSStables()
+ * This function generates the scrambling sequences required for generation of
+ * SSS sequence according with 3GPP TS 36.211 version 10.5.0 Release 10.
  */
-void loadmtable (int *m0s, int *m1s){
-	int id1;
-	for (id1=0; id1<NUMSSS; id1++) m0s[id1] = m%N;
-	for (id1=0; id1<NUMSSS; id1++) m1s[id1] = (m0s[id1]+(int)floor((float)m/31.0)+1)%N;
+void generate_zsc_tilde(int *z_tilde, int *s_tilde, int *c_tilde){
 
+	int i;
+	int x[N_SSS];
+	memset(x,0,sizeof(int)*N_SSS);
+	x[4] = 1;
+
+	for (i=0; i<26; i++) x[i+5] = (x[i+2]+x[i])%2;
+	for (i=0; i<N_SSS; i++) s_tilde[i] = 1-2*x[i];
+
+	for (i=0; i<26; i++) x[i+5] = (x[i+3]+x[i])%2;
+	for (i=0; i<N_SSS; i++) c_tilde[i] = 1-2*x[i];
+
+	for (i=0; i<26; i++) x[i+5] = (x[i+4]+x[i+2]+x[i+1]+x[i])%2;
+	for (i=0; i<N_SSS; i++) z_tilde[i] = 1-2*x[i];
+}
+
+void generate_m0m1(int N_id_1, int N_id_2, int *m0, int *m1) {
+    int q_prime = N_id_1/(N_SSS-1);
+    int q       = (N_id_1 + (q_prime*(q_prime+1)/2))/(N_SSS-1);
+    int m_prime = N_id_1 + (q*(q+1)/2);
+    *m0      = m_prime%N_SSS;
+    *m1      = (*m0 + m_prime/N_SSS + 1) % N_SSS;
+}
+
+void generate_s(int *s, int *s_tilde, int m0_m1) {
+	int i;
+	for (i=0;i<N_SSS;i++) {
+		s[i] = s_tilde[(i+m0_m1)%N_SSS];
+	}
+}
+
+void generate_s_all(int s[N_SSS][N_SSS], int *s_tilde) {
+	int i;
+	for (i=0;i<N_SSS;i++) {
+		generate_s(s[i],s_tilde,i);
+	}
+}
+
+void generate_c(int *c, int *c_tilde, int N_id_2, int is_c0) {
+	int i;
+	for (i=0;i<N_SSS;i++) {
+		c[i] = c_tilde[(i+N_id_2+(is_c0>0?3:0))%N_SSS];
+	}
+}
+
+void generate_z(int *z, int *z_tilde, int m0_m1) {
+	int i;
+	for (i=0;i<N_SSS;i++) {
+		z[i] = z_tilde[(i+(m0_m1%8))%N_SSS];
+	}
+}
+
+void generate_z_all(int z[N_SSS][N_SSS], int *z_tilde) {
+	int i;
+	for (i=0;i<N_SSS;i++) {
+		generate_z(z[i],z_tilde,i);
+	}
+}
+
+void generate_sss_all_tables(struct sss_tables *tables, int N_id_2) {
+	int i;
+
+	generate_zsc_tilde(z_t,s_t,c_t);
+	generate_s_all(tables->s,s_t);
+	generate_z_all(tables->z1,z_t);
+	for (i=0;i<2;i++) {
+		generate_c(tables->c[i],c_t,N_id_2,i);
+	}
+	tables->N_id_2 = N_id_2;
 }
 
 
 void generate_sss(real_t *signal, struct lte_grid_config *config)
 {
 
-	int i, id1 = config->cell_id/3;
+	int i;
+	int id1 = config->cell_id/3;
 	int id2 = config->cell_id%3;
 	int m0;
 	int m1;
 
 	if (config->debug) {
-		for (i=0;i<PSS_LEN;i++) {
+		for (i=0;i<SSS_LEN;i++) {
 			signal[i] = 1.0;
 		}
 		return;
 	}
 
-	loadmtable(m0s,m1s);
-	m0 = m0s[id1];
-	m1 = m1s[id1];
+	generate_m0m1(id1,id2,&m0,&m1);
+	generate_zsc_tilde(z_t,s_t,c_t);
 
-	x[0] = 0;
-	x[1] = 0;
-	x[2] = 0;
-	x[3] = 0;
-	x[4] = 1;
+	generate_s(s0, s_t, m0);
+	generate_s(s1, s_t, m1);
 
-	for (i=0; i<26; i++) x[i+5] = (x[i+2]+x[i])%2;
-	for (i=0; i<N; i++) s[i] = 1-2*x[i];
+	generate_c(c0, c_t, id2,0);
+	generate_c(c1, c_t, id2,1);
 
-	for (i=0; i<26; i++) x[i+5] = (x[i+3]+x[i])%2;
-	for (i=0; i<N; i++) c[i] = 1-2*x[i];
+	generate_z(z1_0, z_t, m0);
+	generate_z(z1_1, z_t, m1);
 
-	for (i=0; i<26; i++) x[i+5] = (x[i+4]+x[i+2]+x[i+1]+x[i])%2;
-	for (i=0; i<N; i++) z[i] = 1-2*x[i];
 
-	for (i=0; i<N; i++){
+	for (i=0; i<N_SSS; i++){
 		/** Even Resource Elements: Sub-frame 0*/
-		signal[2*i] = (float)(s0*c0);
+		signal[2*i] = (float)(s0[i]*c0[i]);
 		/** Odd Resource Elements: Sub-frame 0*/
-		signal[2*i+1] = (float)(s1*c1*z0);
+		signal[2*i+1] = (float)(s1[i]*c1[i]*z1_0[i]);
 	}
-	for (i=0; i<N; i++){
+	for (i=0; i<N_SSS; i++){
 		/** Even Resource Elements: Sub-frame 5*/
-		signal[2*i+N*2]   = (float)(s1*c0);
+		signal[2*i+N_SSS*2]   = (float)(s1[i]*c0[i]);
 		/** Odd Resource Elements: Sub-frame 5*/
-		signal[2*i+1+N*2] = (float)(s0*c1*z1);
+		signal[2*i+1+N_SSS*2] = (float)(s0[i]*c1[i]*z1_1[i]);
 	}
 }
 

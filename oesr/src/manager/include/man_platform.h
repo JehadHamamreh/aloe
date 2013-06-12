@@ -170,6 +170,7 @@ typedef struct {
 	man_processor_t *processors[MAX(nodes)*MAX(processors)];
 	int nof_nodes;
 	int nof_processors;
+	float core0_relative;
 	man_platform_model_t model;
 	packet_t packet;
 	int last_update_ts;

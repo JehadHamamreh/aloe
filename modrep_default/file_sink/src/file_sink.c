@@ -42,8 +42,6 @@ extern int input_sample_sz;
  */
 int initialize() {
 	char name[64];
-	var_t pm;
-	int i;
 
 	if (param_get_int_name("data_type", &data_type)) {
 		data_type=-1;
@@ -64,6 +62,7 @@ int initialize() {
 	}
 
 #ifdef _COMPILE_ALOE
+	var_t pm;
 	pm = oesr_var_param_get(ctx, "file_name");
 	if (!pm) {
 		moderror("Parameter file_name undefined\n");
@@ -108,6 +107,9 @@ int work(void **inp, void **out) {
 	}
 #endif
 
+	if (!rcv_samples) {
+		return 0;
+	}
 	switch(data_type) {
 	case 0:
 		rtdal_datafile_write_real(fd,(float*) buffer,rcv_samples);

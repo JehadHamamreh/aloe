@@ -54,7 +54,7 @@ int check_received_samples_demapper() {
 		return 0;
 	}
 	if (get_input_samples(0) != grid.fft_size*grid.nof_osymb_x_subf) {
-		moderror_msg("Received %d samples from input 0, but expected %d "
+		moddebug("Received %d samples from input 0, but expected %d "
 				"(subframe_idx=%d)\n",
 			get_input_samples(0), grid.fft_size*grid.nof_osymb_x_subf, subframe_idx);
 		return -1;
@@ -162,12 +162,12 @@ int init_pdsch(int ch_id) {
 		return -1;
 	}
 	if (lte_pdsch_init_params_ch(ch_id, &grid)) {
-		moderror_msg("Initiating PDSCH channel %d\n",ch_id);
+		moddebug("Initiating PDSCH channel %d\n",ch_id);
 		return -1;
 	}
 	moddebug("sf=%d, rbgmask=%d\n",subframe_idx,grid.pdsch[0].rbg_mask);
 	if (lte_pdsch_init_sf(subframe_idx, &grid.phch[CH_PDSCH], &grid)) {
-		moderror_msg("Initiating PDSCH channel %d SF=%d\n",ch_id,subframe_idx);
+		moddebug("Initiating PDSCH channel %d SF=%d\n",ch_id,subframe_idx);
 		return -1;
 	}
 	lte_pdsch_setup_rbgmask(&grid.pdsch[ch_id],&grid);
@@ -178,7 +178,7 @@ int init_pdsch(int ch_id) {
 int init_pdcch(int ch_id) {
 
 	if (lte_grid_init(&grid)) {
-		moderror("Initiating resource grid\n");
+		moddebug("Initiating resource grid\n",0);
 		return -1;
 	}
 	return 0;

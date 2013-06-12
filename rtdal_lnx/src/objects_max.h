@@ -21,10 +21,10 @@
 
 
 #define rtdal_process_MAX 	200
-#define rtdal_itfspscq_MAX 	500
+#define rtdal_itflocal_MAX 	500
 #define rtdal_itfphysic_MAX 5
 #define rtdal_periodic_MAX 	10
-#define pipeline_MAX		30
+#define pipeline_MAX		RTDAL_MAX_CORES
 #define rtdal_dac_MAX		2
 #define dac_channel_MAX		2
 

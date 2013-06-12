@@ -33,6 +33,7 @@ int param_get_int_name(char *name, int *value) {
 	return (param_get_int(id,value)==-1)?-1:0;
 }
 
+
 /** Stores in the address of the second parameter the scalar float value of the
  * parameter name.
  * Tries to parse the parameter as an float. Read param_addr() for supported formats.

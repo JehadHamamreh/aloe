@@ -18,15 +18,19 @@
 
 #include <stddef.h>
 #include <assert.h>
+
+#include <rtdal.h>
 #include "defs.h"
 #include "oesr.h"
 #include "str.h"
-#include "rtdal.h"
 #include "oesr_context.h"
 #include "nod_waveform.h"
+#include "nod_anode.h"
 #include "waveform.h"
 
 
+extern r_log_t queues_log;
+extern struct log_cfg logs_cfg;
 
 /**
  *
@@ -81,9 +85,36 @@ itf_t oesr_itf_create(void *context, int port_idx, oesr_itf_mode_t mode, int siz
 	} else {
 		/* is internal */
 		if (mode == ITF_WRITE) {
-				nof_msg = OESR_ITF_DEFAULT_MSG*(nod_itf->delay+1)+2;
+			r_log_t log;
+			char tmp[128];
+			if (logs_cfg.queues_en
+					&& (module->parent.log_enable ||
+							nod_itf->log_enable || logs_cfg.queues_all)) {
+				if (queues_log) {
+					log = queues_log;
+				} else {
+					snprintf(tmp,128,"%s.%d.log",module->parent.name,port_idx);
+					log = rtdal_log_new(tmp,TEXT,1024*1024);
+					if (!log) {
+						aerror_msg("Could not create queue log %s\n",tmp);
+					}
+				}
+			} else {
+				log = NULL;
+			}
+			if (nod_itf->delay >= 0) {
+				if (size<4096) {
+					nof_msg = OESR_ITF_DEFAULT_MSG*(nod_itf->delay+1)+128;
+				}
+				else {
+					nof_msg = OESR_ITF_DEFAULT_MSG*(nod_itf->delay+1);
+				}
+			} else {
+				nof_msg = 64;
+			}
+
 			rtdal_itf = (r_itf_t) rtdal_itfspscq_new(nof_msg,
-					size, nod_itf->delay);
+					size, nod_itf->delay,log);
 			if (!rtdal_itf) {
 				OESR_HWERROR("rtdal_itfspscq_new");
 				return NULL;
@@ -156,7 +187,9 @@ int oesr_itf_delay_set(void *context, int port_idx, int mode, int delay) {
 		}
 		nod_itf = &module->parent.inputs[port_idx];
 	}
-	nod_itf->delay = delay;
+	if (nod_itf->delay != -1) {
+		nod_itf->delay = delay;
+	}
 	return 0;
 }
 
@@ -256,10 +289,10 @@ int oesr_itf_ptr_request(itf_t itf, void **ptr) {
  * \return 1 on success, 0 if the packet could not be released, or -1 on error.
  *
  */
-int oesr_itf_ptr_release(itf_t itf) {
+int oesr_itf_ptr_release(itf_t itf, void *ptr, int len) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_release(x->hw_itf);
+	return rtdal_itf_release(x->hw_itf,ptr,len);
 }
 
 
@@ -272,10 +305,10 @@ int oesr_itf_ptr_release(itf_t itf) {
  * \return 1 on success, 0 if the packet could not be sent or -1 on error.
  *
  */
-int oesr_itf_ptr_put(itf_t itf, int len, int tstamp) {
+int oesr_itf_ptr_put(itf_t itf, void *ptr, int len, int tstamp) {
 	assert(itf);
 	interface_t *x = (interface_t*) itf;
-	return rtdal_itf_push(x->hw_itf, len, tstamp);
+	return rtdal_itf_push(x->hw_itf, ptr, len, tstamp);
 }
 
 

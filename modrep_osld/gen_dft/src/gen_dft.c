@@ -362,6 +362,9 @@ int work(void **inp, void **out) {
 			" of dft_size (%d) on interface %d\n",rcv_samples,dft_size,i);
 			return -1;
 		}
+		if (get_input_samples(0)>0) {
+			modinfo_msg("received %d samples\n",get_input_samples(0));
+		}
 
 		nof_ffts = rcv_samples/dft_size;
 

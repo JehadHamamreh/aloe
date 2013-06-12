@@ -25,6 +25,7 @@
 	#error "Required libconfig version 1.4.8 or newer"
   #endif
 
+#include <rtdal.h>
 #include "oesr_man.h"
 #include "str.h"
 #include "defs.h"
@@ -417,12 +418,22 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 
 	if (src_itf) {
 		if (!config_setting_lookup_int(cfg, "delay", &src_itf->delay)) {
-			src_itf->delay = 1;
+			src_itf->delay = -1;
 		}
 		if (dest_itf) {
 			dest_itf->delay = src_itf->delay;
 		}
 	}
+
+	if (src_itf) {
+		if (!config_setting_lookup_bool(cfg, "log", &src_itf->log_enable)) {
+			src_itf->log_enable = 0;
+		}
+		if (dest_itf) {
+			dest_itf->log_enable = src_itf->log_enable;
+		}
+	}
+
 	if (dest_module && src_module) {
 		pardebug("%d:%d/%d->%d:%d/%d bw=%.2f delay=%d\n",src_module->id,src_port,src_module->nof_outputs,
 				dest_module->id,dest_port,dest_module->nof_outputs, src_itf->total_mbpts,
@@ -526,6 +537,16 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		for (i=0;i<w->nof_modes;i++) {
 			mod->c_mopts[i] = 0.1;
 		}
+	}
+	mod->log_enable = 0;
+	int t=0;
+	config_setting_lookup_bool(cfg, "log", &t);
+	if (t) {
+		mod->log_enable |= 0x1;
+	}
+	config_setting_lookup_bool(cfg, "log_time", &t);
+	if (t) {
+		mod->log_enable |=0x2;
 	}
 	n_vars = read_variables(cfg, mod, mod->name, w);
 	if (n_vars < 0) {

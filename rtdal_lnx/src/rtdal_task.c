@@ -22,14 +22,14 @@
 #include <signal.h>
 #include <sys/types.h>
 
-#include "defs.h"
 #include "rtdal_task.h"
 #include "rtdal.h"
+#include "rtdal_context.h"
 #include "rtdal_error.h"
 #include "rtdal_kernel.h"
+#include "defs.h"
 
-extern int *core_mapping;
-extern int nof_cores;
+extern rtdal_context_t rtdal;
 
 
 /**
@@ -163,14 +163,16 @@ int rtdal_task_new_thread(pthread_t *thread, void *(*fnc)(void*), void *arg,
 		CPU_SET((size_t) cpu,&cpuset);
 	} else {
 		CPU_ZERO(&cpuset);
-		for (i=0;i<nof_cores;i++) {
-			CPU_SET((size_t) core_mapping[i],&cpuset);
+		for (i=0;i<rtdal.machine.nof_cores;i++) {
+			CPU_SET((size_t) rtdal.machine.core_mapping[i],&cpuset);
 		}
 	}
-	s =  pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
-	if (s) {
-		RTDAL_POSERROR(s, "pthread_attr_setaffinity_np");
-		goto destroy_attr;
+	if (rtdal.machine.nof_cores) {
+		s =  pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
+		if (s) {
+			RTDAL_POSERROR(s, "pthread_attr_setaffinity_np");
+			goto destroy_attr;
+		}
 	}
 
 	if (!getuid()) {

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/mman.h>
 
 #include "oesr.h"
 #include "rtdal.h"
@@ -140,20 +141,6 @@ void close_interfaces(void *ctx) {
 	int i;
 	moddebug("nof_input=%d, nof_output=%d\n",nof_input_itf,nof_output_itf);
 
-	if (ctrl_in) {
-		if (oesr_itf_close(ctrl_in)) {
-			oesr_perror("oesr_itf_close");
-		}
-	}
-
-	for (i=0;i<nof_input_itf;i++) {
-		moddebug("input_%d=0x%x\n",i,inputs[i]);
-		if (inputs[i]) {
-			if (oesr_itf_close(inputs[i])) {
-				oesr_perror("oesr_itf_close");
-			}
-		}
-	}
 	for (i=0;i<nof_output_itf;i++) {
 		moddebug("output_%d=0x%x\n",i,outputs[i]);
 		if (outputs[i]) {
@@ -243,6 +230,8 @@ int Init(void *_ctx) {
 
 	moddebug("enter ts=%d\n",oesr_tstamp(ctx));
 
+	mlockall(MCL_CURRENT | MCL_FUTURE);
+
 	if (!mem_ok) {
 		init_memory();
 		mem_ok = 1;
@@ -250,18 +239,14 @@ int Init(void *_ctx) {
 
 	if (!log_ok) {
 		mlog = NULL;
-		if (USE_LOG) {
-			if (init_log(ctx)) {
-				return -1;
-			}
+#ifdef USE_LOG
+		if (init_log(ctx)) {
+			return -1;
 		}
+#endif
 		log_ok = 1;
 	}
 
-/*	if (init_counter(ctx)) {
-		return -1;
-	}
-*/
 	if (init_variables(ctx)) {
 		return -1;
 	}
@@ -327,15 +312,18 @@ int Run(void *_ctx) {
 	int i;
 	int n;
 
+
 	if (ctrl_in) {
 		do {
-			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER_SZ,oesr_tstamp(ctx));
+			moddebug("reading control\n",0);
+			n = oesr_itf_read(ctrl_in, &ctrl_in_buffer, CTRL_IN_BUFFER_SZ,tstamp);
 			if (n == -1) {
 				oesr_perror("oesr_itf_read");
 				return -1;
 			} else if (n>0) {
+				moddebug("read %d control\n",n);
 				if (process_ctrl_packet()) {
-					moderror("Error processing control packet\n");
+					printf("Error processing control packet\n");
 					return -1;
 				}
 			}
@@ -347,26 +335,33 @@ int Run(void *_ctx) {
 			input_ptr[i] = NULL;
 			rcv_len[i] = 0;
 		} else {
-			n = oesr_itf_ptr_get(inputs[i], &input_ptr[i], &rcv_len[i], tstamp);
-			if (n == 0) {
-			} else if (n == -1) {
-				oesr_perror("oesr_itf_get");
-				return -1;
-			} else {
-				itfdebug("[ts=%d] received %d bytes\n",rtdal_time_slot(),rcv_len[i]);
-				rcv_len[i] /= input_sample_sz;
-			}
+			do {
+				moddebug("reading from %d\n",i);
+				n = oesr_itf_ptr_get(inputs[i], &input_ptr[i], &rcv_len[i], tstamp);
+				if (n == -1) {
+					oesr_perror("oesr_itf_get");
+					printf("get\n");
+					return -1;
+				} else if (n == 1) {
+					moddebug("received %d bytes\n",rcv_len[i]);
+					rcv_len[i] /= input_sample_sz;
+					itflog(i,"rcv",rcv_len[i],rcv_len[i]*input_sample_sz);
+				}
+			} while (n==2);
 		}
 	}
 	for (i=0;i<nof_output_itf;i++) {
 		if (!outputs[i]) {
 			output_ptr[i] = NULL;
 		} else {
+			moddebug("requesting output %d\n",i);
 			n = oesr_itf_ptr_request(outputs[i], &output_ptr[i]);
 			if (n == 0) {
-				moderror_msg("[ts=%d] no packets available in output interface %d\n",rtdal_time_slot(),i);
+				moddebug("no packets available in output interface %d\n",i);
+				return -1;
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_request");
+				printf("request\n");
 				return -1;
 			}
 		}
@@ -374,12 +369,11 @@ int Run(void *_ctx) {
 
 	memset(snd_len,0,sizeof(int)*nof_output_itf);
 
+	moddebug("Calling WORK()\n",0);
 	n = work(input_ptr,output_ptr);
 	if (n<0) {
 		return -1;
 	}
-
-	memset(rcv_len,0,sizeof(int)*nof_input_itf);
 
 	for (i=0;i<nof_output_itf;i++) {
 		if (!snd_len[i] && output_ptr[i]) {
@@ -389,26 +383,33 @@ int Run(void *_ctx) {
 
 	for (i=0;i<nof_input_itf;i++) {
 		if (input_ptr[i]) {
-			n = oesr_itf_ptr_release(inputs[i]);
+			moddebug("releasing input %d size %d\n",i,rcv_len[i]*input_sample_sz);
+			n = oesr_itf_ptr_release(inputs[i],input_ptr[i],rcv_len[i]*input_sample_sz);
 			if (n == 0) {
-				itfdebug("[ts=%d] packet from interface %d not released\n",rtdal_time_slot(),i);
+				moddebug("packet from interface %d not released\n",i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_release\n");
+				printf("release\n");
 				return -1;
 			}
 		}
 	}
 	for (i=0;i<nof_output_itf;i++) {
-		if (output_ptr[i] && snd_len[i]) {
-			n = oesr_itf_ptr_put(outputs[i],snd_len[i],tstamp);
+		if (output_ptr[i]) {
+			moddebug("sending output %d size %d\n",i,snd_len[i]);
+			n = oesr_itf_ptr_put(outputs[i],output_ptr[i], snd_len[i],tstamp);
 			if (n == 0) {
-				itfdebug("[ts=%d] no space left in output interface %d\n",rtdal_time_slot(),i);
+				moddebug("no space left in output interface %d\n",i);
 			} else if (n == -1) {
 				oesr_perror("oesr_itf_ptr_put\n");
 				return -1;
+			} else {
+				itflog(i,"snd",snd_len[i]/output_sample_sz,snd_len[i]);
 			}
 		}
 	}
+
+	memset(rcv_len,0,sizeof(int)*nof_input_itf);
 
 	moddebug("exit Run\n",0);
 	return 0;

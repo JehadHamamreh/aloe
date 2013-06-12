@@ -141,14 +141,13 @@ int _get_param(char *name, int *address, char *mode) {
 	return 0;
 }
 
-
+static int run_cnt=0;
 int ctrl_work_(int tslot, struct lte_grid_config *grid,
 		struct remote_parameters *params, char *mode) {
 	int i, subframe_tmp;
+	int pdsch_delay;
 
-	if (_get_param("cfi",&grid->cfi,mode)) {
-		return -1;
-	}
+	_get_param("cfi",&grid->cfi,mode);
 
 	if (!strcmp(mode,"tx") || grid->subframe_idx != -1) {
 		grid->subframe_idx++;
@@ -167,49 +166,54 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 			_get_param("subframe",&subframe_tmp,mode);
 			if (subframe_tmp != -1) {
 				if (subframe_tmp != grid->subframe_idx % NOF_SUBFRAMES_X_FRAME) {
-					/*moderror_msg("Synchronization lost! Expected subframe %d but got %d\n",
+					modinfo_msg("Synchronization lost! Expected subframe %d but got %d\n",
 							grid->subframe_idx,subframe_tmp);
-					*/
+					//grid->subframe_idx--;
+					//return -1;
 				}
 			}
 		}
 	}
 
-	if (_get_param("nof_prb",&grid->nof_prb,mode)) {
-		return -1;
-	}
+	_get_param("nof_prb",&grid->nof_prb,mode);
 	_get_param("sfn",&params->sfn,mode);
-	if (_get_param("mcs",&params->mcs,mode)) {
-		return -1;
-	}
-	if (_get_param("nof_rbg",&grid->pdsch[0].nof_rbg,mode)) {
-		return -1;
-	}
-	if (_get_param("rbg_mask",&grid->pdsch[0].rbg_mask,mode)) {
-		return -1;
+	if (params->mcs == -1 || params->mcs==0) {
+		_get_param("mcs",&params->mcs,mode);
 	}
 
+	_get_param("nof_rbg",&grid->pdsch[0].nof_rbg,mode);
+	_get_param("rbg_mask",&grid->pdsch[0].rbg_mask,mode);
+
+	grid->nof_pdsch=1;
 	if (lte_grid_init(grid)==-1) {
-		moderror("Error initiating grid\n");
-		return 0;
+		modinfo("Error initiating grid\n");
+		goto print;
 	}
 	params->cfi = grid->cfi;
 	params->nof_rbg[0] = grid->pdsch[0].nof_rbg;
 	params->pdsch_mask[0] = grid->pdsch[0].rbg_mask;
 	params->nof_pdsch = 1;
+	params->nof_prb = grid->nof_prb;
 
 	params->tbs = lte_get_tbs(params->mcs,params->nof_rbg[0]);
 	params->cbs = lte_get_cbits(params->mcs,params->nof_rbg[0]);
 	params->modulation = lte_get_modulation_format(params->mcs);
 	params->pdcch_en[0] = 1;
 
-	params->bits_x_slot = lte_pdsch_get_re(0,grid->subframe_idx%NOF_SUBFRAMES_X_FRAME,grid)*
+	for (i=0;i<SUBFRAME_DELAY;i++) {
+		params->tslot_idx[i] = (grid->subframe_idx-i)%NOF_SUBFRAMES_X_FRAME;
+	}
+	if (!strcmp(mode,"rx")) {
+		pdsch_delay = D_PDSCH;
+	} else {
+		pdsch_delay = 0;
+	}
+	params->bits_x_slot = lte_pdsch_get_re(0,params->tslot_idx[pdsch_delay]%NOF_SUBFRAMES_X_FRAME,grid)*
 			params->modulation;
 
 	if (grid_changed(mode)) {
 		print_config(grid,params);
 	}
-
 
 	/* check code rate and if exceeds 0.93, do not transmit */
 	if (params->bits_x_slot && grid->subframe_idx >= 0) {
@@ -219,6 +223,7 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 					(float) (params->tbs+16)/params->bits_x_slot);
 			}
 			params->tbs = 0;
+			params->cbs = 0;
 			params->bits_x_slot = 0;
 			params->pdsch_mask[0] = 0;
 		}
@@ -229,16 +234,11 @@ int ctrl_work_(int tslot, struct lte_grid_config *grid,
 	}
 
 
-	for (i=0;i<SUBFRAME_DELAY;i++) {
-		params->tslot_idx[i] = (grid->subframe_idx-i)%NOF_SUBFRAMES_X_FRAME;
-	}
-
-	if (PRINT) {
-		printf("ts=%d, mode=%s fft_size=%d mcs=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
-				oesr_tstamp(ctx),mode, grid->fft_size, params->mcs, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
+print:
+	modinfo_msg("fft_size=%d mcs=%d, nof_prb=%d, cfi=%d sf=%d, tbs=%d, cbs=%d, mod=%d, bits=%d\n",
+				grid->fft_size, params->mcs, params->nof_prb, params->cfi, grid->subframe_idx,params->tbs,params->cbs,
 				params->modulation,params->bits_x_slot);
-	}
-
+	run_cnt++;
 	return 0;
 }
 
@@ -275,9 +275,7 @@ int ctrl_work(int tslot) {
 	}
 	if (mode_is_rx()) {
 		ctrl_work_(tslot,&grid_rx,&rx_params, "rx");
-		if (pdcch_rx(tslot,&grid_rx,&rx_params)) {
-			return -1;
-		}
+		pdcch_rx(tslot,&grid_rx,&rx_params);
 		if (grid_rx.cfi > 0) {
 			rx_params.nof_pdcch = 1;
 			rx_params.pdcch_cce[0] = 2;

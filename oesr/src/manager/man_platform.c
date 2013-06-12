@@ -18,6 +18,8 @@
 
 #include <stddef.h>
 
+#include "rtdal.h"
+
 #include "defs.h"
 #include "str.h"
 #include "man_platform.h"
@@ -68,6 +70,8 @@ man_platform_model_t* man_platform_get_model() {
 	return NULL;
 }
 
+rtdal_machine_t machine;
+
 /**
  * Initializes the rtdal and reads and parses the platform configuration file with
  * path "configFile".
@@ -94,17 +98,21 @@ man_platform_model_t* man_platform_get_model() {
 int man_platform_config(man_platform_t *_platform, string config_file) {
 	mdebug("platform=0x%x, config_file=%s\n",platform,config_file);
 
-	rtdal_machine_t machine;
-
 	if (!_platform) {
 		return -1;
 	}
+
 	rtdal_machine(&machine);
 
 	platform = _platform;
 	platform->nof_nodes = 1;
 	platform->nof_processors = machine.nof_cores;
-	platform->ts_length_us = machine.ts_len_us;
+	platform->ts_length_us = machine.ts_len_ns/1000;
+	platform->core0_relative = machine.core0_relative;
+	if (machine.scheduling == SCHEDULING_BESTEFFORT) {
+		platform->nof_processors = 1;
+		platform->ts_length_us = 1;
+	}
 	for (int i=0;i<platform->nof_processors;i++) {
 		platform->nodes[0].processors[i].node = &platform->nodes[0];
 		platform->processors[i] = &platform->nodes[0].processors[i];

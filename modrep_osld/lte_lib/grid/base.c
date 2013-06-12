@@ -357,7 +357,9 @@ int lte_grid_init_channels(struct lte_grid_config *config) {
 	}
 	for (i=0;i<NOF_PHCH;i++) {
 		if (lte_ch_init(&config->phch[i], i, config)) {
-			printf("Error initiating channel %s\n",config->phch[i].name);
+			if (config->verbose) {
+				printf("Error initiating channel %s\n",config->phch[i].name);
+			}
 			return -1;
 		}
 	}
@@ -379,7 +381,9 @@ int lte_grid_init(struct lte_grid_config *config) {
 		nof_ctrl_symb = config->nof_control_symbols;
 	}
 	if (lte_grid_init_reg(config,nof_ctrl_symb)) {
-		printf("Error allocating REGs\n");
+		if (config->verbose) {
+			printf("Error allocating REGs\n");
+		}
 		return -1;
 	}
 	if (lte_grid_init_channels(config)) {

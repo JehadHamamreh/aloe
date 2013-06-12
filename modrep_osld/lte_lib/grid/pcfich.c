@@ -14,11 +14,15 @@ int lte_grid_init_reg_pcfich(struct lte_grid_config *config) {
 		k=(kh+(i*config->nof_prb/2)*(NOF_RE_X_OSYMB/2))%modulo;
 		config->control.pcfich[i] = lte_reg_get_k(k,0,config);
 		if (!config->control.pcfich[i]) {
-			printf("Error allocating PCFICH: REG (%d,0) not found\n",k);
+			if (config->verbose) {
+				printf("Error allocating PCFICH: REG (%d,0) not found\n",k);
+			}
 			return -1;
 		}
 		if (config->control.pcfich[i]->assigned != 1) {
-			printf("Error allocating PCFICH: REG (%d,0) %s\n",k,reg_print_state(config->control.pcfich[i]));
+			if (config->verbose) {
+				printf("Error allocating PCFICH: REG (%d,0) %s\n",k,reg_print_state(config->control.pcfich[i]));
+			}
 			return -1;
 		} else {
 			config->control.pcfich[i]->assigned = 2;

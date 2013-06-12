@@ -21,6 +21,12 @@
 
 #include "oesr_types.h"
 
+
+#define LOG_LEVEL_INFO 		0x1
+#define LOG_LEVEL_ITF  		0x2
+#define LOG_LEVEL_DEBUG 	0x4
+
+
 /**@defgroup module_functions Module functions
  *
  * @{
@@ -84,6 +90,9 @@ int Stop(void *context);
 #define OESR_ERROR_MODNOTFOUND 	7
 #define OESR_ERROR_NOTREADY 	8
 
+int oesr_log_level(void *_context);
+void oesr_printf(void *_context, const char *format, ...);
+
 #define oesr_perror(msg) oesr_error_print(ctx,""); aerror(msg)
 char *oesr_error_string(void *ctx);
 int oesr_error_code(void *ctx);
@@ -107,7 +116,7 @@ int oesr_get_nofmodules(void *context);
 /**@defgroup itf Interface functions
  * @{
  */
-#define OESR_ITF_DEFAULT_MSG 8
+#define OESR_ITF_DEFAULT_MSG 4
 typedef enum {
 	ITF_READ, ITF_WRITE
 }oesr_itf_mode_t;
@@ -120,8 +129,8 @@ int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_read(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_status(itf_t itf);
 int oesr_itf_ptr_request(itf_t itf, void **ptr);
-int oesr_itf_ptr_release(itf_t itf);
-int oesr_itf_ptr_put(itf_t itf, int len, int tstamp);
+int oesr_itf_ptr_release(itf_t itf, void *ptr, int len);
+int oesr_itf_ptr_put(itf_t itf, void *ptr, int len, int tstamp);
 int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len, int tstamp);
 /**@} */
 

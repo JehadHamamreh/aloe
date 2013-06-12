@@ -89,7 +89,7 @@ int work(void **inp, void **out) {
 		outreal = out[i];
 		moddebug("rcv_len=%d input bits\n",get_input_samples(i));
 
-		if (get_input_samples(i)) {
+		if (get_input_samples(i) && output) {
 			if (out_real) {
 				out_len = modulate_real(input,outreal,get_input_samples(i));
 			} else {

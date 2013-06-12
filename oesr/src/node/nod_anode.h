@@ -38,7 +38,24 @@ typedef struct {
 	r_itf_t slaves_itf[MAX(node_itfphysic)];
 } nod_anode_t;
 
-int nod_anode_initialize();
+struct log_cfg {
+	int enabled;
+	int log_to_stdout;
+	int modules_en;
+	int modules_all;
+	int modules_time_en;
+	int modules_time_all;
+	int modules_join;
+	int log_modules_level;
+	int queues_en;
+	int queues_all;
+	int queues_join;
+	int log_queues_level;
+	int join_logs_sync;
+};
+
+
+int nod_anode_initialize(rtdal_machine_t *machine, int max_waveforms);
 int nod_anode_cmd_recv();
 
 #endif

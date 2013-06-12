@@ -28,8 +28,10 @@
 pmid_t blen_id, gen_id;
 int cnt=0;
 static int last_type;
-static int last_block_length;
 static int period,period_cnt;
+#ifdef _COMPILE_ALOE
+static int last_block_length;
+#endif
 
 /**@ingroup source
  *
@@ -39,7 +41,6 @@ static int period,period_cnt;
  *
  */
 int initialize() {
-	int size;
 	int block_length;
 
 	blen_id = param_id("block_length");
@@ -74,7 +75,7 @@ int initialize() {
 
 int work(void **inp, void **out) {
 	int block_length, type;
-	int i,j;
+	int i;
 	int snd_samples;
 
 	period_cnt++;
@@ -82,6 +83,10 @@ int work(void **inp, void **out) {
 		period_cnt=0;
 	}
 	if (period_cnt) {
+		return 0;
+	}
+
+	if (!out[0]) {
 		return 0;
 	}
 
@@ -102,7 +107,7 @@ int work(void **inp, void **out) {
 		}
 	}
 	if (i == NOF_GENERATORS) {
-		moderror_msg("Generator type %d not implemented\n", type);
+		modinfo_msg("Generator type %d not implemented\n", type);
 		return -1;
 	}
 	if (type != last_type) {
@@ -111,7 +116,7 @@ int work(void **inp, void **out) {
 	}
 
 	if (block_length > OUTPUT_MAX_SAMPLES/generators[i].samp_sz) {
-		moderror_msg("block_length %d too large. Maximum is %d for this generator\n",block_length,
+		modinfo_msg("block_length %d too large. Maximum is %d for this generator\n",block_length,
 				OUTPUT_MAX_SAMPLES/generators[i].samp_sz);
 		return -1;
 	}
@@ -126,7 +131,11 @@ int work(void **inp, void **out) {
 	snd_samples = generators[i].work(out[0],block_length);
 
 #ifdef _COMPILE_ALOE
+<<<<<<< HEAD
 	moddebug("%d bytes sent at ts=%d\n",snd_samples,oesr_tstamp(ctx));
+=======
+	modinfo_msg("Sent %d samples at ts=%d\n",snd_samples,oesr_tstamp(ctx));
+>>>>>>> devel
 #endif
 	return snd_samples;
 }

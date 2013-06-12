@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <rtdal.h>
 #include "defs.h"
 #include "mempool.h"
 

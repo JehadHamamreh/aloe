@@ -33,7 +33,7 @@ typedef struct h_proc_* r_proc_t;
 
 struct h_itf_ {
 	int id;
-	int is_external;
+	int type;
 };
 typedef struct h_itf_* r_itf_t;
 
@@ -42,6 +42,17 @@ struct h_dac_ {
 	int id;
 };
 typedef struct h_dac_* r_dac_t;
+
+struct h_log_ {
+	int id;
+};
+
+
+typedef enum {
+	TEXT, UINT32, INT32
+}r_log_mode_t;
+
+typedef struct h_log_* r_log_t;
 
 typedef pthread_t r_task_t;
 

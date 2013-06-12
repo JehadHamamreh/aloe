@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <complex.h>
+#include <math.h>
 
 #define RANDOM_NUMBERS	(1024*16)
 #define RANDOM_BITS		4*RANDOM_NUMBERS
@@ -35,7 +36,7 @@ static int cnt = 0;
 #define FIXED 1
 #define SEQ 2
 
-#define TYPE RAND
+#define TYPE 0
 
 void generator_init_random() {
 	int i;
@@ -75,7 +76,7 @@ void random_bits(char *output, int len) {
 }
 
 int work_binary(char *output, int block_size) {
-	int i,j;
+	int j;
 
 	for (j=0;j<block_size;j++) {
 		switch(TYPE) {
@@ -95,26 +96,26 @@ int work_binary(char *output, int block_size) {
 }
 
 int work_ramp_re(float *output, int block_size) {
-	int i,j;
+	int j;
 
 	for (j=0;j<block_size;j++) {
-		output[j] = i;
+		output[j] = j;
 	}
 	return block_size*sizeof(float);
 }
 
 int work_ramp_c(_Complex float *output, int block_size) {
-	int i,j;
+	int j;
 
 	for (j=0;j<block_size;j++) {
-		__real__ output[j] = j;
-		__imag__ output[j] = block_size-j-1;
+		__real__ output[j] = j/block_size;
+		__imag__ output[j] = (block_size-j-1)/block_size;
 	}
 	return block_size*sizeof(_Complex float);
 }
 
 int work_bpsk_re(float *output, int block_size) {
-	int i,j;
+	int j;
 
 	random_bits(tmp_binary,block_size);
 	for (j=0;j<block_size;j++) {
@@ -128,7 +129,7 @@ int work_bpsk_re(float *output, int block_size) {
 }
 
 int work_bpsk_c(_Complex float *output, int block_size) {
-	int i,j;
+	int j;
 
 	random_bits(tmp_binary,block_size);
 	for (j=0;j<block_size;j++) {
@@ -150,7 +151,7 @@ int work_bpsk_c(_Complex float *output, int block_size) {
 }
 
 int work_sin_re(float *output, int block_size) {
-	int i,j;
+	int j;
 	int cnt=0;
 	for (j=0;j<block_size;j++) {
 		switch(cnt) {
@@ -174,9 +175,9 @@ int work_sin_re(float *output, int block_size) {
 	}
 	return block_size*sizeof(float);
 }
-
+unsigned int t=0;
 int work_sin_c(_Complex float *output, int block_size) {
-	int i,j;
+	int j;
 	int cnt=0;
 	for (j=0;j<block_size;j++) {
 		switch(cnt) {
@@ -201,6 +202,7 @@ int work_sin_c(_Complex float *output, int block_size) {
 		if (cnt == 4) {
 			cnt = 0;
 		}
+
 	}
 	return block_size*sizeof(_Complex float);
 }

@@ -166,8 +166,12 @@ int oesr_var_param_set_value_idx(void *context, int idx, void* value, int size) 
 	nod_module_t *module = (nod_module_t*) ctx->module;
 	variable_t *variable = (variable_t*) &module->parent.variables[idx];
 
-	sdebug("%s: %d:%s: set variable %s value %d\n",oesr_module_name(ctx),oesr_tstamp(context),
-				module->parent.name,variable->name,*((int*) value));
+	/*
+	if (!strcmp(oesr_module_name(ctx),"ctrl")) {
+		printf("%s: %d: set variable %s value %d pos %d\n",oesr_module_name(ctx),oesr_tstamp(context),
+					variable->name,*((int*) value),idx);
+	}
+	*/
 
 	cpy_sz = (size > variable->size)?variable->size:size;
 

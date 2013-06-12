@@ -52,6 +52,11 @@ typedef struct {
 	/* The pipeline runs its own timer, which is synchronized at the beginning*/
 	rtdal_timer_t mytimer;
 
+	/* logs for the in/out times */
+	r_log_t log_in;
+	r_log_t log_out;
+	r_log_t log_exec;
+
 	int stop;
 	/**
 	 * Indicates if the thread has finished the execution of a time-slot or not.
@@ -61,6 +66,7 @@ typedef struct {
 	int nof_processes;
 	int rtfaults;
 	int ts_counter;
+	int enable;
 	/**
 	 * Indicates the execution position of the running module
 	 */
@@ -68,11 +74,13 @@ typedef struct {
 	int running_process_idx;
 
 	int waiting;
-
+	int xenomai_warn_msw;
+	int wait_on_finish;
 }pipeline_t;
 
 void pipeline_run_from_timer(void *arg, struct timespec *time);
 void pipeline_sync_threads();
+void pipeline_sync_thread_idx(int idx);
 void pipeline_initialize(int _num_pipelines);
 void *pipeline_run_thread(void *obj);
 int pipeline_recover_thread(pipeline_t *obj);

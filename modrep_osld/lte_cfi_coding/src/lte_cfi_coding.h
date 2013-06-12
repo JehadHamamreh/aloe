@@ -28,8 +28,8 @@
 typedef int input_t;
 typedef char output_t;
 
-#define OUTPUT_MAX_SAMPLES 	14*2048
-#define INPUT_MAX_SAMPLES 	14*2048
+#define OUTPUT_MAX_SAMPLES 	1024
+#define INPUT_MAX_SAMPLES 	1024
 
 #define NOF_INPUT_ITF		0
 #define NOF_OUTPUT_ITF		1

@@ -19,36 +19,38 @@
 #ifndef rtdal_DAC_H
 #define rtdal_DAC_H
 
-#include "objects_max.h"
+#include "rtdal.h"
+
+#define MAX_DAC_HANDLERS 5
 
 /**
- * This is the interface to the digital converters. Each converter must implement the interface in a particular class
+ * This is the interface to the digital converters.
  */
 typedef struct {
 	int id;
-	string options;
-	float freq;
-	int block_len;
-	int sampleType;
-	rtdal_itfspscq_t channels[MAX(dac_channel)];
-	string address;
-	void (*ts_begin_fnc)(void);
-	int thread_prio;
-	int sync_clock;
+	void *handler;
+	int code;
 } rtdal_dac_t;
 
+struct dac_names_ {
+	const char *name;
+	int code;
+};
 
-int rtdal_dac_open(r_dac_t obj, string address, string options);
-int rtdal_dac_close(r_dac_t obj);
-int rtdal_dac_set_scheduler(r_dac_t obj, void (*ts_begin_fnc)(void), int thread_prio);
-int rtdal_dac_start(r_dac_t obj);
-int rtdal_dac_set_opts(r_dac_t obj, string opts);
-int rtdal_dac_set_freq(r_dac_t obj, float freq);
-int rtdal_dac_set_block_len(r_dac_t obj, int len);
-int rtdal_dac_set_sample_type(r_dac_t obj, int type);
-int rtdal_dac_set_buffer_sz(r_dac_t obj, int in, int out);
-int rtdal_dac_set_opts(r_dac_t obj, string opts);
-int rtdal_dac_set_freq(r_dac_t obj, float freq);
-r_itf_t rtdal_dac_channel(r_dac_t obj, int int_ch);
+#define DAC_USRP 1
+
+const static struct dac_names_ dac_names[] = {
+#ifdef HAVE_UHD
+		{"USRP",DAC_USRP},
+#endif
+		{NULL,0}};
+
+#ifdef HAVE_UHD
+#include "uhd/uhd.h"
+#define call_usrp(a,...)  uhd_##a(__VA_ARGS__);
+#else
+#define call_usrp(a,...) -1
+#endif
+
 
 #endif

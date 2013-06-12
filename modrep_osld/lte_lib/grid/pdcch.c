@@ -21,7 +21,7 @@ int lte_grid_init_reg_pdcch(struct lte_pdcch *ch, struct lte_grid_config *config
 				reg = lte_reg_get_k(k, l, config);
 				if (!reg) {
 					printf("Error initiating PDCCH: REG (%d,%d) not found\n",k,l);
-					break;
+					return -1;
 				}
 				if (reg->assigned != 1) {
 					l++;

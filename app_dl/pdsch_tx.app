@@ -19,6 +19,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
 		mopts=26;
+		log=true;
 		variables=(
 			{name="direction";value=0},{name="out_len";value=0},
 			{name="rvidx";value=0;}
@@ -29,7 +30,7 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=19;
-		variables=({name="subframe";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
+		variables=({name="subframe";value=-1},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
 		{name="hard";value=1},{name="channel";value=0});
 	};
 

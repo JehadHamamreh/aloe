@@ -5,23 +5,30 @@ modules:
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
-		mopts=75;
+		mopts=60;
+		log=false;
 		variables=(
+<<<<<<< HEAD:app_dl/pdsch_rx.app
 			{name="soft";value=1},{name="modulation";value=2},{name="sigma2";value=1.0});
+=======
+			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=0.5;});
+>>>>>>> devel:pdsch_rx.app
 	};
 	
 	descrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=35;
-		variables=({name="subframe";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
+		mopts=26;
+		log=false;
+		variables=({name="subframe";value=-1},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
 		{name="hard";value=0},{name="channel";value=0});
 	};
 	
 	unratematching:
 	{
 		binary="modrep_osld/liblte_ratematching.so";	
-		mopts=84;
+		mopts=122;
+		log=true;
 		variables=(
 			{name="direction";value=1},{name="out_len";value=0},
 			{name="rvidx";value=0;}
@@ -31,17 +38,20 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/liblte_turbocode.so";	
-		mopts=200;
+		mopts=279;
+		log=true;
 		variables=({name="direction";value=1},{name="iterations";value=1},{name="padding";value=0;});
 	};
 
 	uncrc_tb:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=8;
+		mopts=16;
+		log=true;
 		variables=({name="direction";value=1},{name="long_crc";value=16;}
-					,{name="point_interval";value=100}  
-					,{name="print_interval";value=0}  
+					/*,{name="point_interval";value=10}*/
+					,{name="print_interval";value=900}
+					,{name="forward_on_error";value=1}
 			); 
 	};	
 	

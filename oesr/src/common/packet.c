@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <rtdal.h>
 #include "packet.h"
 #include "defs.h"
 
@@ -54,8 +55,8 @@ int packet_init(packet_t *pkt, int size) {
  */
 int packet_clear(packet_t *pkt) {
 	pktdebug("w_ptr=%d, r_ptr=%d\n",pkt->w_ptr,pkt->r_ptr);
-	assert_init;
 	aassert(pkt);
+	assert_init;
 	memset(&pkt->dest, 0, sizeof(packet_dest_t));
 	pkt->r_ptr = 0;
 	pkt->w_ptr = 0;

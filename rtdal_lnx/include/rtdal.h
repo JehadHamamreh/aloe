@@ -19,11 +19,12 @@
 #ifndef rtdal_H_
 #define rtdal_H_
 
-#define MODULES_PATH "/home/ismael/aloe_ws/aloe_git/modules"
 
 #include "rtdal_types.h"
 #include "str.h"
 #include "rtdal_machine.h"
+
+#include <stdarg.h>
 
 
 /**@defgroup runmain _run_main() function
@@ -46,7 +47,7 @@ void rtdal_machine(rtdal_machine_t *machine);
 int rtdal_sleep(time_t *t);
 void rtdal_rtcontrol_enable(int enabled);
 void rtdal_timeslot_set(int ts_base_multiply);
- 
+void rtdal_printf(const char *format, ...);
 /**@} */
 
 
@@ -115,7 +116,7 @@ int rtdal_time_attach_local();
 /**@} */
 
 /**@defgroup file Filesystem I/O functions
- * TODO: documentent this
+ * TODO: document this
  * @{
  */
 int rtdal_file_open(string name);
@@ -124,6 +125,24 @@ int rtdal_file_write(int fd, void* buf, int size);
 int rtdal_file_read(int fd, void* buf, int size);
 
 /**@} */
+
+/**@defgroup log Logging functions
+ * TODO: document this
+ * @{
+ */
+#define RTDAL_LOG_OPTS_EXCL	0x1
+int rtdal_log_init(char *base_path, int max_logs, int max_str_len,  int _default_log_sz, void *redirect_stream);
+void rtdal_log_flushall();
+void rtdal_log_flush(r_log_t log);
+r_log_t rtdal_log_new(char *name, r_log_mode_t mode, int size);
+r_log_t rtdal_log_new_opts(char *name, r_log_mode_t mode, int size, int opts);
+void rtdal_log_printf(r_log_t log, const char *format, ... );
+void rtdal_log_vprintf(r_log_t _log, const char *format, va_list ap);
+void rtdal_log_add(r_log_t log, void *data, int size);
+void rtdal_log_add_us(r_log_t log);
+void rtdal_log_add_tslot(r_log_t log);
+/**@} */
+
 
 /**@defgroup itf Interfaces functions
  * @{ */
@@ -134,16 +153,17 @@ int rtdal_itfphysic_create(r_itf_t obj, string address);
 int rtdal_itfphysic_connect(r_itf_t obj);
 int rtdal_itfphysic_disconnect(r_itf_t obj);
 
-r_itf_t rtdal_itfspscq_new(int max_msg, int msg_sz, int delay);
+r_itf_t rtdal_itfspscq_new(int max_msg, int msg_sz, int delay, r_log_t log);
 
+int rtdal_itf_reset(r_itf_t obj);
 int rtdal_itf_remove(r_itf_t obj);
 int rtdal_itf_set_callback(r_itf_t obj, void (*fnc)(void), int prio);
 int rtdal_itf_set_blocking(r_itf_t obj, int block);
 int rtdal_itf_get_blocking(r_itf_t obj);
-int rtdal_itf_push(r_itf_t obj, int len, int tstamp);
+int rtdal_itf_push(r_itf_t obj, void *ptr, int len, int tstamp);
 int rtdal_itf_pop(r_itf_t obj, void **ptr, int *len, int tstamp);
 int rtdal_itf_request(r_itf_t obj, void **ptr);
-int rtdal_itf_release(r_itf_t obj);
+int rtdal_itf_release(r_itf_t obj, void *ptr, int len);
 int rtdal_itf_send(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itf_recv(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itf_set_delay(r_itf_t obj, int delay);
@@ -154,10 +174,25 @@ int rtdal_itf_get_delay(r_itf_t obj);
  * TODO: documentent this
  * @{
  */
-int rtdal_uhd_set_freq(float freq);
-int rtdal_uhd_set_block_len(int len);
-int rtdal_uhd_get_block_len();
-void *rtdal_uhd_buffer(int int_ch);
+
+r_dac_t rtdal_dac_open(string name, string args);
+int rtdal_dac_close(r_dac_t obj);
+int rtdal_dac_start_rx_stream(r_dac_t obj);
+
+float rtdal_dac_set_tx_srate(r_dac_t obj, float freq);
+float rtdal_dac_get_tx_srate(r_dac_t obj);
+float rtdal_dac_set_rx_srate(r_dac_t obj, float freq);
+float rtdal_dac_get_rx_srate(r_dac_t obj);
+
+float rtdal_dac_set_tx_gain(r_dac_t obj, float gain);
+float rtdal_dac_set_rx_gain(r_dac_t obj, float gain);
+
+float rtdal_dac_set_tx_freq(r_dac_t obj, float freq);
+float rtdal_dac_set_rx_freq(r_dac_t obj, float freq);
+
+int rtdal_dac_send(r_dac_t obj, void *data, int nsamples, int blocking);
+int rtdal_dac_recv(r_dac_t obj, void *data, int nsamples, int blocking);
+
 /**@} */
 
 

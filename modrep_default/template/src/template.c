@@ -39,7 +39,6 @@ int block_length;
  * \returns This function returns 0 on success or -1 on error
  */
 int initialize() {
-	int size;
 
 	/* obtains a handler for fast access to the parameter */
 	gain_id = param_id("gain");

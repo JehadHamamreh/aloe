@@ -4,7 +4,7 @@
 set(LIBRARIES m rt)
 
 # set-up program includes here
-include_directories(/usr/local/include/)
+include_directories(/usr/local/include/ ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)
 
 ############## DO NOT NEED TO MODIFY BEYOND HERE
 

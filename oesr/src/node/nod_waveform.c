@@ -16,9 +16,9 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "rtdal.h"
 #include "defs.h"
 #include "packet.h"
-#include "rtdal.h"
 #include "rtdal_machine.h"
 #include "nod_waveform.h"
 #include "mempool.h"
@@ -107,7 +107,7 @@ int nod_waveform_run(nod_waveform_t *w, int runnable) {
 			return -1;
 		}
 	}
-	w->status.cur_status = LOADED;
+//	w->status.cur_status = LOADED;
 	return 0;
 }
 
@@ -142,10 +142,6 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 	nod_waveform_t* waveform = arg;
 	ndebug("waveform_id=%d\n",waveform->id);
 
-	if (DEBUG_NODE) {
-		rtdal_task_print_sched();
-	}
-
 	for (i=0;i<waveform->nof_modules;i++) {
 		if (waveform->modules[i].parent.status != STOP) {
 			/*if (rtdal_process_isrunning(waveform->modules[i].process)) {
@@ -161,6 +157,31 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 		}
 	}
 	return (void*) 1;
+}
+
+void* nod_waveform_reset_pipeline(void *_waveform) {
+	int i,j;
+	nod_waveform_t *waveform = (nod_waveform_t*) _waveform;
+	ndebug("reseting at %d\n",rtdal_time_slot());
+
+	for (i=0;i<waveform->nof_modules;i++) {
+		for (j=0;j<waveform->modules[i].parent.nof_outputs;j++) {
+			if (waveform->modules[i].parent.outputs[j].hw_itf) {
+				rtdal_itf_reset(waveform->modules[i].parent.outputs[j].hw_itf);
+			}
+		}
+		oesr_context_reset_ts(waveform->modules[i].context);
+		rtdal_process_seterror(waveform->modules[i].process, FINISH_OK);
+	}
+
+	time_t t;
+	t.tv_sec = 3;
+	t.tv_usec = 0;
+	rtdal_sleep(&t);
+
+	nod_waveform_run(waveform,1);
+
+	return NULL;
 }
 
 /**  goes through all the modules and calls nod_module_stop();
@@ -224,10 +245,6 @@ void* nod_waveform_status_init_thread(void *arg) {
 	int n;
 	int nof_trials, nof_initiated;
 	nod_waveform_t *waveform = arg;
-
-	if (DEBUG_NODE) {
-		rtdal_task_print_sched();
-	}
 
 	i = nof_trials = nof_initiated = 0;
 	printf("Initiating %d modules",waveform->nof_modules);
@@ -314,7 +331,7 @@ int nod_waveform_precach_pipeline(nod_waveform_t *waveform) {
 	rtdal_timeslot_set(10);
 	waveform->status.next_timeslot = rtdal_time_slot();
 	waveform->status.cur_status = RUN;
-	ts.tv_sec = 3;
+	ts.tv_sec = 2;
 	ts.tv_usec = 0;
 	rtdal_sleep(&ts);
 	variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");
@@ -354,16 +371,18 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 
 	switch(new_status->cur_status) {
 	case INIT:
-		if (nod_waveform_run(waveform,0)) { /** stop running modules in pipeline */
+		/*if (nod_waveform_run(waveform,0)) {
 			return -1;
 		}
+		*/
 		if (nod_waveform_status_init(waveform)) {
 			return -1;
 		}
+		/*
 		if (nod_waveform_run(waveform,1)) {
 			return -1;
 		}
-
+		*/
 		if (waveform->precach_pipeline) {
 			nod_waveform_precach_pipeline(waveform);
 		}
@@ -501,7 +520,7 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 		get_i(&dest->id);
 		get_i(&granularity_us);
 		if (granularity_us) {
-			dest->tslot_multiplicity = machine.ts_len_us/granularity_us;
+			dest->tslot_multiplicity = machine.ts_len_ns/1000/granularity_us;
 		} else {
 			dest->tslot_multiplicity = 1;
 		}

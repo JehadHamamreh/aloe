@@ -65,7 +65,7 @@ int initialize() {
 	}
 	/* Only approximate LLR soft demodulation algorithm implemented so far */
 	if ((soft < 0) || (soft > 1)) {
-		moderror_msg("Wrong soft demodulation mode %d. Specify 0 for "
+		modinfo_msg("Wrong soft demodulation mode %d. Specify 0 for "
 			"exact and 1 for approximate LLR algorithm.\n", soft);
 		return -1;
 	}
@@ -115,6 +115,7 @@ int work(void **inp, void **out) {
 
 	/* Dynamically obtain demodulation parameters */
 	if (param_get_int(modulation_id, &modulation) != 1) {
+<<<<<<< HEAD
 		modulation = BPSK;
 		moddebug("Parameter modulation not specified. Assuming %d (BPSK).\n",modulation);
 	}
@@ -128,13 +129,28 @@ int work(void **inp, void **out) {
 	/* Verify parameters */
 	if ((modulation != BPSK) && (modulation != QPSK) && (modulation != QAM16) && (modulation != QAM64)) {
 		moderror_msg("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
+=======
+		printf("Error getting 'modulation' parameter\n");
+		return -1;
+	}
+	if (param_get_float(sigma2_id, &sigma2) != 1) {
+		printf("Error getting noise variance (sigma2) parameter\n");
+		return -1;
+	}
+
+	/* Verify parameters */
+	if (modulation > 6 || modulation < 0) {
+		printf("Invalid modulation %d. Specify 1 for BPSK, 2 for QPSK,"
+>>>>>>> devel
 				"4 for 16QAM, or 6 for 64QAM\n", modulation);
 		return -1;
 	}
 	if (sigma2 < 0) {
-		moderror_msg("Noise variance %f. Must be greater than 0.\n", sigma2);
+		printf("Noise variance %f. Must be greater than 0.\n", sigma2);
 		return -1;
 	}
+
+	modinfo_msg("modulation=%d\n",modulation);
 
 	input = inp[0];
 	output = out[0];
@@ -179,7 +195,14 @@ int work(void **inp, void **out) {
 		}
 	}
 	snd_samples = rcv_samples*bits_per_symbol;
+<<<<<<< HEAD
 	moddebug("snd_samples=%d soft 'bits' (float).\n",snd_samples);
+=======
+	for (int i=0;i<snd_samples;i++) {
+		output[i]*=1.5;
+	}
+
+>>>>>>> devel
 	return snd_samples;
 }
 

@@ -50,6 +50,7 @@ typedef struct {
 	float total_mbpts;
 	float use_mbpts;
 	int delay;
+	int log_enable;
 	r_itf_t hw_itf;
 } interface_t;
 
@@ -104,6 +105,7 @@ typedef struct {
 	int nof_modes;
 	int stage;
 	int index;
+	int log_enable;
 } module_t;
 
 

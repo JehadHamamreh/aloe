@@ -16,6 +16,7 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
 #include <stddef.h>
 #include "rtdal.h"
 
@@ -25,6 +26,28 @@
 #include "oesr_context.h"
 #include "nod_waveform.h"
 #include "waveform.h"
+
+/* Returs true if debugging is enabled for this module */
+int oesr_log_level(void *_context) {
+	oesr_context_t *context = (oesr_context_t*) _context;
+	nod_module_t *module = (nod_module_t*) context->module;
+	return module->log_level;
+}
+
+void oesr_printf(void *_context, const char *format, ...) {
+	oesr_context_t *context = (oesr_context_t*) _context;
+	nod_module_t *module = (nod_module_t*) context->module;
+	if (!module->log) {
+		return;
+	}
+	va_list ap;
+	va_start(ap,format);
+	rtdal_log_vprintf(module->log,format,ap);
+	if (module->output_stdout) {
+		vprintf(format,ap);
+	}
+
+}
 
 /**  Returns the size of the oesr context
  */
@@ -49,6 +72,11 @@ int oesr_context_init(void *_context, void *_module) {
 	memset(context->logs,0,sizeof(oesr_log_t)*MAX(oesr_log));
 	module->changing_status = 0;
 	return 0;
+}
+
+void oesr_context_reset_ts(void *_context) {
+	oesr_context_t *context = (oesr_context_t*) _context;
+	context->tstamp = 0;
 }
 
 nod_module_t *oesr_get_module(void *context) {
@@ -189,7 +217,11 @@ int oesr_tstamp(void *context) {
 int oesr_tslot_length(void *context) {
 	rtdal_machine_t machine;
 	rtdal_machine(&machine);
-	return machine.ts_len_us;
+	if (machine.ts_len_ns) {
+		return machine.ts_len_ns/1000;
+	} else {
+		return 1;
+	}
 }
 
 /**

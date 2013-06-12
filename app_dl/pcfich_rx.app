@@ -16,8 +16,9 @@ modules:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
 		mopts=4;
+		log=false;
 		variables=(
-			{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1},
+			{name="subframe";value=-1},{name="cell_gr";value=101},{name="cell_sec";value=2},{name="channel";value=1},
 			{name="direct";value=1},{name="hard";value=1}
 		);
 	};
@@ -25,7 +26,9 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/liblte_cfi_decoding.so";	
-		mopts=3;
+		mopts=4;
+		log=true;
+		variables=({name="errors_threshold";value=32});
 	};
 		
 };

@@ -32,8 +32,8 @@
 typedef char input_t;
 typedef char output_t;
 
-#define OUTPUT_MAX_SAMPLES 	14*2048	/* Max 576 bits for PDCCH format 3 */
-#define INPUT_MAX_SAMPLES 	14*2048
+#define OUTPUT_MAX_SAMPLES 	8*576	/* Max 576 bits for PDCCH format 3 */
+#define INPUT_MAX_SAMPLES 	8*576
 
 #define NOF_INPUT_ITF		1
 #define NOF_OUTPUT_ITF		1

@@ -16,9 +16,9 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "rtdal.h"
 #include "defs.h"
 #include "nod_sync.h"
-#include "rtdal.h"
 
 int nod_sync_master(r_itf_t *itf) {
 	aerror("Not yet implemented");

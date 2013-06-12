@@ -5,7 +5,8 @@ modules:
 	de_output:
 	{
 		binary="modrep_osld/libgen_demux.so";	
-		mopts=11;
+		log=false;
+		mopts=13.0;
 		variables=({name="nof_outputs";value=14;},{name="data_type";value=2;},
 					{name="out_len_0";value=138},{name="out_len_7";value=138});
 	};
@@ -13,7 +14,8 @@ modules:
 	remcyclic_first:
 	{
 		binary="modrep_osld/libgen_remcyclic.so";	
-		mopts=3;
+		log=false;
+		mopts=4.0;
 		instances=2;
 		variables=({name="dft_size";value=128}, {name="cyclic_prefix_sz";value=10});
 	};
@@ -21,7 +23,8 @@ modules:
 	remcyclic:
 	{
 		binary="modrep_osld/libgen_remcyclic.so";	
-		mopts=3;
+		log=false;
+		mopts=3.0;
 		instances=12;
 		variables=({name="dft_size";value=128}, {name="cyclic_prefix_sz";value=9}	);
 	};
@@ -29,7 +32,8 @@ modules:
 	fft:
 	{
 		binary="modrep_osld/libgen_dft.so";
-		mopts=16;
+		mopts=11;
+		log=false;
 		instances=14;
 		variables=(
 			{name="dc_offset";value=1;},
