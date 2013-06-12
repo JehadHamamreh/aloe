@@ -33,7 +33,7 @@ packet_t *node_packet;
 
 nod_anode_t anode;
 
-r_log_t oesr_log, modules_log, queues_log;
+r_log_t oesr_log=NULL, modules_log=NULL, queues_log=NULL;
 
 struct log_cfg logs_cfg;
 
@@ -106,6 +106,9 @@ int nod_anode_parse_cfg(char *config_file) {
 	}
 	if (!config_setting_lookup_bool(cfg,"trace_modules_exetime",&logs_cfg.modules_time_en)) {
 		logs_cfg.modules_time_en=0;
+	}
+	if (!config_setting_lookup_bool(cfg,"trace_modules_exetime_all",&logs_cfg.modules_time_all)) {
+		logs_cfg.modules_time_all=0;
 	}
 	if (!config_setting_lookup_bool(cfg,"join_logs_sync",&logs_cfg.join_logs_sync)) {
 		logs_cfg.join_logs_sync=0;

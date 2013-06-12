@@ -27,7 +27,7 @@ else()
 	else()
 		message("-- LOGS Disabled")
 	endif()
-	set(CFDEB "-O3 ${LOGEN}")
+	set(CFDEB "-O3 ${LOGEN} -march=core2")
 endif()
 
 set(CMAKE_C_FLAGS "${CFDEB} -Wall -Winline -Wno-unused-result -Wno-format -std=c99 -D_GNU_SOURCE -fPIC")
@@ -38,6 +38,9 @@ list(APPEND RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/include)
 list(APPEND RTDAL_INCLUDE ${CMAKE_SOURCE_DIR}/rtdal_lnx/extern)
 set(OESR_INCLUDE ${CMAKE_SOURCE_DIR}/oesr/include)
 
+set(VOLK_INCLUDE ${CMAKE_SOURCE_DIR}/volk/include)
+
+add_subdirectory(volk)
 add_subdirectory(oesr)
 add_subdirectory(rtdal_lnx)
 add_subdirectory(modrep_default)

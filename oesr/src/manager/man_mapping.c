@@ -148,10 +148,16 @@ void generate_model_platform(man_platform_t *platform) {
 	int i,j;
 
 	plat.nof_processors = platform->nof_processors;
-
+	printf("Platform model. %d processsors: ",platform->nof_processors);
 	for (i=0;i<platform->nof_processors;i++) {
-		plat.C[i] = platform->ts_length_us;
+		if (i==0) {
+			plat.C[i] = platform->core0_relative*platform->ts_length_us;
+		} else {
+			plat.C[i] = platform->ts_length_us;
+		}
+		printf("C[%d]=%g, ",i,plat.C[i]);
 	}
+	printf("\n");
 
 	for (i=0;i<platform->nof_processors;i++) {
 		for (j=0;j<platform->nof_processors;j++) {
@@ -277,7 +283,7 @@ void generate_model_stages(waveform_t *waveform) {
 			for (k = 0; k < waveform->nof_modules; k++) {
 				if (waveform->modules[i].outputs[j].remote_module_id ==
 						waveform->modules[k].id) {
-					if (waveform->modules[i].outputs[j].delay == 1) {
+					if (waveform->modules[i].outputs[j].delay == -1) {
 						waveform->modules[i].outputs[j].delay = abs(waveform->modules[i].stage-waveform->modules[k].stage);
 					}
 					mapdebug("delay %s:%d->%s(%d):%d is %d slots\n",waveform->modules[i].name,
@@ -323,13 +329,38 @@ int generate_model(mapping_t *m, waveform_t *waveform, man_platform_t *platform)
 /** USES oesr_man_ERROR to describe any mapping error */
 int call_algorithm(mapping_t *m, waveform_t *waveform, man_platform_t *platform) {
 
-    m->cost = mapper(&preproc, &malg, &costf, &plat, &wave, &result);
-	if (m->cost == infinite) {
-		printf("Error loading waveform. Not enough resources\n");
-		return -1;
+	if (platform->ts_length_us > 1) {
+	    m->cost = mapper(&preproc, &malg, &costf, &plat, &wave, &result);
+		if (m->cost == infinite) {
+			printf("Error loading waveform. Not enough resources\n");
+			return -1;
+		} else {
+			return 0;
+		}
 	} else {
-		return 0;
+		for (int i=0;i<waveform->nof_modules;i++) {
+			m->p_res[i]=0;
+
+			for (int j = 0; j < waveform->modules[i].nof_outputs; j++) {
+				waveform->modules[i].outputs[j].delay = -1;
+			}
+			for (int j = 0; j < waveform->modules[i].nof_inputs; j++) {
+				waveform->modules[i].inputs[j].delay = -1;
+			}
+		}
+		for (int i=0;i<waveform->nof_modules;i++) {
+			for (int j = 0; j < waveform->modules[i].nof_inputs; j++) {
+				if (waveform->modules[i].inputs[j].remote_module_id>waveform->modules[i].id) {
+					for (int k=0;k<waveform->nof_modules;k++) {
+						if (waveform->modules[k].id == waveform->modules[i].inputs[j].remote_module_id) {
+							waveform->modules[k].outputs[waveform->modules[i].inputs[j].remote_port_idx].delay = -2;
+						}
+					}
+				}
+			}
+		}
 	}
+
 	return 0;
 }
 
@@ -347,12 +378,14 @@ int mapping_map(mapping_t *m, waveform_t *waveform) {
 	mdebug("waveform_name=%s, nof_modules=%d\n",waveform->name, waveform->nof_modules);
 	int i;
 	int ret=-1;
+	float total_mopts;
 	man_platform_t *platform = man_platform_get_context();
 	man_node_t *node;
 	if (!platform) {
 		aerror("oesr_man not initialized\n");
 		return -1;
 	}
+	printf("Computing mapping for %d modules...\n",waveform->nof_modules);
 	if (mapping_alloc(m,waveform->nof_modules,platform->nof_processors)) {
 		return -1;
 	}
@@ -365,6 +398,7 @@ int mapping_map(mapping_t *m, waveform_t *waveform) {
 	if (call_algorithm(m, waveform, platform)) {
 		goto free;
 	}
+	total_mopts=0;
 	memset(m->modules_x_node,0,sizeof(int)*MAX(nodes));
 	for (i=0;i<waveform->nof_modules;i++) {
 		if (m->p_res[joined_function_inv[i]] >= platform->nof_processors) {
@@ -378,7 +412,9 @@ int mapping_map(mapping_t *m, waveform_t *waveform) {
 		waveform->modules[i].exec_position = i;/*waveform->nof_modules-i-1;*/
 		node = p->node;
 		m->modules_x_node[node->id]++;
+		total_mopts+=waveform->modules[i].c_mopts[0];
 	}
+	printf("Done. %g GOPTS\n",total_mopts/1000);
 	ret = 0;
 free:
 	mapping_free(m,waveform->nof_modules,platform->nof_processors);

@@ -204,10 +204,6 @@ int work(void **inp, void **out) {
 
 	struct ul_params uparams;
 
-#ifdef _COMPILE_ALOE
-	moddebug("ts=%d rcv_samples=%d\n",oesr_tstamp(ctx),get_input_samples(0));
-#endif
-
 	rcv_samples = get_input_samples(0);
 	if (!rcv_samples) {
 		return 0;
@@ -254,7 +250,7 @@ int work(void **inp, void **out) {
 	}
 
 #ifdef _COMPILE_ALOE
-	moddebug("ts=%d subframe=%d\n",oesr_tstamp(ctx),subframe);
+	modinfo_msg("subframe=%d\n",subframe);
 #endif
 
 	if (hard) { /* bits (scrambling, hard descrambling) */

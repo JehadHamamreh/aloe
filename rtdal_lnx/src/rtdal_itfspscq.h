@@ -24,32 +24,12 @@
 #include "rtdal.h"
 
 
-typedef struct {
-	int valid;
-	int tstamp;
-	int len;
-	void *data;
-}r_pkt_t;
-
-typedef struct {
-	rtdal_itf_t parent;
-
-	int max_msg;
-	int max_msg_sz;
-	int read;
-	int write;
-	r_pkt_t *packets;
-	char *data;
-}rtdal_itfspscq_t;
-
-int rtdal_itfspscq_init(rtdal_itfspscq_t *obj);
-int rtdal_itfspscq_create(r_itf_t obj, string address);
 int rtdal_itfspscq_reset(r_itf_t obj);
 int rtdal_itfspscq_remove(r_itf_t obj);
 int rtdal_itfspscq_request(r_itf_t obj, void **ptr);
-int rtdal_itfspscq_push(r_itf_t obj, int len, int tstamp);
+int rtdal_itfspscq_push(r_itf_t obj, void *ptr, int len, int tstamp);
 int rtdal_itfspscq_pop(r_itf_t obj, void **ptr, int *len, int tstamp);
-int rtdal_itfspscq_release(r_itf_t obj);
+int rtdal_itfspscq_release(r_itf_t obj, void *ptr, int len);
 int rtdal_itfspscq_send(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itfspscq_recv(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itfspscq_set_callback(r_itf_t obj, void (*fnc)(void), int prio);

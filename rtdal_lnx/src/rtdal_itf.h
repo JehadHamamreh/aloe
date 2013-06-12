@@ -21,13 +21,18 @@
 
 #include "str.h"
 #include "rtdal.h"
+#include "rtdal_itfspscq.h"
+
+#define ITF_INT_QUEUE		1
+#define ITF_INT_SPSCQ		2
+#define ITF_EXTERNAL		4
 
 /**
  * Abstract class that manages the rtdal data or control, physical or logical interfaces.
  */
 typedef struct {
 	int id;
-	int is_external;
+	int type;
 
 	strdef(name);
 	int mode_is_input;
@@ -41,5 +46,6 @@ typedef struct {
 	r_log_t log;
 
 }rtdal_itf_t;
+
 
 #endif

@@ -24,6 +24,7 @@
 #include "rtdal_process.h"
 #include "pipeline.h"
 #include "defs.h"
+#include "modulethread.h"
 
 lstrdef(tmp);
 lstrdef(tmp2);
@@ -95,9 +96,20 @@ int rtdal_process_remove(r_proc_t process) {
 	rtdal_process_t *obj = (rtdal_process_t*) process;
 	hdebug("pid=%d\n",obj->pid);
 
-	if (pipeline_remove((pipeline_t*) obj->pipeline, obj)) {
-		return -1;
+	switch(rtdal.machine.scheduling) {
+		case SCHEDULING_PIPELINE:
+			if (pipeline_remove((pipeline_t*) obj->pipeline, obj)) {
+				return -1;
+			}
+		break;
+		case SCHEDULING_BESTEFFORT:
+			if (modulethread_remove(obj)) {
+				return -1;
+			}
+		break;
 	}
+
+
 
 	dlclose(obj->dl_handle);
 

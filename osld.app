@@ -121,8 +121,9 @@ modules:
 
 	synchro:
 	{
-		binary="modrep_osld/liblte_synchG.so";
+		binary="modrep_osld/liblte_synchJ.so";
 		mopts=5;
+		log=true;
 		variables=({name="bypass";value=1},{name="FFTsize";value=128},
 		{name="LTEframe_structtype";value=1;});
 	};

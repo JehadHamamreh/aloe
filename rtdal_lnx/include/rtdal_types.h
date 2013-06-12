@@ -33,7 +33,7 @@ typedef struct h_proc_* r_proc_t;
 
 struct h_itf_ {
 	int id;
-	int is_external;
+	int type;
 };
 typedef struct h_itf_* r_itf_t;
 

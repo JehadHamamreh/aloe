@@ -28,7 +28,7 @@
 
 pmid_t rnti_id, antenna_selection_id, dci_format_id, ue_port_id, nof_ports_id;
 
-int L; 		/* crc length to be scrambled */
+int Lcrc; 		/* crc length to be scrambled */
 int channel; 	/* specifies LTE control channel, as each applies another scrambling sequence */
 int direction;	/* specifies if Tx/bit-scrambling (0) or Rx/soft-bit scrambling (!=0) */
 
@@ -40,10 +40,10 @@ int direction;	/* specifies if Tx/bit-scrambling (0) or Rx/soft-bit scrambling (
  */
 int verify_initialization_parameters(void)
 {
-	if ((L<1) || (L>L_MAX)) {
+	if ((Lcrc<1) || (Lcrc>L_MAX)) {
 		moderror_msg("Wrong or unsupported CRC length %d. CRC length "
 			"must be a positive integer between 1 and %d.\n",
-			L, L_MAX);
+			Lcrc, L_MAX);
 		return -1;
 	}
 	if ((channel<0) || (channel>1)) {
@@ -57,8 +57,8 @@ int verify_initialization_parameters(void)
 
 inline int verify_runtime_parameters(unsigned rnti, int ue_port)
 {
-	if (L != 16) {
-		moderror_msg("Wrong crc length %d specified. Should be 16.\n", L);
+	if (Lcrc != 16) {
+		moderror_msg("Wrong crc length %d specified. Should be 16.\n", Lcrc);
 		return -1;
 	}
 	if ((rnti < 0) || (rnti > 0xFFFF)) {
@@ -93,10 +93,10 @@ int initialize() {
 		  "%d: transmitter.\n", 0);
 		direction = 0;
 	}
-	if (param_get_int_name("crc_length", &L)) {
+	if (param_get_int_name("crc_length", &Lcrc)) {
 		moddebug("Number of parity bits not specified. Assuming "
 		  "default value %d.\n", L_default);
-		L = L_default;
+		Lcrc = L_default;
 	}
 	if (param_get_int_name("channel", &channel)) {
 		moddebug("LTE channel not specified. Assuming (%d) - "
@@ -199,12 +199,12 @@ int work(void **inp, void **out) {
 
 	if (!direction) {
 		/* Transmitter (bit-scrambling) */
-		memcpy(output_b, input_b, rcv_samples-L);
-		srambling(&input_b[rcv_samples-L], &output_b[rcv_samples-L], L, c);
+		memcpy(output_b, input_b, rcv_samples-Lcrc);
+		srambling(&input_b[rcv_samples-Lcrc], &output_b[rcv_samples-Lcrc], Lcrc, c);
 	} else {
 		/* Receiver (soft-bit scrambling) */
-		memcpy(output_f, input_f, rcv_samples-L);
-		desrambling(&input_f[rcv_samples-L], &output_f[rcv_samples-L], L, c);
+		memcpy(output_f, input_f, rcv_samples-Lcrc);
+		desrambling(&input_f[rcv_samples-Lcrc], &output_f[rcv_samples-Lcrc], Lcrc, c);
 	}
 
 	return snd_samples;

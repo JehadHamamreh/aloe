@@ -62,7 +62,6 @@ int initialize() {
 	return 0;
 }
 
-
 int work(void **inp, void **out) {
 	int i, out_len, j;
 	input_t *input;
@@ -73,9 +72,8 @@ int work(void **inp, void **out) {
 	for (i=0;i<NOF_INPUT_ITF;i++) {
 		input = inp[i];
 		output = out[i];
-		moddebug("rcv_len=%d\n",get_input_samples(i));
-
 		if (get_input_samples(i) && output) {
+			modinfo_msg("rcv=%d samples\n",get_input_samples(0));
 			if (!direction) {
 				out_len = RATE*get_input_samples(i)+TOTALTAIL;
 				if (turbo_coder(input,output,get_input_samples(i))<0) {
@@ -86,8 +84,8 @@ int work(void **inp, void **out) {
 				input_llr = (Tdec*) input;
 
 				if (out_len < 0 || out_len > 5114) {
-					modinfo_msg("Maximum supported block length is %d\n",5114);
-					return 0;
+					moderror_msg("Maximum supported block length is %d\n",5114);
+					return -1;
 				}
 
 				ccfg.Long_CodeBlock=out_len;

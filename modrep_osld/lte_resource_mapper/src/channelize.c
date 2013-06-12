@@ -122,8 +122,10 @@ int insert_signals(complex_t *output) {
 			lte_sss_put(&sss_signal[SSS_LEN],&output[i*grid.fft_size+grid.pre_guard],&symbol,&grid);
 		}
 #endif
+#ifndef ONLY_SYNC
 #ifdef ENABLE_REF
 		lte_refsig_put(&reference_signal,&output[i*grid.fft_size],&symbol,&grid);
+#endif
 #endif
 	}
 	return 0;
@@ -142,6 +144,13 @@ int allocate_all_channels(void **inp,void *output) {
 	if (!output) {
 		return -1;
 	}
+#ifdef ONLY_SYNC
+	_Complex float *x=output;
+	for (i=0;i<grid.nof_osymb_x_subf*grid.fft_size;i++) {
+		x[i] = 0.0;
+	}
+#else
+	memset(output,0,sizeof(_Complex float)*grid.nof_osymb_x_subf*grid.fft_size);
 	for (i=0;i<nof_pdsch;i++) {
 		if (pdsch[i].in_port >=0) {
 			if (allocate_channel(&pdsch[i],i,inp,output) == -1) {
@@ -166,6 +175,7 @@ int allocate_all_channels(void **inp,void *output) {
 			}
 		}
 	}
+#endif
 	insert_signals(output);
 	lte_set_guard_sf(output,&grid);
 	set_output_samples(0,grid.nof_osymb_x_subf*grid.fft_size);

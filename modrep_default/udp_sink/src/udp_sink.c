@@ -110,6 +110,7 @@ int work(void **inp, void **out) {
 	input_t *input = inp[0];
 
 	rcv_samples = get_input_samples(0);
+	modinfo_msg("received %d samples\n",rcv_samples);
 	if (!rcv_samples) {
 		return 0;
 	}

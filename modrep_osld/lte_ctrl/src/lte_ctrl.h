@@ -1,6 +1,13 @@
 
 #define SUBFRAME_DELAY 4
 
+
+#define D_PBCH 		0
+#define D_PCFICH	1
+#define D_PDCCH 	2
+#define D_PDSCH 	3
+
+
 /** Set to non-zero to send all remote parameters values each time slot automatically.
  * Otherwise, the user shall use ctrl_skeleton_send_idx() or ctrl_skeleton_send_name()
  * to manually send the parameter values
@@ -66,8 +73,8 @@ remote_params_db_t remote_params_tx[] = {
 		{"pdcch_tx_ratematching","E",&tx_params.pdcch_E[0],sizeof(int)},
 
 		{"pdsch_tx_ratematching","out_len",&tx_params.bits_x_slot,sizeof(int)},
-		/*{"pdsch_tx_scrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
-		*/{"pdsch_tx_modulator","modulation",&tx_params.modulation,sizeof(int)},
+		{"pdsch_tx_scrambling","subframe",&tx_params.tslot_idx,sizeof(int)},
+		{"pdsch_tx_modulator","modulation",&tx_params.modulation,sizeof(int)},
 
 		{"resmapp","subframe_idx",&tx_params.tslot_idx,sizeof(int)},
 
@@ -78,32 +85,37 @@ remote_params_db_t remote_params_tx[] = {
 
 		{NULL,NULL,NULL,0}}; /* etc */
 
+
 remote_params_db_t remote_params_rx[] = {
 
 /*		{"synchro","bypass",&rx_params.synchro_bypass,sizeof(int)},
 */
+		{"equalizer","subframe_idx",&rx_params.tslot_idx[D_PBCH],sizeof(int)},
+
 		/* PBCH */
-		{"resdemapp_pbch","subframe_idx",&rx_params.tslot_idx[0],sizeof(int)},
+		{"resdemapp_pbch","subframe_idx",&rx_params.tslot_idx[D_PBCH],sizeof(int)},
+		{"pbch_rx_descrambling","subframe",&rx_params.tslot_idx[D_PBCH],sizeof(int)},
 
 		/* PCFICH */
-		{"pcfich_rx_descrambling","subframe",&rx_params.tslot_idx[1],sizeof(int)},
-		{"resdemapp_pcfich","subframe_idx",&rx_params.tslot_idx[1],sizeof(int)},
+		{"resdemapp_pcfich","subframe_idx",&rx_params.tslot_idx[D_PCFICH],sizeof(int)},
+		{"pcfich_rx_descrambling","subframe",&rx_params.tslot_idx[D_PCFICH],sizeof(int)},
 
 		/* PDCCH */
-		{"resdemapp_pdcch","subframe_idx",&rx_params.tslot_idx[2],sizeof(int)},
+		{"resdemapp_pdcch","subframe_idx",&rx_params.tslot_idx[D_PDCCH],sizeof(int)},
 		{"resdemapp_pdcch","cfi",&rx_params.cfi,sizeof(int)},
 		/* this is one of the branches for blind decoding, trying to decode cce number 0 */
 		{"resdemapp_pdcch","pdcch_nofcce_0",&rx_params.pdcch_cce[0],sizeof(int)},
 		{"resdemapp_pdcch","nof_pdcch",&rx_params.nof_pdcch,sizeof(int)},
+		{"pdcch_rx_descrambling","subframe",&rx_params.tslot_idx[D_PDCCH],sizeof(int)},
 		{"pdcch_rx_unratematching","S",&rx_params.pdcch_S[0],sizeof(int)},
 
 		/* PDSCH */
-		{"resdemapp_pdsch","subframe_idx",&rx_params.tslot_idx[3],sizeof(int)},
+		{"resdemapp_pdsch","subframe_idx",&rx_params.tslot_idx[D_PDSCH],sizeof(int)},
 		{"resdemapp_pdsch","cfi",&rx_params.cfi,sizeof(int)},
 		{"resdemapp_pdsch","pdsch_rbgmask_0",&rx_params.pdsch_mask[0],sizeof(int)},
 		{"pdsch_rx_demodulator","modulation",&rx_params.modulation,sizeof(int)},
-		/*{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[2],sizeof(int)},
-		*/{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
+		{"pdsch_rx_descrambling","subframe",&rx_params.tslot_idx[D_PDSCH],sizeof(int)},
+		{"pdsch_rx_unratematching","out_len",&rx_params.cbs,sizeof(int)},
 
 		{NULL,NULL,NULL,0}}; /* etc */
 

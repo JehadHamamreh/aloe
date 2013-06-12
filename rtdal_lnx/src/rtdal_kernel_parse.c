@@ -8,11 +8,6 @@
 #include "rtdal_machine.h"
 #include "defs.h"
 
-
-#ifdef HAVE_UHD
-	extern struct dac_cfg dac_cfg;
-#endif
-
 int parse_cores_comma_sep(char *str, int *core_mapping) {
 	int i;
 	char *tok;
@@ -115,6 +110,57 @@ int parse_config_opts(config_setting_t *cfg, rtdal_machine_t *machine) {
 		memset(&machine->logs_cfg,0,sizeof(struct rtdal_logs_cfg));
 	}
 
+	if (!config_setting_lookup_bool(cfg,"xenomai_warn_msw",&machine->rt_cfg.xenomai_warn_msw)) {
+		machine->rt_cfg.xenomai_warn_msw=0;
+	}
+
+	return 0;
+}
+
+int parse_pipeline_opts(config_setting_t *cfg, rtdal_machine_t *machine) {
+	const char *tmp;
+	int time_slot_ns_int;
+
+	if (!config_setting_lookup_int(cfg, "time_slot_ns", &time_slot_ns_int)) {
+		aerror("time_slot_us field not defined\n");
+		return -1;
+	}
+	machine->ts_len_ns = (long int) time_slot_ns_int;
+
+	if (!config_setting_lookup_string(cfg, "cores", &tmp)) {
+		aerror("cores field not defined\n");
+		return -1;
+	}
+	machine->nof_cores = parse_cores((char*) tmp, machine->core_mapping);
+	if (machine->nof_cores < 0) {
+		printf("Error invalid cores %s\n",tmp);
+		return -1;
+	}
+
+	if (!config_setting_lookup_string(cfg, "timer_mode", &tmp)) {
+		aerror("timer_mode_single field not defined\n");
+		return -1;
+	}
+	if (!strcmp(tmp,"single")) {
+		machine->clock_mode = SINGLE_TIMER;
+	} else if (!strcmp(tmp,"multi")) {
+		machine->clock_mode = MULTI_TIMER;
+	} else if (!strcmp(tmp,"none")) {
+		machine->clock_mode = NO_TIMER;
+	} else {
+		aerror_msg("Invalid timer mode %s\n",tmp);
+		return -1;
+	}
+	double t;
+	if (!config_setting_lookup_float(cfg,"core0_relative",&t)) {
+		machine->core0_relative=1.0;
+	} else {
+		machine->core0_relative=(float) t;
+	}
+
+	if (!config_setting_lookup_bool(cfg,"thread_sync_on_finish",&machine->thread_sync_on_finish)) {
+		machine->thread_sync_on_finish=0;
+	}
 
 	if (!config_setting_lookup_bool(cfg,"correct_on_rtfault_missed",&machine->rt_cfg.miss_correct)) {
 		machine->rt_cfg.miss_correct=0;
@@ -128,20 +174,14 @@ int parse_config_opts(config_setting_t *cfg, rtdal_machine_t *machine) {
 	if (!config_setting_lookup_bool(cfg,"kill_on_rtfault_exec",&machine->rt_cfg.exec_kill)) {
 		machine->rt_cfg.exec_kill=0;
 	}
-	if (machine->rt_cfg.miss_correct || machine->rt_cfg.exec_correct
-			|| machine->rt_cfg.miss_kill || machine->rt_cfg.exec_kill
-			|| (machine->logs_cfg.timing_en && machine->logs_cfg.enabled)) {
-		machine->rt_cfg.do_rtcontrol = 1;
-	}
 	return 0;
 }
 
 int parse_config(char *config_file, rtdal_machine_t *machine) {
 	config_t config;
 	int ret = -1;
-	config_setting_t *rtdal,*rtdal_opts,*dac;
+	config_setting_t *rtdal,*rtdal_opts,*pipeline_opts;
 	const char *tmp;
-	int single_timer,time_slot_us_int;
 
 	config_init(&config);
 	if (!config_read_file(&config, config_file)) {
@@ -162,44 +202,6 @@ int parse_config(char *config_file, rtdal_machine_t *machine) {
 		goto destroy;
 	}
 
-	if (!config_setting_lookup_int(rtdal, "time_slot_us", &time_slot_us_int)) {
-		aerror("time_slot_us field not defined\n");
-		goto destroy;
-	}
-	machine->ts_len_us = (long int) time_slot_us_int;
-
-	if (!config_setting_lookup_string(rtdal, "cores", &tmp)) {
-		aerror("cores field not defined\n");
-		goto destroy;
-	}
-	machine->nof_cores = parse_cores((char*) tmp, machine->core_mapping);
-	if (machine->nof_cores < 0) {
-		printf("Error invalid cores %s\n",tmp);
-		exit(0);
-	}
-
-	if (!config_setting_lookup_bool(rtdal, "enable_usrp", &machine->using_uhd)) {
-		aerror("enable_usrp field not defined\n");
-		goto destroy;
-	}
-
-	if (!config_setting_lookup_bool(rtdal, "timer_mode_single", &single_timer)) {
-		aerror("timer_mode_single field not defined\n");
-		goto destroy;
-	}
-	if (machine->using_uhd) {
-		if (single_timer) {
-			machine->clock_source = SINGLE_TIMER;
-		} else {
-			machine->clock_source = DAC;
-		}
-	} else {
-		if (single_timer) {
-			machine->clock_source = SINGLE_TIMER;
-		} else {
-			machine->clock_source = MULTI_TIMER;
-		}
-	}
 	if (!config_setting_lookup_string(rtdal, "path_to_libs", &tmp)) {
 		aerror("path_to_libs field not defined\n");
 		goto destroy;
@@ -207,67 +209,35 @@ int parse_config(char *config_file, rtdal_machine_t *machine) {
 
 	strcpy(machine->path_to_libs,tmp);
 
-	if (machine->using_uhd) {
-		dac = config_lookup(&config, "dac");
-		if (!dac) {
-			aerror("Error parsing config file: dac section not found.\n");
-			goto destroy;
-		}
-
-#ifdef HAVE_UHD
-		double tmp;
-		if (!config_setting_lookup_float(dac, "samp_freq", &dac_cfg.inputFreq)) {
-			aerror("samp_freq field not defined\n");
-			goto destroy;
-		}
-		dac_cfg.outputFreq = dac_cfg.inputFreq;
-
-		if (!config_setting_lookup_float(dac, "rf_freq", &dac_cfg.inputRFFreq)) {
-			aerror("rf_freq field not defined\n");
-			goto destroy;
-		}
-		dac_cfg.outputRFFreq = dac_cfg.inputRFFreq;
-
-		if (!config_setting_lookup_float(dac, "rf_gain", &tmp)) {
-			aerror("rf_gain field not defined\n");
-			goto destroy;
-		}
-		dac_cfg.tx_gain = tmp;
-		dac_cfg.rx_gain = tmp;
-
-		if (!config_setting_lookup_float(dac, "if_bw", &tmp)) {
-			aerror("rf_gain field not defined\n");
-			goto destroy;
-		}
-		dac_cfg.tx_bw = tmp;
-		dac_cfg.rx_bw = tmp;
-
-		if (!config_setting_lookup_bool(dac, "sample_is_short", &dac_cfg.sampleType)) {
-			aerror("rf_gain field not defined\n");
-			goto destroy;
-		}
-
-		if (!config_setting_lookup_int(dac, "block_size", &dac_cfg.NsamplesIn)) {
-			aerror("block_size field not defined\n");
-			goto destroy;
-		}
-		dac_cfg.NsamplesOut = dac_cfg.NsamplesIn;
-
-		if (!config_setting_lookup_bool(dac, "chain_is_tx", &dac_cfg.chain_is_tx)) {
-			aerror("chain_is_tx field not defined\n");
-			goto destroy;
-		}
-
-		dac_cfg.sampleType = 0;
-		dac_cfg.nof_channels = 1;
-
-		uhd_readcfg(&dac_cfg);
-#endif
+	if (!config_setting_lookup_string(rtdal, "scheduling", &tmp)) {
+		aerror("cores field not defined\n");
+		goto destroy;
 	}
-	if (machine->using_uhd) {
-#ifdef HAVE_UHD
-		machine->ts_len_us = (long int) 1000000*((float) dac_cfg.NsamplesOut/dac_cfg.outputFreq);
-#endif
+
+	if (!strcmp(tmp,"pipeline")) {
+		pipeline_opts = config_lookup(&config, "pipeline_opts");
+		if (!pipeline_opts) {
+			aerror("Error parsing config file: pipeline_opts section not found but "
+					"pipeline scheduling was selected.\n");
+			goto destroy;
+		}
+		machine->scheduling = SCHEDULING_PIPELINE;
+		machine->queues = QUEUE_NONBLOCKING;
+		if (parse_pipeline_opts(pipeline_opts, machine)) {
+			goto destroy;
+		}
+	} else if (!strcmp(tmp,"best-effort")) {
+		machine->scheduling = SCHEDULING_BESTEFFORT;
+		machine->queues = QUEUE_BLOCKING;
+	} else {
+		aerror_msg("Invalid scheduling %s\n",tmp);
+		goto destroy;
+	}
+
+	if (machine->rt_cfg.miss_correct || machine->rt_cfg.exec_correct
+			|| machine->rt_cfg.miss_kill || machine->rt_cfg.exec_kill
+			|| (machine->logs_cfg.timing_en && machine->logs_cfg.enabled)) {
+		machine->rt_cfg.do_rtcontrol = 1;
 	}
 
 	/* Initialize rtdal_base library */

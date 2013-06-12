@@ -167,10 +167,12 @@ int rtdal_task_new_thread(pthread_t *thread, void *(*fnc)(void*), void *arg,
 			CPU_SET((size_t) rtdal.machine.core_mapping[i],&cpuset);
 		}
 	}
-	s =  pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
-	if (s) {
-		RTDAL_POSERROR(s, "pthread_attr_setaffinity_np");
-		goto destroy_attr;
+	if (rtdal.machine.nof_cores) {
+		s =  pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
+		if (s) {
+			RTDAL_POSERROR(s, "pthread_attr_setaffinity_np");
+			goto destroy_attr;
+		}
 	}
 
 	if (!getuid()) {

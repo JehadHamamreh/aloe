@@ -56,7 +56,7 @@ void *_run_main(void *arg) {
 	int mode;
 
 	rtdal_machine(&machine);
-	tslen = machine.ts_len_us;
+	tslen = machine.ts_len_ns/1000;
 
 	/* this would be done by the node */
 	if (nod_anode_initialize(&machine,2)) {

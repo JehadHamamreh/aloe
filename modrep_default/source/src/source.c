@@ -107,7 +107,7 @@ int work(void **inp, void **out) {
 		}
 	}
 	if (i == NOF_GENERATORS) {
-		moderror_msg("Generator type %d not implemented\n", type);
+		modinfo_msg("Generator type %d not implemented\n", type);
 		return -1;
 	}
 	if (type != last_type) {
@@ -116,7 +116,7 @@ int work(void **inp, void **out) {
 	}
 
 	if (block_length > OUTPUT_MAX_SAMPLES/generators[i].samp_sz) {
-		moderror_msg("block_length %d too large. Maximum is %d for this generator\n",block_length,
+		modinfo_msg("block_length %d too large. Maximum is %d for this generator\n",block_length,
 				OUTPUT_MAX_SAMPLES/generators[i].samp_sz);
 		return -1;
 	}
@@ -131,7 +131,7 @@ int work(void **inp, void **out) {
 	snd_samples = generators[i].work(out[0],block_length);
 
 #ifdef _COMPILE_ALOE
-	moddebug("Sent %d samples at ts=%d\n",snd_samples,oesr_tstamp(ctx));
+	modinfo_msg("Sent %d samples at ts=%d\n",snd_samples,oesr_tstamp(ctx));
 #endif
 	return snd_samples;
 }

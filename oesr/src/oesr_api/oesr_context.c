@@ -217,7 +217,11 @@ int oesr_tstamp(void *context) {
 int oesr_tslot_length(void *context) {
 	rtdal_machine_t machine;
 	rtdal_machine(&machine);
-	return machine.ts_len_us;
+	if (machine.ts_len_ns) {
+		return machine.ts_len_ns/1000;
+	} else {
+		return 1;
+	}
 }
 
 /**

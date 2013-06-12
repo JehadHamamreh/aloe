@@ -84,6 +84,7 @@ void rtdal_log_flushall() {
 }
 
 void rtdal_log_flush(r_log_t _log) {
+	char tmp[128];
 #if LOGS_ENABLED!=0
 	cast(log,_log);
 	assert(log);
@@ -91,30 +92,32 @@ void rtdal_log_flush(r_log_t _log) {
 		return;
 	}
 	pthread_mutex_lock(&mutex);
+	lock();
 
 	FILE *file;
-	snprintf(log->tmp,max_str_len,"%s/%s",base_path,log->name);
+	snprintf(tmp,128,"%s/%s",base_path,log->name);
 	if (log->mode == TEXT) {
-		file = fopen(log->tmp,"w+");
+		file = fopen(tmp,"w+");
 	} else {
-		file = fopen(log->tmp,"wb+");
+		file = fopen(tmp,"wb+");
 	}
 
 	if (!file) {
-		aerror_msg("Error opening file %s: ",log->tmp);
+		aerror_msg("Error opening file %s: ",tmp);
 		perror("fopen");
+		unlock();
 		pthread_mutex_unlock(&mutex);
 		return;
 	}
-	printf("Writting to log file %s...",log->tmp);fflush(stdout);
+	printf("Writting to log file %s...",tmp);fflush(stdout);
 	if (log->wrapped) {
 		if (fwrite(&log->memory[log->wpm],1,log->size-log->wpm,file) == -1) {
-			aerror_msg("Error writing file %s: ",log->tmp);
+			aerror_msg("Error writing file %s: ",tmp);
 			perror("fwrite");
 		}
 	}
 	if (fwrite(&log->memory[0],1,log->wpm,file) == -1) {
-		aerror_msg("Error writing file %s: ",log->tmp);
+		aerror_msg("Error writing file %s: ",tmp);
 		perror("fwrite");
 	}
 	printf("done\n");
@@ -126,18 +129,20 @@ void rtdal_log_flush(r_log_t _log) {
 
 void rtdal_log_delete(r_log_t _log) {
 #if LOGS_ENABLED!=0
+	cast(log,_log);
 	if (!logs_enabled) {
 		return;
 	}
-	pthread_mutex_lock(&mutex);
-	cast(log,_log);
 	assert(log);
+	pthread_mutex_lock(&mutex);
+	lock();
 	if (log->memory) {
 		free(log->memory);
 	}
 	if (log->tmp) {
 		free(log->tmp);
 	}
+	unlock();
 	pthread_mutex_unlock(&mutex);
 #endif
 }

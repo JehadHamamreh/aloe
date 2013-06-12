@@ -3,6 +3,8 @@
 
 #define ENABLE_REF
 
+/*#define ONLY_SYNC
+*/
 #define EXTRACT_REF_PORT	-1
 
 #define CH_OFF -1

@@ -75,7 +75,7 @@ static inline void pipeline_sync_thread_wake_futex() {
 }
 
 static inline int pipeline_sync_initialize_barrier() {
-	pthread_barrier_init(&barrier, NULL, (unsigned int) num_pipelines + 1);
+	pthread_barrier_init(&barrier, NULL, (unsigned int) num_pipelines+1);
 	return 0;
 }
 static inline void pipeline_sync_thread_waits_barrier(int idx) {
@@ -145,7 +145,7 @@ inline void pipeline_sync_threads_wake_idx(int idx) {
 #error Not implemented
 #endif
 #if PIPELINESYNC_MUTEX_TYPE==BARRIER
-#error Not implemented
+	pipeline_sync_thread_wake_barrier();
 #endif
 #if PIPELINESYNC_MUTEX_TYPE==CONDVAR
 	pipeline_sync_thread_wake_condvar();

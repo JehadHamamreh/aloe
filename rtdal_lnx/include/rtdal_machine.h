@@ -20,16 +20,10 @@
 #define rtdal_MACHINE_H
 
 
-#ifdef HAVE_UHD
-#include "dac_cfg.h"
-#include "uhd.h"
-#endif
-
-
 #include "str.h"
 
-enum clock_source {
-	SINGLE_TIMER, SYNC_SLAVE, MULTI_TIMER, DAC
+enum clock_mode {
+	SINGLE_TIMER, MULTI_TIMER, NO_TIMER
 };
 
 #define RT_FAULT_OPTS_HARD 1
@@ -52,21 +46,25 @@ struct rtfault_cfg {
 	int exec_kill;
 	int miss_kill;
 	int do_rtcontrol;
+	int xenomai_warn_msw;
 };
+
+enum scheduling_mode {SCHEDULING_PIPELINE, SCHEDULING_BESTEFFORT};
+enum queue_mode {QUEUE_NONBLOCKING, QUEUE_BLOCKING};
 
 /**
  * Public structure configured at initialize() from the information read from platform.conf. Stores some properties of the local machine architecture.
  */
 typedef struct {
-	long int ts_len_us;
+	long int ts_len_ns;
 	strdef(cfg_file);
 	int cpu_type;
 	float mopts;
 	float mbpts;
 	string name;
 	int core_mapping[RTDAL_MAX_CORES];
+	float core0_relative;
 	int nof_cores;
-	int using_uhd;
 	int rt_fault_opts;
 	int kernel_prio;
 	int pipeline_prio;
@@ -76,11 +74,14 @@ typedef struct {
 	int max_waveforms;
 	int max_modules_x_waveform;
 	int max_variables_x_module;
+	int thread_sync_on_finish;
 	struct rtdal_logs_cfg logs_cfg;
-	enum clock_source clock_source;
+	enum clock_mode clock_mode;
 	struct rtfault_cfg rt_cfg;
 	lstrdef(path_to_libs);
 	void (*slave_sync_kernel) (void*, struct timespec *time);
+	enum scheduling_mode scheduling;
+	enum queue_mode queues;
 }rtdal_machine_t;
 
 #endif

@@ -44,6 +44,7 @@ struct log_cfg {
 	int modules_en;
 	int modules_all;
 	int modules_time_en;
+	int modules_time_all;
 	int modules_join;
 	int log_modules_level;
 	int queues_en;

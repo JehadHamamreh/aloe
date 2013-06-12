@@ -129,8 +129,8 @@ int oesr_itf_write(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_read(itf_t itf, void* buffer, int size, int tstamp);
 int oesr_itf_status(itf_t itf);
 int oesr_itf_ptr_request(itf_t itf, void **ptr);
-int oesr_itf_ptr_release(itf_t itf);
-int oesr_itf_ptr_put(itf_t itf, int len, int tstamp);
+int oesr_itf_ptr_release(itf_t itf, void *ptr, int len);
+int oesr_itf_ptr_put(itf_t itf, void *ptr, int len, int tstamp);
 int oesr_itf_ptr_get(itf_t itf, void **ptr, int *len, int tstamp);
 /**@} */
 

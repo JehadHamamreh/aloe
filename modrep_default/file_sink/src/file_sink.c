@@ -107,6 +107,9 @@ int work(void **inp, void **out) {
 	}
 #endif
 
+	if (!rcv_samples) {
+		return 0;
+	}
 	switch(data_type) {
 	case 0:
 		rtdal_datafile_write_real(fd,(float*) buffer,rcv_samples);

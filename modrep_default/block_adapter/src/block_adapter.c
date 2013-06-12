@@ -111,12 +111,14 @@ int work(void **inp, void **out) {
 
 	if (rcv_samples) {
 		if (rcv_samples < buffer_space()) {
-			moddebug("put %d samples r=%d w=%d data=%d space=%d\n",rcv_samples,rpm,wpm,buffer_data(),buffer_space());
+			modinfo_msg("put %d samples r=%d w=%d data=%d space=%d\n",rcv_samples,rpm,wpm,buffer_data(),buffer_space());
 			put_data(input,rcv_samples);
 		} else {
 			modinfo_msg("Buffer full. Recv=%d bytes, space=%d bytes\n",
 					rcv_samples,buffer_space());
 		}
+	} else {
+		modinfo("received no data\n");
 	}
 
 	block_length=0;
@@ -128,7 +130,7 @@ int work(void **inp, void **out) {
 	}
 
 	if (buffer_data() > block_length) {
-		moddebug("get %d samples r=%d w=%d data=%d space=%d\n",block_length,rpm,wpm,buffer_data(),buffer_space());
+		modinfo_msg("get %d samples r=%d w=%d data=%d space=%d\n",block_length,rpm,wpm,buffer_data(),buffer_space());
 		get_data(output,block_length);
 		return block_length;
 	} else {

@@ -26,6 +26,8 @@
 #include "oesr_context.h"
 #include "nod_anode.h"
 
+#define FINISH_ON_RUNERROR
+
 extern r_log_t modules_log;
 extern struct log_cfg logs_cfg;
 
@@ -84,10 +86,17 @@ void *nod_module_finish_callback(void *context) {
 						module->parent.name);
 		break;
 	case RTFAULT:
-	case RUNERROR:
-		ndebug("Module %s returned error from work() function. Trying a clean stop\n",
+#ifdef FINISH_ON_RUNERROR
+		rtdal_printf("Module %s violated real-time deadlines. Trying a clean stop\n",
 						module->parent.name);
-		rtdal_printf("#");
+#else
+		rtdal_printf("Module %s violated real-time deadlines (ts=%d). Restarting waveform\n",
+						module->parent.name,rtdal_time_slot());
+#endif
+		break;
+	case RUNERROR:
+		rtdal_printf("Module %s returned error from work() function. Trying a clean stop\n",
+						module->parent.name);
 		break;
 	default:
 			aerror("Warning, not supposed to be here\n");
@@ -95,16 +104,21 @@ void *nod_module_finish_callback(void *context) {
 		break;
 	}
 
+	if (nod_waveform_run(waveform,0)) {
+		return NULL;
+	}
+
 	if (rtdal_process_geterror(module->process) == RUNERROR
 			|| rtdal_process_geterror(module->process) == RTFAULT) {
+		rtdal_process_seterror(module->process, FINISH_OK);
+
 #ifdef FINISH_ON_RUNERROR
 		if (nod_waveform_status_stop(waveform)) {
 			aerror("stopping waveform\n");
 		}
 #else
-		if (nod_waveform_reset_pipeline(waveform,module->process)) {
-			aerror("resetting pipeline\n");
-		}
+		rtdal_task_new(0,nod_waveform_reset_pipeline,waveform);
+		//nod_waveform_reset_pipeline(waveform);
 #endif
 
 	} else {
@@ -112,6 +126,9 @@ void *nod_module_finish_callback(void *context) {
 			aerror("stopping waveform\n");
 		}
 	}
+
+	rtdal_process_group_notified(module->process);
+
 	return NULL;
 }
 
@@ -153,7 +170,7 @@ int nod_module_load(nod_module_t *module) {
 	} else {
 		module->log = NULL;
 	}
-	if (logs_cfg.modules_time_en && (module->parent.log_enable & 0x2 || logs_cfg.modules_all)) {
+	if (logs_cfg.modules_time_en && (module->parent.log_enable & 0x2 || logs_cfg.modules_all || logs_cfg.modules_time_all)) {
 		snprintf(tmp,128,"%s.time",module->parent.name);
 		module->time_log = rtdal_log_new(tmp,INT32,0);
 		if (!module->time_log) {
@@ -304,17 +321,20 @@ int nod_module_execinfo_add_sample(execinfo_t *obj, int ctx_tstamp) {
 #ifdef RELINQUISH_DO_MOD
 	rtdal_machine_t machine;
 	rtdal_machine(&machine);
-	relinquish = relinquish % machine.ts_len_us;
-	start = start % machine.ts_len_us;
+	if (machine.ts_len_ns) {
+		relinquish = relinquish % (machine.ts_len_ns/1000);
+		start = start % (machine.ts_len_ns/1000);
+	}
 #endif
 
 	if (!obj->start_ts) {
 		obj->start_ts = tstamp;
 	}
-	if (cpu > obj->max_exec_us) {
+	if (cpu > obj->max_exec_us || (ctx_tstamp > obj->max_exec_ts+100)) {
 		obj->max_exec_us = cpu;
 		obj->max_exec_ts = ctx_tstamp;
-	}
+	}		
+	
 	obj->module_ts = ctx_tstamp;
 	obj->max_rel_us = relinquish > obj->max_rel_us ? relinquish : obj->max_rel_us;
 	obj->max_start_us = start > obj->max_start_us ? start : obj->max_start_us;

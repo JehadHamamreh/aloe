@@ -74,7 +74,8 @@ typedef struct {
 	int running_process_idx;
 
 	int waiting;
-
+	int xenomai_warn_msw;
+	int wait_on_finish;
 }pipeline_t;
 
 void pipeline_run_from_timer(void *arg, struct timespec *time);

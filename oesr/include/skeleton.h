@@ -94,8 +94,8 @@ int generate_input_signal(void *input, int *input_length);
 #endif
 
 
-#define aerror_msg(_fmt, ...)  		DEBUGPRINT2(ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
-#define aerror(a)  					DEBUGPRINT2( ERRSTR WHERESTR a, WHEREARG)
+#define aerror_msg(_fmt, ...)  		fprintf(stderr,ERRSTR WHERESTR _fmt, WHEREARG, __VA_ARGS__)
+#define aerror(a)  					fprintf(stderr, ERRSTR WHERESTR a, WHEREARG)
 
 #ifdef _COMPILE_ALOE
 	#define ainfo(a) 				DEBUGPRINT2(INFOSTR WHERESTR a, WHEREARG)

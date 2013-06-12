@@ -37,7 +37,7 @@
  * @param table Coding table, 4x32 bits
  * \returns Coding table index most similar to the recevied input sequence
  */
-int cfi_decoding(char *in, char (*table)[NOF_BITS]) {
+int cfi_decoding(char *in, char (*table)[NOF_BITS], int *nof_errors) {
 
 	int i, j;
 	int count_i, index=-1;
@@ -55,5 +55,6 @@ int cfi_decoding(char *in, char (*table)[NOF_BITS]) {
 			index = i;
 		}
 	}
+	*nof_errors = min;
 	return index;
 }

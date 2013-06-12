@@ -76,9 +76,9 @@ inline int set_output_samples(int idx, int len) {
 }
 
 void allocate_memory() {
-	input_data = calloc(input_sample_sz,input_max_samples*nof_input_itf);
+	posix_memalign((void**)&input_data,64,input_max_samples*nof_input_itf*input_sample_sz);
+	posix_memalign((void**)&output_data,64,output_max_samples*nof_output_itf*output_sample_sz);
 	assert(input_data);
-	output_data = calloc(output_sample_sz,output_max_samples*nof_output_itf);
 	assert(output_data);
 	input_lengths = calloc(sizeof(int),nof_input_itf);
 	assert(input_lengths);
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	struct timespec tdata[3];
 	gnuplot_ctrl *plot;
 	char tmp[64];
-	int ret, i, j;
+	int ret, i, j, n;
 	float *tmp_f;
 	_Complex float *tmp_c;
 	double *plot_buff_r;
@@ -157,7 +157,6 @@ int main(int argc, char **argv)
 
 	allocate_memory();
 
-
 	if (dat_input_name) {
 		dat_input = rtdal_datafile_open(dat_input_name, "r");
 		if (!dat_input) {
@@ -179,20 +178,13 @@ int main(int argc, char **argv)
 		} else {
 			file_read_sz*=run_times;
 		}
-		if (input_sample_sz == sizeof(float)) {
-			input_lengths[0] = rtdal_datafile_read_real(dat_input,
-					(float*) input_data,file_read_sz);
-		} else if (input_sample_sz == sizeof(_Complex float)) {
-			input_lengths[0] = rtdal_datafile_read_complex(dat_input,
-					(_Complex float*) input_data,file_read_sz);
-		} else {
-			printf("Only real and complex signals are supported\n");
-		}
-		if (input_lengths[0] == -1) {
+		n = rtdal_datafile_read_bin(dat_input,input_data,file_read_sz*input_sample_sz);
+		if (n == -1) {
 			printf("Error reading file %s\n",dat_input_name);
 			exit(1);
 		}
-		printf("Read %d/%d samples from file %s %d\n",input_lengths[0],file_read_sz,dat_input_name);
+		input_lengths[0] = n/input_sample_sz;
+		printf("Read %d/%d samples from file %s\n",input_lengths[0],file_read_sz,dat_input_name);
 	} else {
 		if (generate_input_signal(input_data, input_lengths)) {
 			printf("Error generating input signal\n");
@@ -253,7 +245,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("\nExecution time: %d ns.\n", (int) tdata[0].tv_nsec);
+	printf("\nExecution time: %d us.\n", (int) tdata[0].tv_nsec/1000);
 	printf("FINISHED\n");
 
 	if (dat_output)

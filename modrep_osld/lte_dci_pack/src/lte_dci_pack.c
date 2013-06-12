@@ -82,18 +82,22 @@ int recv_dci(char *input, char *output, int len) {
 	int rbg_mask = 0;
 	int i;
 
-	memset(&dci,0,sizeof(struct dci_format1));
-	dci.harq_pnum_len = 3;
-	dci.carrier_indicator_len=2;
-	if (param_get_int_name("nof_rbg",&dci.nof_rbg)) {
-		modinfo("could not get parameter nof_rbg\n");
-	}
-	if (dci_format1_unpack(input,len,&dci)<0) {
-		moderror("Reading DCI Format 1 packet\n");
-		return -1;
-	}
-	for (i=0;i<MAX_RBG_SET;i++) {
-		rbg_mask |= (dci.rbg_mask[i] & 0x1) << (i);
+	if (len == 0) {
+		return 0;
+	} else {
+		memset(&dci,0,sizeof(struct dci_format1));
+		dci.harq_pnum_len = 3;
+		dci.carrier_indicator_len=2;
+		if (param_get_int_name("nof_rbg",&dci.nof_rbg)) {
+			modinfo("could not get parameter nof_rbg\n");
+		}
+		if (dci_format1_unpack(input,len,&dci)<0) {
+			moderror("Reading DCI Format 1 packet\n");
+			return -1;
+		}
+		for (i=0;i<MAX_RBG_SET;i++) {
+			rbg_mask |= (dci.rbg_mask[i] & 0x1) << (i);
+		}
 	}
 
 #ifdef _COMPILE_ALOE
@@ -118,7 +122,7 @@ int recv_dci(char *input, char *output, int len) {
 	}
 	len += n;
 	set_output_samples(0,len);
-	moddebug("ts=%d received mcs=%d, nof_rbg=%d, rbgmask=0x%x\n",oesr_tstamp(ctx),dci.mcs,dci.nof_rbg,rbg_mask);
+	modinfo_msg("received mcs=%d, nof_rbg=%d, rbgmask=0x%x\n",dci.mcs,dci.nof_rbg,rbg_mask);
 #endif
 
 	return len;
@@ -151,6 +155,7 @@ int initialize() {
 	if (mcs_rx < 0 || nof_rbg_rx < 0 || rbg_mask_rx < 0) {
 		moderror("Error getting remote parameters\n");
 	}
+	modinfo_msg("remote params: mcs_rx=%d, nof_rbg_rx=%d, rbg_mask_rx=%d\n",mcs_rx,nof_rbg_rx,rbg_mask_rx);
 #endif
 	return 0;
 }
@@ -169,9 +174,6 @@ int work(void **inp, void **out) {
 		return len;
 	} else {
 		len = get_input_samples(0);
-		if (!len) {
-			return 0;
-		}
 		recv_dci(inp[0],out[0],len);
 	}
 

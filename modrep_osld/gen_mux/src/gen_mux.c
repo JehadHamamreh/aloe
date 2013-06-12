@@ -34,7 +34,7 @@ int nof_inputs;
 extern int input_sample_sz;
 extern int output_sample_sz;
 extern int nof_input_itf;
-int exclusive;
+int exclusive,check_all;
 
 int input_lengths[NOF_INPUT_ITF];
 int input_padding_pre[NOF_INPUT_ITF];
@@ -67,6 +67,9 @@ int initialize() {
 	if (param_get_int_name("exclusive",&exclusive)) {
 		exclusive = 0;
 	}
+	if (param_get_int_name("check_all",&check_all)) {
+		check_all = 0;
+	}
 	nof_input_itf = nof_inputs;
 	if (nof_inputs > NOF_INPUT_ITF) {
 		moderror_msg("Only %d interfaces are supported. nof_inputs=%d\n",NOF_INPUT_ITF,nof_inputs);
@@ -92,6 +95,14 @@ int work(void **inp, void **out) {
 
 	if (exclusive && nof_active_inputs>1) {
 		moderror_msg("Exclusive mux but %d inputs have data\n",nof_active_inputs);
+		return -1;
+	}
+	if(check_all && (nof_active_inputs<nof_inputs)) {
+		moderror_msg("Only %d/%d inputs have data\n",nof_active_inputs,nof_inputs);
+		return -1;
+	}
+	if (!out[0]) {
+		moderror("Output not ready\n");
 		return -1;
 	}
 	out_len = sum_i(input_lengths,nof_inputs);

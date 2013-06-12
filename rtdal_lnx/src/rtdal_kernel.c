@@ -25,12 +25,16 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <semaphore.h>
 
 #ifdef __XENO__
 #include <rtdk.h>
 #endif
 
+#define HAVE_VOLK
+
+#ifdef HAVE_VOLK
+#include "volk/volk.h"
+#endif
 
 #include "rtdal_kernel.h"
 #include "str.h"
@@ -42,6 +46,8 @@
 #include "rtdal.h"
 #include "rtdal_timer.h"
 #include "futex.h"
+#include "barrier.h"
+#include "pipeline_sync.h"
 
 rtdal_context_t rtdal;
 static rtdal_timer_t kernel_timer;
@@ -49,24 +55,19 @@ static rtdal_timer_t kernel_timer;
 int sigwait_stops = 0;
 static int multi_timer_futex;
 pid_t kernel_pid;
-pthread_t single_timer_thread;
+pthread_t single_timer_thread,exec_timer_thread;
 static char UNUSED(sigmsg[1024]);
 
 static void print_license();
 
-extern sem_t dac_sem;
+r_log_t rtdal_log,sched_log;
 
-r_log_t rtdal_log;
-
-#ifdef HAVE_UHD
-	struct dac_cfg dac_cfg;
-#endif
-
+barrier_t start_barrier;
 
 /** Set timeslot to a multiple of the time slot defined platform-wide
 */
 void rtdal_timeslot_set(int ts_base_multiply) {
-        switch(rtdal.machine.clock_source) {
+        switch(rtdal.machine.clock_mode) {
         case SINGLE_TIMER:
                 kernel_timer.multiple = ts_base_multiply;
                 break;
@@ -76,9 +77,14 @@ void rtdal_timeslot_set(int ts_base_multiply) {
                 }
                 break;
         default:
-                aerror("Not implemented\n");
                 break;
         }
+}
+
+void *exec_timer_none(void *arg) {
+	while(1) {
+		kernel_cycle(NULL,NULL);
+	}
 }
 
 inline static int kernel_initialize_setup_clock() {
@@ -87,10 +93,15 @@ inline static int kernel_initialize_setup_clock() {
 	/* access to kernel sync function is not allowed */
 	rtdal.machine.slave_sync_kernel = NULL;
 
-	switch(rtdal.machine.clock_source) {
+
+	if (rtdal.machine.thread_sync_on_finish) {
+		barrier_init(&start_barrier, rtdal.machine.nof_cores+1);
+	}
+
+	switch(rtdal.machine.clock_mode) {
 	case  SINGLE_TIMER:
 		kernel_timer.period_function = kernel_cycle;
-		kernel_timer.period = rtdal.machine.ts_len_us*1000;
+		kernel_timer.period = rtdal.machine.ts_len_ns;
 		kernel_timer.arg = NULL;
 		kernel_timer.multiple = 1;
 #ifdef __XENO__
@@ -127,14 +138,17 @@ inline static int kernel_initialize_setup_clock() {
 		}
 		futex_wake(&multi_timer_futex);
 		break;
-	case DAC:
-		break;
-	case SYNC_SLAVE:
-		/* enable access to kernel_cycle function */
-		rtdal.machine.slave_sync_kernel = kernel_cycle;
+	case NO_TIMER:
+		if (rtdal_task_new_thread(&exec_timer_thread, exec_timer_none,
+				NULL, DETACHABLE,
+				rtdal.machine.kernel_prio, 0,0)) {
+			rtdal_perror("rtdal_task_new_thread");
+			return -1;
+		}
+
 		break;
 	default:
-		aerror_msg("Unknown clock source %d\n", rtdal.machine.clock_source);
+		aerror_msg("Unknown clock source %d\n", rtdal.machine.clock_mode);
 		return -1;
 	}
 	return 0;
@@ -146,11 +160,11 @@ int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex) {
 	int prio;
 
 	hdebug("pipeline_id=%d\n",obj->id);
-	if (rtdal.machine.clock_source == MULTI_TIMER) {
+	if (rtdal.machine.clock_mode == MULTI_TIMER) {
 		obj->mytimer.period_function =
 				pipeline_run_from_timer;
 		obj->mytimer.period =
-				rtdal.machine.ts_len_us*1000;
+				rtdal.machine.ts_len_ns;
 		obj->mytimer.arg = obj;
 		obj->mytimer.wait_futex = wait_futex;
 #ifdef __XENO__
@@ -162,12 +176,13 @@ int kernel_initialize_create_pipeline(pipeline_t *obj, int *wait_futex) {
 				&obj->thread;
 		tmp_thread_fnc = timer_run_thread;
 		tmp_thread_arg = &obj->mytimer;
-		prio = rtdal.machine.kernel_prio;
 	} else {
 		tmp_thread_fnc = pipeline_run_thread;
 		tmp_thread_arg = obj;
-		prio = rtdal.machine.kernel_prio-10;
 	}
+	obj->wait_on_finish=rtdal.machine.thread_sync_on_finish;
+	prio = rtdal.machine.kernel_prio-1;
+	obj->xenomai_warn_msw = rtdal.machine.rt_cfg.xenomai_warn_msw;
 
 	if (rtdal.machine.logs_cfg.timing_en) {
 		char tmp[64];
@@ -295,16 +310,17 @@ static int kernel_initialize(void) {
 		return -1;
 	}
 
-	/* create pipelines */
-	if (kernel_initialize_create_pipelines()) {
-		return -1;
-	}
+	if (rtdal.machine.scheduling == SCHEDULING_PIPELINE) {
+		/* create pipelines */
+		if (kernel_initialize_create_pipelines()) {
+			return -1;
+		}
 
-	/* setup clock */
-	if (kernel_initialize_setup_clock()) {
-		return -1;
+		/* setup clock */
+		if (kernel_initialize_setup_clock()) {
+			return -1;
+		}
 	}
-
 
 	return 0;
 }
@@ -322,7 +338,7 @@ static void check_threads() {
 	for (i=0;i<rtdal.machine.nof_cores;i++) {
 		if (rtdal.pipelines[i].thread) {
 			if (!pthread_kill(rtdal.pipelines[i].thread,0)) {
-				aerror_msg("pipeline thread %d still running, killing\n",i);
+				//aerror_msg("pipeline thread %d still running, killing\n",i);
 				pthread_kill(rtdal.pipelines[i].thread, TASK_TERMINATION_SIGNAL);
 			}
 		} else {
@@ -339,22 +355,72 @@ void kernel_exit() {
 	rtdal_log_flushall();
 
 	sigwait_stops = 1;
-	sem_post(&dac_sem);
 	kernel_timer.stop = 1;
 	for (int i=0;i<rtdal.machine.nof_cores;i++) {
-		if (rtdal.machine.clock_source == MULTI_TIMER) {
+		if (rtdal.machine.clock_mode == MULTI_TIMER) {
 			rtdal.pipelines[i].mytimer.stop = 1;
 		} else {
 			rtdal.pipelines[i].stop = 1;
 		}
 	}
-#ifdef HAVE_UHD
-	if (rtdal.machine.using_uhd) {
-		uhd_close();
-	}
-#endif
 	usleep(100000);
 	check_threads();
+}
+void *volk_malloc(int size) {
+	void *ptr;
+	int alignment = volk_get_alignment();
+	if (posix_memalign(&ptr,alignment,size)) {
+		return NULL;
+	} else {
+		return ptr;
+	}
+}
+void volk_initialize() {
+	void *x,*y,*z;
+	float result;
+	_Complex float hh=1;
+	x=volk_malloc(128);
+	y=volk_malloc(128);
+	z=volk_malloc(128);
+	volk_32fc_conjugate_32fc_a(x,y,16);
+	volk_32fc_x2_multiply_32fc_a(x,y,z,16);
+	volk_32fc_magnitude_32f_a(x,y,16);
+	volk_32f_accumulator_s32f_a(&result,x,16);
+	volk_32fc_s32fc_multiply_32fc_a(y,x,hh,16);
+	volk_32fc_s32fc_multiply_32fc_u(y,x,hh,16);
+	unsigned int target;
+	volk_32f_index_max_16u_a(&target,x,16);
+	free(x);
+	free(y);
+	free(z);
+}
+
+void load_volk() {
+	printf("Loading VOLK library...\n");
+	volk_initialize();
+	printf("Done\n");
+}
+
+void print_schedinfo() {
+	switch(rtdal.machine.scheduling) {
+	case SCHEDULING_PIPELINE:
+		printf("-- Pipeline Scheduling Selected --\n");
+		printf("Time slot:\t%g us\nPlatform:\t%d cores\nTimer:\t\t", (float) rtdal.machine.ts_len_ns/1000,
+				rtdal.machine.nof_cores);
+		switch(rtdal.machine.clock_mode) {
+		case SINGLE_TIMER:
+			printf("Single\n\n");
+			break;
+		case MULTI_TIMER:
+			printf("Multi\n\n");
+			break;
+		case NO_TIMER:
+			printf("None\n\n");
+		}
+		break;
+	case SCHEDULING_BESTEFFORT:
+		printf("-- Best-Effort Scheduling Selected --\n");
+	}
 }
 
 int main(int argc, char **argv) {
@@ -376,6 +442,10 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 
+#ifdef HAVE_VOLK
+	load_volk();
+#endif
+
 #ifdef __XENO__
 	if (LOGS_ENABLED) {
 		rt_print_auto_init(1);
@@ -384,20 +454,7 @@ int main(int argc, char **argv) {
 #endif
 	kernel_pid = getpid();
 
-	if (rtdal.machine.using_uhd) {
-#ifdef HAVE_UHD
-		struct sched_param param;
-		sem_init(&dac_sem, 0, 0);
-		param.sched_priority = rtdal.machine.kernel_prio-3;
-		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
-		uhd_init(&dac_cfg, &rtdal.machine.ts_len_us,dac_cycle);
-		param.sched_priority = rtdal.machine.kernel_prio;
-		pthread_setschedparam(pthread_self(),SCHED_FIFO,&param);
-#endif
-	}
-
-	printf("Time slot:\t%d us\nPlatform:\t%d cores\nTimer:\t\t%s\n\n", rtdal.machine.ts_len_us,
-			rtdal.machine.nof_cores,(rtdal.machine.clock_source==MULTI_TIMER)?"Multi":"Single");
+	print_schedinfo();
 
 	/* initialize kernel */
 	if (kernel_initialize()) {
@@ -428,31 +485,4 @@ static void print_license() {
 }
 
 
-/** @TODO MOVE THIS TO RTDAL_DAC
- *
- */
-#ifdef HAVE_UHD
 
-
-int rtdal_uhd_set_freq(float freq) {
-	dac_cfg.outputFreq = (double) freq;
-	return 0;
-}
-int rtdal_uhd_set_block_len(int len) {
-	dac_cfg.NsamplesOut = len;
-	return 0;
-}
-int rtdal_uhd_get_block_len() {
-	return dac_cfg.NsamplesIn;
-}
-void *rtdal_uhd_buffer(int ch) {
-	if (ch) {
-		return dac_cfg.dacoutbuff[0];
-	} else {
-		return dac_cfg.dacinbuff[0];
-	}
-}
-
-
-
-#endif

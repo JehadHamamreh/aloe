@@ -13,7 +13,7 @@ function [ out ] = read_complex( filename, count )
         count=inf;
     end
 
-    x=fread(tidin,count,'single');
+    x=fread(tidin,2*count,'single');
     i=1:2:length(x);
     out=x(i)+x(i+1)*1i;
 end

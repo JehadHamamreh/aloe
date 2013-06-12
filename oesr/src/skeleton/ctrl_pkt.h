@@ -16,8 +16,8 @@
  * along with ALOE++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CTRL_PKT_VALUE_SZ	2*sizeof(int)
-#define CTRL_PKT_HEADER_SZ	2*sizeof(int)
+#define CTRL_PKT_VALUE_SZ	20*sizeof(int)
+#define CTRL_PKT_HEADER_SZ	20*sizeof(int)
 
 struct ctrl_in_pkt {
 	int pm_idx;

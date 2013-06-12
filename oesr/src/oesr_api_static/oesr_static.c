@@ -99,29 +99,10 @@ int _run_cycle(void* context) {
 #endif
 		ctx->tstamp++;
 
-		/* compute execution time, exponential average, max, etc. and save data to mymodule.execinfo */
-#ifdef kk
-		/* stat reports */
-		for (i=0;i<nof_reporting_vars;i++) {
-			module.reporting_variables[i].period_cnt++;
-			/* save the first window samples only */
-			if (module.reporting_variables[i].period_cnt++<module.reporting_variables[i].window)
-				module.reporting_variables[i].serialize(module.reporting_variables[i].report_packet);
-			}
-			/* send report every period */
-			if (module.reporting_variables[i].periodCnt++<module.reporting_variables[i].period) {
-				rtdal.newTask(report_variable,&reporting_variables[i]);
-			}
-		}
-
-		/* write logs */
-		for (i=0;i<nof_logs;i++) {
-			if (logs[i].w_ptr) {
-				rtdal.new_task(oesr_log._writelog,logs[i]);
-			}
-		}
-#endif
+	} else {
+		rtdal_process_stop(module->process);
 	}
+
 	return 0;
 }
 

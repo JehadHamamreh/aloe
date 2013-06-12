@@ -20,13 +20,7 @@
 
 /**
  * @defgroup dac_sink dac_sink
- * This module sends through each DA converter channel the samples received from each input interface
- *
- * Supported converter types:
- *   - complex float
- *
- * Supported module types:
- *   - complex float
+ * Sends to DAC the received samples. Currently only supports complex samples
  *
  * @{
  */

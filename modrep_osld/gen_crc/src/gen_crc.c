@@ -25,6 +25,7 @@
 
 #include "gen_crc.h"
 #include "crc.h"
+#include <rtdal.h>
 
 pmid_t long_crc_id, poly_id;
 static int long_crc;
@@ -35,7 +36,7 @@ static unsigned int poly;
 */
 
 unsigned total_errors, total_pkts;
-int print_interval,point_interval,cross_on_error;
+int print_interval,point_interval,cross_on_error,forward_on_error;
 
 /** @ingroup gen_crc gen_crc
  *
@@ -60,6 +61,10 @@ int initialize() {
 
 	if (param_get_int_name("cross_on_error",&cross_on_error)) {
 		cross_on_error = 0;
+	}
+
+	if (param_get_int_name("forward_on_error",&forward_on_error)) {
+		forward_on_error = 0;
 	}
 
 	long_crc_id = param_id("long_crc");
@@ -121,7 +126,7 @@ int work(void **inp, void **out) {
 				if (n) {
 					total_errors++;
 #ifdef _COMPILE_ALOE
-					modinfo_msg("error at packet %d ts=%d len=%d\n",total_pkts,oesr_tstamp(ctx),rcv_samples);
+//					modinfo_msg("error at packet %d len=%d\n",total_pkts,rcv_samples);
 #endif
 					if (cross_on_error) {
 						write(0,"x",1);
@@ -129,16 +134,19 @@ int work(void **inp, void **out) {
 				}
 
 				total_pkts++;
-				set_output_samples(i,rcv_samples-long_crc);
+				if (!(!forward_on_error && n)) {
+					set_output_samples(i,rcv_samples-long_crc);
+				}
 
 				if (print_interval && !(total_pkts%print_interval)) {
-					modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+					rtdal_printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 								total_pkts,total_errors,(float)total_errors/total_pkts);
 				}
 
 				if (point_interval && !(total_pkts%point_interval)) {
-					write(0,".",1);
+					rtdal_printf(".\n");
 				}
+
 			} else {
 				set_output_samples(i,rcv_samples+long_crc);
 			}
@@ -149,7 +157,7 @@ int work(void **inp, void **out) {
 
 int stop() {
 	if (mode==MODE_CHECK) {
-		modinfo_msg("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
+		rtdal_printf("Total blocks: %d\tTotal errors: %d\tBLER=%g\n",
 						total_pkts,total_errors,(float)total_errors/total_pkts);
 	}
 	return 0;

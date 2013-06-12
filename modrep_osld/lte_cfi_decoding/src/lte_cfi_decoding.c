@@ -26,6 +26,7 @@
 
 char table[4][32];
 int cfi_pm_idx;
+pmid_t err_th_id;
 
 /**
  * @ingroup lte_cfi_decoding
@@ -36,6 +37,7 @@ int cfi_pm_idx;
  */
 int initialize() {
 	coding_table(table);
+	err_th_id = param_id("errors_threshold");
 
 	/* get ctrl cfi param index */
 #ifdef _COMPILE_ALOE
@@ -60,9 +62,10 @@ int initialize() {
  *
  */
 int work(void **inp, void **out) {
-	int rcv_samples;
+	int rcv_samples,nof_errors;
 	int index;
 	input_t *input;
+	int errors_threshold;
 
 	input = inp[0];
 	rcv_samples = get_input_samples(0);
@@ -76,16 +79,26 @@ int work(void **inp, void **out) {
 			"bits.\n", rcv_samples);
 		return -1;
 	}
-	index = cfi_decoding(input, table)+1;
-
-#ifdef _COMPILE_ALOE
-	moddebug("Detected CFI=%d at tstamp=%d\n",index,oesr_tstamp(ctx));
-#endif
-	if (param_remote_set(out, 0, cfi_pm_idx, &index, sizeof(int))) {
-		moderror("Setting parameter\n");
-		return -1;
+	if (err_th_id) {
+		param_get_int(err_th_id,&errors_threshold);
+	} else {
+		errors_threshold=32;
 	}
 
+	index = cfi_decoding(input, table,&nof_errors);
+	index++;
+
+	if (nof_errors < errors_threshold) {
+	#ifdef _COMPILE_ALOE
+		modinfo_msg("Detected CFI=%d, err=%d\n",index,nof_errors);
+	#endif
+		if (param_remote_set(out, 0, cfi_pm_idx, &index, sizeof(int))) {
+			moderror("Setting parameter\n");
+			return -1;
+		}
+	} else {
+		modinfo_msg("Incorrect CFI=%d, err=%d\n",index,nof_errors);
+	}
 	return 0;
 }
 

@@ -61,7 +61,7 @@ int nod_waveform_run(nod_waveform_t *waveform, int runnable);
 int nod_waveform_remove(nod_waveform_t *waveform);
 int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_status);
 int nod_waveform_status_stop(nod_waveform_t *waveform);
-int nod_waveform_reset_pipeline(nod_waveform_t *waveform, r_proc_t proc);
+void* nod_waveform_reset_pipeline(void *_waveform);
 nod_module_t* nod_waveform_find_module_id(nod_waveform_t *w, int module_id);
 nod_module_t* nod_waveform_find_module_name(nod_waveform_t *w, char *name);
 

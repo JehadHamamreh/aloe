@@ -99,6 +99,7 @@ int initialize() {
 	return 0;
 }
 
+int run_cnt=0;
 /**
  * @ingroup lte_resource_mapper
  *
@@ -119,10 +120,8 @@ int work(void **inp, void **out) {
 		param_get_int(subframe_idx_id, &subframe_idx);
 	}
 
-#ifdef _COMPILE_ALOE
-	moddebug("subframe_idx=%d tstamp=%d rcv_len=%d cfi=%d\n",subframe_idx,oesr_tstamp(ctx),
-		get_input_samples(0),grid.cfi);
-#endif
+	param_get_int_name("cfi",&grid.cfi);
+	
 
 	if (subframe_idx==-1) {
 		return 0;
@@ -132,10 +131,13 @@ int work(void **inp, void **out) {
 	if (n < 1) {
 		return n;
 	}
+#ifdef _COMPILE_ALOE
+	modinfo_msg("subframe_idx=%d rcv_len=%d cfi=%d\n",subframe_idx,
+		get_input_samples(0),grid.cfi);
+#endif
 
 	if (channels_init_grid(channel_ids, nof_channels)) {
-		moddebug("Initiating resource grid\n",0);
-		return 0;
+		return -1;
 	}
 
 	if (deallocate_all_channels(channel_ids, nof_channels, inp[0],out)) {

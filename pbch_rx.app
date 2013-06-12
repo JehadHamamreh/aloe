@@ -4,7 +4,7 @@ modules:
 	demodulator:
 	{
 		binary="modrep_osld/libgen_soft_demod.so";	
-		mopts=3.9;
+		mopts=21.0;
 		variables=(
 			{name="soft";value=1;},{name="modulation";value=2;},{name="sigma2";value=1.5;});
 	};
@@ -12,15 +12,16 @@ modules:
 	descrambling:
 	{
 		binary="modrep_osld/liblte_scrambling.so";	
-		mopts=2.14;
-		variables=({name="subframe";value=0},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
+		mopts=11.0;
+		log=false;
+		variables=({name="subframe";value=-1},{name="q";value=0;},{name="cell_gr";value=2},{name="cell_sec";value=0},
 			{name="channel";value=3},{name="hard";value=0});
 	};
 	
 	unratematching:
 	{
 		binary="modrep_osld/liblte_ctrl_ratematching.so";	
-		mopts=1.8;
+		mopts=5;
 		variables=(
 			{name="direction";value=1},{name="S";value=120}
 		);
@@ -29,7 +30,7 @@ modules:
 	decoder:
 	{
 		binary="modrep_osld/libgen_viterbi.so";	
-		mopts=35.1;
+		mopts=252;
 		variables=(
 			{name="constraint_length";value=7},{name="rate";value=3},
 			{name="generator_0";value=91},{name="generator_1";value=127},{name="generator_2";value=117}
@@ -39,23 +40,27 @@ modules:
 	crc_descramble:
 	{
 		binary="modrep_osld/liblte_crc_scrambling.so";
-		mopts=1.16;
+		mopts=4;
 		variables=({name="direction";value=0;},{name="channel";value=1;},{name="nof_ports";value=1;});
 	};	
 
 	crc_check:
 	{
 		binary="modrep_osld/libgen_crc.so";
-		mopts=1.55;
-		variables=({name="direction";value=1},{name="long_crc";value=16;}
-					/*,{name="print_nof_pkts";value=10000} */
+		mopts=3;
+		log=false;
+		variables=({name="direction";value=1},{name="long_crc";value=16;},
+					{name="forward_on_error";value=0}
+					/*,{name="print_nof_pkts";value=1} */
+					/*,{name="print_interval";value=1}*/
 			); 
 	};	
 	
 	unpack:
 	{
 		binary="modrep_osld/liblte_bch_pack.so";	
-		mopts=1.1;
+		mopts=3;
+		log=true;
 		variables=(
 			{name="direction";value=1}
 		);

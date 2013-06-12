@@ -78,6 +78,7 @@ void* nanoclock_timer_run_thread(rtdal_timer_t* obj) {
 	} else {
 		clock_gettime(CLOCK_REALTIME, &obj->next);
 	}
+
 	n=0;
 	while(!obj->stop) {
 		timespec_add_us(&obj->next, obj->period);
@@ -106,34 +107,31 @@ void *xenomai_timer_run_thread(rtdal_timer_t *obj) {
 	int n;
 	unsigned int tscnt=0;
 
-	pthread_set_mode_np(0, PTHREAD_WARNSW);
+//	pthread_set_mode_np(0, PTHREAD_WARNSW);
 	
 	period.tv_sec=0;
 	period.tv_nsec=obj->period;
 	obj->stop = 0;
+
 	if (obj->wait_futex) {
 		futex_wait(obj->wait_futex);
-		obj->next.tv_sec+=3;
+		obj->next.tv_sec+=2;
 		obj->next.tv_nsec=0;
 	} else {
 		clock_gettime(CLOCK_REALTIME, &obj->next);
-		obj->next.tv_sec++;
+		obj->next.tv_sec+=2;
 	}
 	s=pthread_make_periodic_np(pthread_self(), &obj->next, &period);
 	if (s) {
 		printf("error %d\n",s);
 		return NULL;
 	}
-	printf("go!!\n");
 	n=0;
 	while(!obj->stop) {
 		overruns=0;
 		if ((s=pthread_wait_np(&overruns))) {
 			if (s!=110)
 				printf("error2 %d\n",s);
-		}
-		if (overruns>0) {
-			printf("[%d] %d overrun\n",tscnt, overruns);
 		}
 
 		timelog(obj->log);

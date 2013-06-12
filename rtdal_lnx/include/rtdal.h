@@ -160,10 +160,10 @@ int rtdal_itf_remove(r_itf_t obj);
 int rtdal_itf_set_callback(r_itf_t obj, void (*fnc)(void), int prio);
 int rtdal_itf_set_blocking(r_itf_t obj, int block);
 int rtdal_itf_get_blocking(r_itf_t obj);
-int rtdal_itf_push(r_itf_t obj, int len, int tstamp);
+int rtdal_itf_push(r_itf_t obj, void *ptr, int len, int tstamp);
 int rtdal_itf_pop(r_itf_t obj, void **ptr, int *len, int tstamp);
 int rtdal_itf_request(r_itf_t obj, void **ptr);
-int rtdal_itf_release(r_itf_t obj);
+int rtdal_itf_release(r_itf_t obj, void *ptr, int len);
 int rtdal_itf_send(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itf_recv(r_itf_t obj, void* buffer, int len, int tstamp);
 int rtdal_itf_set_delay(r_itf_t obj, int delay);
@@ -174,10 +174,25 @@ int rtdal_itf_get_delay(r_itf_t obj);
  * TODO: documentent this
  * @{
  */
-int rtdal_uhd_set_freq(float freq);
-int rtdal_uhd_set_block_len(int len);
-int rtdal_uhd_get_block_len();
-void *rtdal_uhd_buffer(int int_ch);
+
+r_dac_t rtdal_dac_open(string name, string args);
+int rtdal_dac_close(r_dac_t obj);
+int rtdal_dac_start_rx_stream(r_dac_t obj);
+
+float rtdal_dac_set_tx_srate(r_dac_t obj, float freq);
+float rtdal_dac_get_tx_srate(r_dac_t obj);
+float rtdal_dac_set_rx_srate(r_dac_t obj, float freq);
+float rtdal_dac_get_rx_srate(r_dac_t obj);
+
+float rtdal_dac_set_tx_gain(r_dac_t obj, float gain);
+float rtdal_dac_set_rx_gain(r_dac_t obj, float gain);
+
+float rtdal_dac_set_tx_freq(r_dac_t obj, float freq);
+float rtdal_dac_set_rx_freq(r_dac_t obj, float freq);
+
+int rtdal_dac_send(r_dac_t obj, void *data, int nsamples, int blocking);
+int rtdal_dac_recv(r_dac_t obj, void *data, int nsamples, int blocking);
+
 /**@} */
 
 

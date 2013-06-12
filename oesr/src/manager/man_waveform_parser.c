@@ -418,7 +418,7 @@ static int read_interface(config_setting_t *cfg, waveform_t *w) {
 
 	if (src_itf) {
 		if (!config_setting_lookup_int(cfg, "delay", &src_itf->delay)) {
-			src_itf->delay = 1;
+			src_itf->delay = -1;
 		}
 		if (dest_itf) {
 			dest_itf->delay = src_itf->delay;
@@ -539,7 +539,7 @@ static int read_module(config_setting_t *cfg, module_t *mod, waveform_t *w, int 
 		}
 	}
 	mod->log_enable = 0;
-	int t;
+	int t=0;
 	config_setting_lookup_bool(cfg, "log", &t);
 	if (t) {
 		mod->log_enable |= 0x1;

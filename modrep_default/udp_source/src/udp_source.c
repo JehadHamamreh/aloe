@@ -153,7 +153,7 @@ int work(void **inp, void **out) {
 		modinfo_msg("Received only %d/%d bytes\n",rcv_len,block_length);
 	}
 
-	moddebug("received %d bytes\n",rcv_len);
+	modinfo_msg("received %d bytes\n",rcv_len);
 
 	return rcv_len;
 }

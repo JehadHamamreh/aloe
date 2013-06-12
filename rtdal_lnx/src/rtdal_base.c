@@ -30,8 +30,12 @@
 #include "objects_max.h"
 #include "rtdal_context.h"
 #include "rtdal_time.h"
+#include "modulethread.h"
 #include "rtdal_file.h"
 #include "rtdal_error.h"
+#include "rtdal_itfspscq.h"
+#include "rtdal_itfqueue.h"
+
 #include "defs.h"
 #include "str.h"
 
@@ -87,7 +91,7 @@ int rtdal_initialize_node(rtdal_context_t *_context, string config_file,
 	context = _context;
 
 	rtdal_error_set_context(&context->error);
-	context->time.ts_len_us = context->machine.ts_len_us;
+	context->time.ts_len_us = context->machine.ts_len_ns/1000;
 	rtdal_time_set_context(&context->time);
 
 	rtdal_time_reset();
@@ -260,47 +264,6 @@ r_itf_t rtdal_itfphysic_get_id(int id) {
 	return (r_itf_t) &context->physic_itfs[i];
 }
 
-/**
- * Creates a new message spscq.
- * @param name Name of the new spscq interface
- * @param max_msg Positive integer. Maximum number of messages that can be inserted in the spscq
- * @param msg_sz Positive integer. Maximum message size
- * @return non-null value on success, zero on error
- */
-r_itf_t rtdal_itfspscq_new(int max_msg, int max_msg_sz, int delay, r_log_t log) {
-	hdebug("max_msg=%d,max_msg_sz=%d\n",max_msg,max_msg_sz);
-	assert(context);
-	RTDAL_ASSERT_PARAM_P(max_msg>=0);
-	RTDAL_ASSERT_PARAM_P(max_msg_sz>=0);
-	int i;
-
-
-	pthread_mutex_lock(&context->mutex);
-	for (i=0;i<MAX(rtdal_itfspscq);i++) {
-		if (!context->spscqs[i].parent.id)
-			break;
-	}
-	if (i == MAX(rtdal_itfspscq)) {
-		RTDAL_SETERROR(RTDAL_ERROR_NOTFOUND);
-		return NULL;
-	}
-	hdebug("i=%d\n",i);
-	context->spscqs[i].max_msg = max_msg;
-	context->spscqs[i].max_msg_sz = max_msg_sz;
-	context->spscqs[i].parent.delay = delay;
-	context->spscqs[i].parent.id = i+1;
-	context->spscqs[i].parent.log = log;
-
-	if (rtdal_itfspscq_init(&context->spscqs[i])) {
-		context->spscqs[i].parent.id = 0;
-		pthread_mutex_unlock(&context->mutex);
-		return NULL;
-	}
-
-	pthread_mutex_unlock(&context->mutex);
-	return (r_itf_t) &context->spscqs[i];
-}
-
 
 /**
  * Returns a handler to the first dac object matching the name.
@@ -372,16 +335,25 @@ r_proc_t rtdal_process_new(struct rtdal_process_attr *attr, void *arg) {
 	context->processes[i].arg = arg;
 	context->processes[i].finish_code = FINISH_OK;
 
-	if (pipeline_add(&context->pipelines[attr->pipeline_id],
-			&context->processes[i]) == -1) {
-		goto out;
+	switch(context->machine.scheduling) {
+		case SCHEDULING_PIPELINE:
+			if (pipeline_add(&context->pipelines[attr->pipeline_id],
+					&context->processes[i]) == -1) {
+				goto out;
+			}
+		break;
+		case SCHEDULING_BESTEFFORT:
+			if (modulethread_new(&context->processes[i])) {
+				goto out;
+			}
+			break;
 	}
 
 	if (rtdal_process_launch(&context->processes[i])) {
-		pipeline_remove(&context->pipelines[attr->pipeline_id],
-				&context->processes[i]);
+		rtdal_process_remove((r_proc_t)&context->processes[i]);
 		goto out;
 	}
+
 
 	pthread_mutex_unlock(&context->mutex);
 	return (r_proc_t) &context->processes[i];

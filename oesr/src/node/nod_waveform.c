@@ -107,7 +107,7 @@ int nod_waveform_run(nod_waveform_t *w, int runnable) {
 			return -1;
 		}
 	}
-	w->status.cur_status = LOADED;
+//	w->status.cur_status = LOADED;
 	return 0;
 }
 
@@ -159,19 +159,10 @@ static void* nod_waveform_status_stop_thread(void *arg) {
 	return (void*) 1;
 }
 
-int nod_waveform_reset_pipeline(nod_waveform_t *waveform, r_proc_t proc) {
+void* nod_waveform_reset_pipeline(void *_waveform) {
 	int i,j;
+	nod_waveform_t *waveform = (nod_waveform_t*) _waveform;
 	ndebug("reseting at %d\n",rtdal_time_slot());
-	if (nod_waveform_run(waveform,0)) {
-		return -1;
-	}
-	rtdal_process_seterror(proc, FINISH_OK);
-	rtdal_process_group_notified(proc);
-
-	time_t t;
-	t.tv_sec = 0;
-	t.tv_usec = 20000;
-	rtdal_sleep(&t);
 
 	for (i=0;i<waveform->nof_modules;i++) {
 		for (j=0;j<waveform->modules[i].parent.nof_outputs;j++) {
@@ -183,13 +174,14 @@ int nod_waveform_reset_pipeline(nod_waveform_t *waveform, r_proc_t proc) {
 		rtdal_process_seterror(waveform->modules[i].process, FINISH_OK);
 	}
 
-	rtdal_process_group_notified(proc);
+	time_t t;
+	t.tv_sec = 3;
+	t.tv_usec = 0;
+	rtdal_sleep(&t);
 
-	ndebug("return at %d\n",rtdal_time_slot());
-	if (nod_waveform_run(waveform,1)) {
-		return -1;
-	}
-	return 0;
+	nod_waveform_run(waveform,1);
+
+	return NULL;
 }
 
 /**  goes through all the modules and calls nod_module_stop();
@@ -339,7 +331,7 @@ int nod_waveform_precach_pipeline(nod_waveform_t *waveform) {
 	rtdal_timeslot_set(10);
 	waveform->status.next_timeslot = rtdal_time_slot();
 	waveform->status.cur_status = RUN;
-	ts.tv_sec = 3;
+	ts.tv_sec = 2;
 	ts.tv_usec = 0;
 	rtdal_sleep(&ts);
 	variable_t* source = nod_module_variable_get(&waveform->modules[0], "enabled");
@@ -379,16 +371,18 @@ int nod_waveform_status_new(nod_waveform_t *waveform, waveform_status_t *new_sta
 
 	switch(new_status->cur_status) {
 	case INIT:
-		if (nod_waveform_run(waveform,0)) { /** stop running modules in pipeline */
+		/*if (nod_waveform_run(waveform,0)) {
 			return -1;
 		}
+		*/
 		if (nod_waveform_status_init(waveform)) {
 			return -1;
 		}
+		/*
 		if (nod_waveform_run(waveform,1)) {
 			return -1;
 		}
-
+		*/
 		if (waveform->precach_pipeline) {
 			nod_waveform_precach_pipeline(waveform);
 		}
@@ -526,7 +520,7 @@ int nod_waveform_unserializeTo(packet_t *pkt, nod_waveform_t *dest) {
 		get_i(&dest->id);
 		get_i(&granularity_us);
 		if (granularity_us) {
-			dest->tslot_multiplicity = machine.ts_len_us/granularity_us;
+			dest->tslot_multiplicity = machine.ts_len_ns/1000/granularity_us;
 		} else {
 			dest->tslot_multiplicity = 1;
 		}

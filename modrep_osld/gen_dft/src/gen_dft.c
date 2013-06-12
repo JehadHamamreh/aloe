@@ -165,6 +165,9 @@ int work(void **inp, void **out) {
 					"interface %d\n",get_input_samples(i),dft_size,i);
 			return -1;
 		}
+		if (get_input_samples(0)>0) {
+			modinfo_msg("received %d samples\n",get_input_samples(0));
+		}
 
 		nof_fft = get_input_samples(i)/dft_size;
 

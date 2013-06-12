@@ -29,6 +29,7 @@ pmid_t padding_id;
 static int padding;
 
 int tail_bit;
+int bypass;
 int direction;
 int constraint_length;
 int rate;
@@ -60,6 +61,9 @@ int initialize() {
 		moderror("Parameter rate not specified\n");
 		return -1;
 	}
+	bypass=0;
+	param_get_int_name("bypass",&bypass);
+
 	if (rate<0 || rate > MAX_RATE) {
 		moderror_msg("Invalid rate %d\n",rate);
 		return -1;
@@ -93,8 +97,10 @@ int work(void **inp, void **out) {
 		if (rcv_samples && output) {
 			input_llr = input;
 
-			viterbi_decode(&state,input_llr,rcv_samples,constraint_length,rate,g,
-								output,&out_len);
+			if (!bypass) {
+				viterbi_decode(&state,input_llr,rcv_samples,constraint_length,rate,g,
+									output,&out_len);
+			}
 
 			out_len = rcv_samples / rate;
 

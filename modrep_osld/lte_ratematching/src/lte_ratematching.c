@@ -76,19 +76,23 @@ int work(void **inp, void **out) {
 	char *output_b;
 	float *input_f;
 	float *output_f;
-
+	
 	if (!get_input_samples(0)) {
 		return 0;
 	}
 
 	if (param_get_int(out_len_id, &out_len) != 1) {
-		moderror("Error getting parameter out_len\n");
+		printf("Error getting parameter out_len\n");
+		return -1;
+	}
+	if (out_len<0) {
+		printf("Invalid out_len %d\n",out_len);
 		return -1;
 	}
 
 	if (rvidx_id) {
 		if (param_get_int(rvidx_id, &rvidx) != 1) {
-			moderror("Error getting parameter rvidx\n");
+			printf("Error getting parameter rvidx\n");
 			return -1;
 		}
 	} else {
@@ -105,6 +109,11 @@ int work(void **inp, void **out) {
 		return 0;
 	}
 	
+	if (!out[0]) {
+		printf("Output itf not ready\n");
+		return -1;
+	}
+	
 	out_len_block = out_len/nof_active_itf;
 	output_f = out[0];
 	output_b = out[0];
@@ -118,16 +127,21 @@ int work(void **inp, void **out) {
 			if(!direction) {
 				if (char_RM_block(input_b,&output_b[i*out_len_block],in_len,
 						out_len_block,rvidx)) {
+					printf("char\n");
 					return -1;
 				}
 			} else {
 				if (float_UNRM_block(input_f,&output_f[i*out_len_block],in_len,
 						out_len_block,rvidx)) {
+					printf("error in rm algorithm\n");
 					return -1;
 				}	
 			}
 
 		}
+	}
+	if (out_len_block*nof_active_itf<0) {
+		printf("kk\n");
 	}
 	return out_len_block*nof_active_itf;
 }

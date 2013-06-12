@@ -134,16 +134,15 @@ int recv_bch(char *input, char *output, int len) {
 	char *buffer;
 
 	if (len < 24) {
-		moderror("Expected 24 bits for PBCH\n");
-		return -1;
+		return 0;
+	} else {
+		nof_prb = get_bw(input);
+		buffer=&input[6];
+		/* get phich setup */
+		sfn = unpack_bits(&buffer,8);
 	}
 
-	nof_prb = get_bw(input);
-	buffer=&input[6];
-	/* get phich setup */
-	sfn = unpack_bits(&buffer,8);
-
-	moddebug("ts=%d received nof_prb=%d, sfn=%d\n",oesr_tstamp(ctx),nof_prb,sfn);
+	modinfo_msg("received nof_prb=%d sfn=%d\n",nof_prb,sfn);
 
 	len = 0;
 	n = param_remote_set_ptr(&output[len], nof_prb_rx, &nof_prb, sizeof(int));
@@ -212,9 +211,6 @@ int work(void **inp, void **out) {
 		return len;
 	} else {
 		len = get_input_samples(0);
-		if (!len) {
-			return 0;
-		}
 		recv_bch(inp[0],out[0],len);
 	}
 

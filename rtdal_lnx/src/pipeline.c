@@ -35,6 +35,8 @@
 #include "pipeline_sync.h"
 #include "defs.h"
 
+#include "barrier.h"
+
 #define NSEC_DEB_LEN 120000
 struct timespec nsec_deb[NSEC_DEB_LEN];
 struct timespec nsec_deb2[NSEC_DEB_LEN];
@@ -46,6 +48,8 @@ static int is_first_in_cycle_count;
 extern int timeslot_p[MAX_PIPELINES];
 
 int pgroup_notified_failure[MAX_PROCESS_GROUP_ID];
+
+extern barrier_t start_barrier;
 
 void pipeline_initialize(int _num_pipelines) {
 	hdebug("num_pipelines=%d\n",_num_pipelines);
@@ -91,9 +95,9 @@ inline static void pipeline_run_thread_check_status(pipeline_t *pipe,
 		if (proc->attributes.finish_callback) {
 			hdebug("calling finish 0x%x arg=0x%x\n",proc->attributes.finish_callback,
 					proc->arg);
-			printf("fault-%d\n",rtdal_time_slot());
 			pgroup_notified_failure[proc->attributes.process_group_id] = 1;
-			rtdal_task_new(NULL, proc->attributes.finish_callback,proc->arg);
+			//rtdal_task_new(NULL, proc->attributes.finish_callback,proc->arg);
+			proc->attributes.finish_callback(proc->arg);
 		} else {
 			aerror_msg("Abnormal pid=%d termination but no callback was defined\n",
 					proc->pid);
@@ -177,6 +181,8 @@ void pipeline_run_from_timer(void *arg, struct timespec *time) {
 	pipeline_run_time_slot(obj,time);
 }
 
+
+
 /**
  * Runs one process after another (calling process[i].run_point()) and then
  * sleeps waiting for the semaphore
@@ -187,17 +193,29 @@ void *pipeline_run_thread(void *self) {
 	assert(obj->id>=0);
 
 #ifdef __XENO__
-	pthread_set_mode_np(0, PTHREAD_WARNSW);
+	if (obj->xenomai_warn_msw) {
+		printf("Enabling MSW warning for pipe %d\n",obj->id);
+		pthread_set_mode_np(0, PTHREAD_WARNSW);
+	}
 #endif
 
 	hdebug("pipeid=%d waiting\n",obj->id);
 
 	obj->stop = 0;
-	pipeline_sync_thread_waits(obj->id);
-	hdebug("pipeid=%d start\n",obj->id);
 	while(!obj->stop) {
-		pipeline_run_time_slot(obj, NULL);
 		pipeline_sync_thread_waits(obj->id);
+
+#ifdef __XENO__
+		pthread_set_mode_np(0, PTHREAD_LOCK_SCHED);
+#endif
+		pipeline_run_time_slot(obj, NULL);
+#ifdef __XENO__
+		pthread_set_mode_np(PTHREAD_LOCK_SCHED, 0);
+#endif
+
+		if (obj->wait_on_finish) {
+			barrier_wait(&start_barrier);
+		}
 	}
 	hdebug("pipeid=%d exiting\n",obj->id);
 	return NULL;

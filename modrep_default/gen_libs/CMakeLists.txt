@@ -7,7 +7,7 @@ if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 	project (gen_libs)
 	
 else()
-	include_directories(${OESR_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR})
+	include_directories(${OESR_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR} ${VOLK_INCLUDE})
 endif()
 
 set(LIBRARY_NAME "gen_libs")
