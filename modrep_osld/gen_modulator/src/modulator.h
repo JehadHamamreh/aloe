@@ -2,10 +2,7 @@
 #define INCLUDE_DEFS_ONLY
 #include "gen_modulator.h"
 
-
 #include "lte_lib/modulation.h"
-
-
 
 
 /* Moduation Mapper/Demapper functions

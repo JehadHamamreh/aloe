@@ -99,6 +99,7 @@ int work(void **inp, void **out) {
 	int rcv_len, out_len;
 
 	rcv_len=get_input_samples(0);
+	moddebug("%d samples recevied.\n",rcv_len);
 	if (!rcv_len)
 		return 0;
 
