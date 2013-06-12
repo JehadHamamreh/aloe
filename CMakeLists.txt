@@ -6,8 +6,8 @@ cmake_minimum_required (VERSION 2.6)
 project (ALOE++)
 
 # The version number.
-set (ALOE_VERSION_MAJOR 0)
-set (ALOE_VERSION_MINOR 6)
+set (ALOE_VERSION_MAJOR 1)
+set (ALOE_VERSION_MINOR 0)
 
 set(MODULE_REPOS_NAME "default")
 
