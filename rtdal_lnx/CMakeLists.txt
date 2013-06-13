@@ -47,6 +47,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dac/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../volk/include")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../volk/include")
 
 file(GLOB_RECURSE rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 list(APPEND rtdal_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/extern/message_queue.c" "${CMAKE_CURRENT_SOURCE_DIR}/extern/ring_buff_posix_osal.c" "${CMAKE_CURRENT_SOURCE_DIR}/extern/ring_buff.c"  "${CMAKE_CURRENT_SOURCE_DIR}/extern/rtdal_datafile.c")
@@ -56,7 +57,7 @@ add_executable(runcf ${rtdal_SOURCES} ${DAC_SOURCES})
 set_target_properties(runcf PROPERTIES COMPILE_FLAGS "${CFDEB} ${COMPILE_DAC} -Wno-format ${COMPILE_XENOMAI} ${MATFILE_CFLAGS}")
 
 target_link_libraries (runcf "-Wl,--whole-archive" oesr)
-target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread volk rt dl ${LINK_DAC})
+target_link_libraries (runcf "-Wl,--no-whole-archive" ${LINK_XENOMAI} pthread volk rt dl m ${LINK_DAC})
 target_link_libraries (runcf ${UHD_LIBRARIES})
 
 
