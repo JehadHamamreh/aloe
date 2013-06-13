@@ -200,7 +200,7 @@ int uhd_send(void *h, void *data, int nsamples, int blocking) {
 
 size_t uhd_recv_rb(uhd_handler* handler, void *data, int nbytes, int blocking) {
 	void *buff;
-	size_t r;
+	unsigned int r;
 	ring_buff_err_t err;
 	err = ring_buff_read(handler->ring_buff, &buff, nbytes, &r,blocking);
 	if(err != RING_BUFF_ERR_OK)
