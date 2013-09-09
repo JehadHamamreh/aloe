@@ -42,10 +42,10 @@ function dx_rx = subblock_deinterleaver(vx, stream, turbo)
 	% 1. Define inter-column permutation matrix and dummy-bit insertion pattern
     if (turbo)
         % GPP for turbo-encoded channels:
-        % Alternative (optimized) implementation employs P(i) = mod(P_GPP(i)+1,cols):
         if (stream < 2)
             P = [0, 16, 8, 24, 4, 20, 12, 28, 2, 18, 10, 26, 6, 22, 14, 30, 1, 17, 9, 25, 5, 21, 13, 29, 3, 19, 11, 27, 7, 23, 15, 31];
         else
+   	        % Alternative (optimized) implementation employs P(i) = mod(P_GPP(i)+1,cols):
             P = [1, 17, 9, 25, 5, 21, 13, 29, 3, 19, 11, 27, 7, 23, 15, 31, 2, 18, 10, 26, 6, 22, 14, 30, 4, 20, 12, 28, 8, 24, 16, 0];    
 		end
         % Pattern for inserting dummy bits:
