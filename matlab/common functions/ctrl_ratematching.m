@@ -31,6 +31,9 @@
 % in        - Input bit streams (stream of '0s' and '1s'), which is the
 %           output of the encoder
 %
+% turbo     - If set, assumes the rate matching of turbo encoded
+%           data channels (PDSCH or PUSCH)
+%
 % Outputs:
 % out       - output stream
 
