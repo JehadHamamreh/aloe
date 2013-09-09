@@ -62,9 +62,9 @@ function out = ctrl_unratematching(e, turbo, S)
         v = bit_split(w);
         
         % Subblock Deinterleaving
-        d0 = subblock_deinterleaver(v(1,:), turbo);
-        d1 = subblock_deinterleaver(v(2,:), turbo);
-        d2 = subblock_deinterleaver(v(3,:), turbo);       
+        d0 = subblock_deinterleaver(v(1,:), 0, turbo);
+        d1 = subblock_deinterleaver(v(2,:), 1, turbo);
+        d2 = subblock_deinterleaver(v(3,:), 2, turbo);       
         
         d = [d0;d1;d2];
         out = wrap_input(d);
